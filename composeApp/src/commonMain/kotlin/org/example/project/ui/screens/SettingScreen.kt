@@ -13,6 +13,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.example.project.navigation.Screen
 
+import kotlinproject.composeapp.generated.resources.Res
+import kotlinproject.composeapp.generated.resources.setting_content
+import kotlinproject.composeapp.generated.resources.setting_title
+import org.jetbrains.compose.resources.stringResource
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingScreen(
@@ -21,7 +26,7 @@ fun SettingScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text(stringResource(Res.string.setting_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                     }
@@ -36,7 +41,7 @@ fun SettingScreen(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Settings Screen Content",
+                text = stringResource(Res.string.setting_content),
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.bodyLarge
             )

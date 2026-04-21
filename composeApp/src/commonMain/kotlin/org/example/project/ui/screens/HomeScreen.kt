@@ -23,9 +23,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import kotlinproject.composeapp.generated.resources.Res
+import kotlinproject.composeapp.generated.resources.app_name
 import kotlinproject.composeapp.generated.resources.icon_home
 import org.example.project.navigation.Screen
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,10 +39,10 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Instagram",
+                        text = stringResource(Res.string.app_name),
                         fontFamily = MaterialTheme.typography.titleLarge.fontFamily,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp
+                        fontSize = 30.sp
                     )
                 },
                 actions = {

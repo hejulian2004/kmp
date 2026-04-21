@@ -7,22 +7,24 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import org.example.project.navigation.Screen
+
+import kotlinproject.composeapp.generated.resources.Res
+import kotlinproject.composeapp.generated.resources.profile_content
+import kotlinproject.composeapp.generated.resources.profile_title
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(
+fun ProfileScreen(
     navController: NavController
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detail") },
+                title = { Text(stringResource(Res.string.profile_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                     }
@@ -37,7 +39,7 @@ fun DetailScreen(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Detail Screen Content",
+                text = stringResource(Res.string.profile_content),
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.bodyLarge
             )
@@ -48,5 +50,5 @@ fun DetailScreen(
 @Composable
 @Preview(showBackground = true)
 fun  DetailScreenPreview(){
-    DetailScreen(rememberNavController())
+    ProfileScreen(rememberNavController())
 }

@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Instagram</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_post">Post</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_setting">Setting</string>
+    <string name="profile_title">Detail</string>
+    <string name="profile_content">Detail Screen Content</string>
+    <string name="setting_title">Settings</string>
+    <string name="setting_content">Settings Screen Content</string>
+    <string name="post_picker_title">Select Post Type</string>
+    <string name="post_option_image">Image</string>
+    <string name="post_option_video">Video</string>
+    <string name="cancel">Cancel</string>
+</resources>
