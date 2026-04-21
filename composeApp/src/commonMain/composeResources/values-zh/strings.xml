@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Instagram</string>
+    <string name="nav_home">主页</string>
+    <string name="nav_search">搜索</string>
+    <string name="nav_post">发布</string>
+    <string name="nav_profile">我的</string>
+    <string name="nav_setting">设置</string>
+    <string name="profile_title">我的详情</string>
+    <string name="profile_content">我的页面内容</string>
+    <string name="setting_title">设置</string>
+    <string name="setting_content">设置页面内容</string>
+    <string name="post_picker_title">选择发布类型</string>
+    <string name="post_option_image">图文</string>
+    <string name="post_option_video">视频</string>
+    <string name="cancel">取消</string>
+</resources>
