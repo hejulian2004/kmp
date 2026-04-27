@@ -1,24 +1,33 @@
 package org.example.project.domain
+enum class PostType {  IMAGE_TEXT, VIDEO }
 
+data class PostModel(
+    val id: String,
+    val userId: String,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val type: PostType,
+    val thumbnail: String?,
+    val summary: String,
+    val contentId: String
+)
 
 sealed class PostContent {
-    data class TextPost(val body: String) : PostContent()
-//    todo: 未来实现
-//    data class ImagePost(val body: String, val images: List<MediaFile>) : PostContent()
-//    data class VideoPost(val video: MediaFile, val thumbnail: MediaFile, val caption: String) : PostContent()
-}
+    abstract val title: String
 
-data class Post(
-    val id: String,
-    val authorId: String,
-    val createdAt: Long,
-    val content: PostContent
-) {
-}
+    abstract val id: String
+    data class ImageTextContent(
+        override val id: String,
+        override val title: String,
+        val body: String,
+        val images: List<String>,
+    ) : PostContent()
 
-sealed class PublishState {
-    object Idle : PublishState()
-//    data class Editing(val type: PostType) : PublishState()
-    object Publishing : PublishState()
-    data class Done(val post: Post) : PublishState()
+    data class VideoContent(
+        override val id: String,
+        override val title: String,
+        val description: String,
+        val videoUrl: String,
+        val coverUrl: String,
+    ) : PostContent()
 }

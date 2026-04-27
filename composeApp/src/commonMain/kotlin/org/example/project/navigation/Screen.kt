@@ -2,6 +2,7 @@ package org.example.project.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.outlined.AirplanemodeActive
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.NearMe
@@ -63,6 +64,11 @@ sealed class Screen(
         route = "detail_screen",
         icon = Icons.Filled.AccountCircle
     )
+
+    object ImagePickerScreen: Screen(
+        route = "image_picked_screen",
+        icon = Icons.Filled.Image
+    )
 }
 
 sealed class NavAction {
@@ -91,4 +97,6 @@ val bottomNavScreens = listOf(
     Screen.Profile,
     Screen.Setting,
 )
-
+val hideBottomBarRoutes = listOf(
+    Screen.Post.route,
+)

@@ -1,13 +1,17 @@
 package org.example.project.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import org.example.project.presentation.viewmodel.MainViewModel
 import org.example.project.ui.screens.HomeScreen
+import org.example.project.ui.screens.ImagePickerScreen
 import org.example.project.ui.screens.ProfileScreen
 import org.example.project.ui.screens.SettingScreen
 
@@ -15,7 +19,8 @@ import org.example.project.ui.screens.SettingScreen
 @Composable
 fun BottomNavGraph(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    sharedViewModel: MainViewModel? = null
 ) {
     NavHost(
         navController = navController,
@@ -56,6 +61,17 @@ fun BottomNavGraph(
             route = Screen.Search.route
         ) {
             SettingScreen(navController)
+        }
+        composable(
+            route = Screen.ImagePickerScreen.route
+        ) {
+            DisposableEffect(Unit) {
+                sharedViewModel?.setBottomBarVisible(false)
+                onDispose {
+                    sharedViewModel?.setBottomBarVisible(true)
+                }
+            }
+            ImagePickerScreen(navController)
         }
     }
 }

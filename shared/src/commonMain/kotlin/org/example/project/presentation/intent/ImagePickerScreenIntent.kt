@@ -1,4 +1,7 @@
 package org.example.project.presentation.intent
 
-class ImagePickerScreenIntent {
+
+sealed class ImagePickerScreenIntent {
+    data object PickImage : ImagePickerScreenIntent()
+    data object ClearImage : ImagePickerScreenIntent()
 }

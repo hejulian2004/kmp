@@ -28,6 +28,8 @@ import org.example.project.ui.theme.InstagramTheme
 import org.example.project.ui.theme.InstagramTypography
 
 import kotlinproject.composeapp.generated.resources.*
+import org.example.project.navigation.Screen
+import org.example.project.ui.screens.ImagePickerScreen
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -46,9 +48,7 @@ fun PostPickerContent(
             style = InstagramTypography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
-
         Spacer(modifier = Modifier.height(28.dp))
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
@@ -56,12 +56,17 @@ fun PostPickerContent(
             PostOption(
                 icon = Icons.Outlined.Image,
                 label = stringResource(Res.string.post_option_image),
-                onClick = { onDismiss() }
+                onClick = {
+                    onDismiss()
+                    navController.navigate(Screen.ImagePickerScreen.route)
+                }
             )
             PostOption(
                 icon = Icons.Outlined.VideoLibrary,
                 label = stringResource(Res.string.post_option_video),
-                onClick = { onDismiss() }
+                onClick = {
+                    onDismiss()
+                }
             )
         }
         Column(
@@ -110,6 +115,9 @@ private fun PostOption(
 @Preview(showBackground = true)
 fun PostPickerContentPreview() {
     InstagramTheme {
-        PostPickerContent({}, rememberNavController())
+        PostPickerContent(
+            {},
+            rememberNavController()
+        )
     }
 }

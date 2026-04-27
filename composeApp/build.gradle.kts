@@ -39,8 +39,18 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            //noinspection UseTomlInstead
             implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.2")
+            //noinspection UseTomlInstead
             implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
+            implementation(libs.filekit.core)
+            implementation(libs.androidx.startup.runtime)
+            implementation(libs.coil.compose)
+            implementation(libs.filekit.dialogs.compose)
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.coil)
+            implementation("io.coil-kt.coil3:coil-network-ktor3:3.4.0")
+            implementation("io.ktor:ktor-client-cio:3.1.3")
             implementation(project(":shared"))
         }
         commonTest.dependencies {

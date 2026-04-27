@@ -63,6 +63,9 @@ kotlin {
                 implementation(libs.androidx.lifecycle.viewmodelCompose)
                 implementation(libs.androidx.lifecycle.runtimeCompose)
                 implementation(libs.compose.runtime)
+                implementation(libs.filekit.core)
+                implementation(libs.androidx.startup.runtime)
+                implementation(libs.filekit.dialogs)
             }
         }
 

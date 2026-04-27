@@ -22,10 +22,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil3.compose.AsyncImage
 import kotlinproject.composeapp.generated.resources.Res
 import kotlinproject.composeapp.generated.resources.app_name
+import kotlinproject.composeapp.generated.resources.compose_multiplatform
 import kotlinproject.composeapp.generated.resources.icon_home
+import kotlinproject.composeapp.generated.resources.icon_plane
 import org.example.project.navigation.Screen
+import org.example.project.ui.components.ImagePreview
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -34,42 +38,17 @@ import org.jetbrains.compose.resources.stringResource
 fun HomeScreen(
     navController: NavController,
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(Res.string.app_name),
-                        fontFamily = MaterialTheme.typography.titleLarge.fontFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 30.sp
-                    )
-                },
-                actions = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            painter = painterResource(Res.drawable.icon_home),
-                            contentDescription = null,
-                        )
-                    }
-                    IconButton(onClick = {}) {
-                        Icon(
-                            painter = painterResource(Res.drawable.icon_home),
-                            contentDescription = null,
-                        )
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
+    Scaffold() { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            ImagePreview(model = "https://picsum.photos/800/640")
         }
     }
 }
+
 
 @Composable
 @Preview(showBackground = true)
