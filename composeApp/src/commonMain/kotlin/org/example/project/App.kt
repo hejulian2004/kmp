@@ -13,16 +13,17 @@ import org.example.project.ui.theme.InstagramTheme
 @Composable
 @Preview
 fun App() {
+    setSingletonImageLoaderFactory { context ->
+        ImageLoader.Builder(context)
+            .components {
+                add(KtorNetworkFetcherFactory())
+                addPlatformFileSupport()
+            }
+            .crossfade(true)
+            .build()
+    }
+
     InstagramTheme {
-        setSingletonImageLoaderFactory { context ->
-            ImageLoader.Builder(context)
-                .components {
-                    add(KtorNetworkFetcherFactory())
-                    addPlatformFileSupport()
-                }
-                .crossfade(true)
-                .build()
-        }
         MainScreen()
     }
 }

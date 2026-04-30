@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,6 +31,7 @@ import kotlinproject.composeapp.generated.resources.icon_home
 import kotlinproject.composeapp.generated.resources.icon_plane
 import org.example.project.navigation.Screen
 import org.example.project.ui.components.ImagePreview
+import org.example.project.ui.components.UserCard
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -44,7 +46,21 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            ImagePreview(model = "https://picsum.photos/800/640")
+            UserCard(
+                avatarUrl = "https://picsum.photos/800/640",
+                username = "张三",
+                extraInfo = "北京 · 摄影爱好者",
+                onDismiss = { },
+                onClick = { },
+                bottomAction = {
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {  }
+                    ) {
+                        Text("关注")
+                    }
+                }
+            )
         }
     }
 }

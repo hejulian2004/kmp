@@ -19,48 +19,72 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // 字体家族
+
 object AppFontFamily {
     val Default = FontFamily.SansSerif
 }
+
 // 字重
+
 object AppFontWeight {
-    val Normal  = FontWeight.Normal
-    val Medium  = FontWeight.Medium
-    val Bold    = FontWeight.Bold
+    val Normal = FontWeight.Normal
+    val Medium = FontWeight.Medium
+    val Bold   = FontWeight.Bold
 }
-// 字号
+
+/**
+ *  字号
+ *  xs  11sp  —— 角标、时间戳等最小辅助文字
+ *  sm  13sp  —— 次要信息、标签
+ *  md  16sp  —— 正文、列表主要内容
+ *  lg  22sp  —— 页面标题
+ *  xl  28sp  —— 品牌 Logo / 大标题
+ */
 object AppFontSize {
-    val xs    :  TextUnit = 11.sp   // labelSmall
-    val sm    :  TextUnit = 13.sp
-    val md    :  TextUnit = 16.sp   // bodyLarge
-    val lg    :  TextUnit = 22.sp   // titleLarge
-    val xl    :  TextUnit = 28.sp
+    val xs : TextUnit = 11.sp
+    val sm : TextUnit = 13.sp
+    val md : TextUnit = 16.sp
+    val lg : TextUnit = 22.sp
+    val xl : TextUnit = 28.sp
 }
+
 // 行高
+
 object AppLineHeight {
-    val xs    : TextUnit = 16.sp
-    val sm    : TextUnit = 20.sp
-    val md    : TextUnit = 24.sp
-    val lg    : TextUnit = 28.sp
+    val xs : TextUnit = 16.sp
+    val sm : TextUnit = 20.sp
+    val md : TextUnit = 24.sp
+    val lg : TextUnit = 28.sp
 }
+
 // 字间距
+
 object AppLetterSpacing {
     val none : TextUnit = 0.sp
-    val sm : TextUnit = 0.5.sp
-    val md : TextUnit = 1.sp
+    val sm   : TextUnit = 0.5.sp
+    val md   : TextUnit = 1.sp
 }
 
 
 /**
  * 项目标准排版配置
- * 包含：
- * - titleLarge: 用于页面标题及品牌 Logo
- * - bodyLarge: 用于主要的列表项及正文
- * - labelSmall: 用于次要的辅助信息
+ *
+ * 已定义样式：
+ * - [Typography.titleLarge]  用于页面标题及品牌 Logo
+ * - [Typography.bodyLarge]   用于主要列表项及正文
+ * - [Typography.bodyMedium]  用于次要正文内容
+ * - [Typography.labelSmall]  用于辅助信息、时间戳
+ * - [Typography.labelMedium] 用于标签、角标文字
+ *
+ * 使用方式：
+ * ```
+ * Text("标题", style = MaterialTheme.typography.titleLarge)
+ * Text("正文", style = MaterialTheme.typography.bodyLarge)
+ * ```
  */
 val InstagramTypography = Typography(
 
-    // 用于页面标题及品牌 Logo
+    // 页面标题 / 品牌 Logo
     titleLarge = TextStyle(
         fontFamily    = AppFontFamily.Default,
         fontWeight    = AppFontWeight.Bold,
@@ -69,7 +93,7 @@ val InstagramTypography = Typography(
         letterSpacing = AppLetterSpacing.none
     ),
 
-    // 用于主要的列表项及正文
+    // 主要正文 / 列表项
     bodyLarge = TextStyle(
         fontFamily    = AppFontFamily.Default,
         fontWeight    = AppFontWeight.Normal,
@@ -78,45 +102,63 @@ val InstagramTypography = Typography(
         letterSpacing = AppLetterSpacing.sm
     ),
 
-    // 用于次要的辅助信息
+    // 次要正文
+    bodyMedium = TextStyle(
+        fontFamily    = AppFontFamily.Default,
+        fontWeight    = AppFontWeight.Normal,
+        fontSize      = AppFontSize.sm,
+        lineHeight    = AppLineHeight.sm,
+        letterSpacing = AppLetterSpacing.sm
+    ),
+
+    // 辅助信息 / 时间戳
     labelSmall = TextStyle(
         fontFamily    = AppFontFamily.Default,
         fontWeight    = AppFontWeight.Medium,
         fontSize      = AppFontSize.xs,
         lineHeight    = AppLineHeight.xs,
         letterSpacing = AppLetterSpacing.sm
-    )
+    ),
+
+    // 标签 / 角标
+    labelMedium = TextStyle(
+        fontFamily    = AppFontFamily.Default,
+        fontWeight    = AppFontWeight.Medium,
+        fontSize      = AppFontSize.sm,
+        lineHeight    = AppLineHeight.sm,
+        letterSpacing = AppLetterSpacing.none
+    ),
 )
 
 
 data class NavColors(
-    val background : Color,
-    val selectedIcon : Color,
-    val unselectedIcon: Color,
-    val divider : Color,
+    val background     : Color,
+    val selectedIcon   : Color,
+    val unselectedIcon : Color,
+    val divider        : Color,
 )
 
 @Composable
 fun navColors(): NavColors {
     val scheme = MaterialTheme.colorScheme
-    val isDark = isSystemInDarkTheme()
+    val isDark  = isSystemInDarkTheme()
     return NavColors(
         background     = scheme.surface,
-        unselectedIcon = if (isDark) scheme.secondary else scheme.onBackground.copy(alpha = 0.4f),
         selectedIcon   = scheme.onSurface,
+        unselectedIcon = if (isDark) scheme.secondary
+        else scheme.onBackground.copy(alpha = 0.4f),
         divider        = scheme.secondary,
     )
 }
 
-
 object NavSize {
-    val IconSize = 24.dp
-    val BigIconSize = 30.dp
-    val IconScaleSelected  = 1.1f
-    val IconScaleUnselected = 1.0f
+    val IconSize             = 24.dp
+    val BigIconSize          = 30.dp
+    val IconScaleSelected    = 1.1f
+    val IconScaleUnselected  = 1.0f
     val BarPaddingHorizontal = 8.dp
-    val BarPaddingVertical = 12.dp
-    val DividerThickness = 0.5.dp
+    val BarPaddingVertical   = 12.dp
+    val DividerThickness     = 0.5.dp
 }
 
 object NavAnim {
