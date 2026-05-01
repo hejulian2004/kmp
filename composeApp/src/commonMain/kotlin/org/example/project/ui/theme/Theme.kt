@@ -1,9 +1,3 @@
-/**
- * @File: Theme.kt
- * @Description: 定义应用程序的颜色方案及主题配置，支持深浅色模式切换
- * @Date: 2026-04-20
- */
-
 package org.example.project.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -17,6 +11,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation.Navigator
 
 private val DarkColorScheme = darkColorScheme(
     primary      = InstagramBlue,
@@ -86,6 +81,8 @@ data class AppSize(
     val borderWidth  : Dp = 1.dp,
     val dividerWidth : Dp = 0.5.dp,
     val buttonRadius : Dp = 8.dp,
+    val topBarHeight : Dp = 50.dp,
+    val navigationBarHeight:Dp = 90.dp
 )
 
 
@@ -101,8 +98,6 @@ val MaterialTheme.size: AppSize
 
 /**
  * [InstagramTheme]
- *
- * ⚠️ content 必须是最后一个参数，保证 trailing lambda 语法可用：
  *    InstagramTheme { MainScreen() }
  */
 @Composable

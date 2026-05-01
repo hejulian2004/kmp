@@ -1,4 +1,4 @@
-package org.example.project.ui.screens
+package org.example.project.ui.screens.profilescreen
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

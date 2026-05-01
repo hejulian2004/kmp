@@ -1,73 +1,77 @@
 package org.example.project.ui.screens
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import coil3.compose.AsyncImage
-import kotlinproject.composeapp.generated.resources.Res
-import kotlinproject.composeapp.generated.resources.app_name
-import kotlinproject.composeapp.generated.resources.compose_multiplatform
-import kotlinproject.composeapp.generated.resources.icon_home
-import kotlinproject.composeapp.generated.resources.icon_plane
-import org.example.project.navigation.Screen
-import org.example.project.ui.components.ImagePreview
-import org.example.project.ui.components.UserCard
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
+import org.example.project.ui.components.profilescreen.ProfileInfoSection
+import org.example.project.ui.components.profilescreen.TopBar
+import org.example.project.ui.components.profilescreen.TopBarSpan
+import org.example.project.ui.theme.size
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
 ) {
-    Scaffold() { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+    Surface(
+        modifier = Modifier
+            .fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
         ) {
-            UserCard(
-                avatarUrl = "https://picsum.photos/800/640",
-                username = "张三",
-                extraInfo = "北京 · 摄影爱好者",
-                onDismiss = { },
-                onClick = { },
-                bottomAction = {
-                    Button(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {  }
-                    ) {
-                        Text("关注")
-                    }
-                }
+        Column {
+            Row(
+                modifier = Modifier
+                    .statusBarsPadding()
+            ) {
+                TopBar(
+                    modifier = Modifier
+                        .height(MaterialTheme.size.topBarHeight),
+                    title = "user_223",
+                    leftSpan1 = TopBarSpan(
+                        icon = Icons.Default.Add,
+                        alignment = Alignment.CenterStart,
+                        onPress = { }
+                    ),
+                    leftSpan2 = TopBarSpan(),
+                    rightSpan1 = TopBarSpan(
+                        icon = Icons.Rounded.Search,
+                        alignment = Alignment.Center,
+                        onPress = { }
+                    ),
+                    rightSpan2 = TopBarSpan(
+                        icon = Icons.Default.Menu,
+                        alignment = Alignment.CenterEnd,
+                        onPress = { }
+                    ),
+                    onTitlePress = { isExpanded -> }
+                )
+            }
+
+            ProfileInfoSection(
+                avatarUrl = "https://picsum.photos/200"
             )
         }
     }
-}
-
-
-@Composable
-@Preview(showBackground = true)
-fun HomeScreenPreview(){
-    HomeScreen(rememberNavController())
 }

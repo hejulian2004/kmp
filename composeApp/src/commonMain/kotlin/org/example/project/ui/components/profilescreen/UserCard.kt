@@ -1,4 +1,4 @@
-package org.example.project.ui.components
+package org.example.project.ui.components.profilescreen
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn

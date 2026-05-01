@@ -26,4 +26,5 @@
     <string name="add">Add</string>
     <string name="image_limit_reached">Maximum %1$d images reached</string>
     <string name="unknown_error">unknown error</string>
+    <string name="collapse">Collapse</string>
 </resources>

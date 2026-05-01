@@ -49,9 +49,12 @@ kotlin {
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.filekit.core)
             implementation(libs.filekit.coil)
-            implementation("io.coil-kt.coil3:coil-network-ktor3:3.4.0")
-            implementation("io.ktor:ktor-client-cio:3.1.3")
+            implementation(libs.coil.network.ktor3)
+            implementation(libs.ktor.client.cio)
             implementation(project(":shared"))
+            implementation(libs.google.accompanist.systemuicontroller)
+            implementation(libs.androidx.core.ktx.v1120)
+            implementation("com.google.accompanist:accompanist-systemuicontroller:0.31.3-beta")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

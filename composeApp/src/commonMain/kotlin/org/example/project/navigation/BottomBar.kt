@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -45,14 +46,13 @@ import org.example.project.ui.theme.navColors
 @Composable
 fun BottomBar(
     navController: NavHostController,
-    screens: List<Screen>
+    screens: List<Screen>,
+    modifier: Modifier = Modifier
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-
     var currentPopup by remember { mutableStateOf<NavAction.Popup?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
     when (val popup = currentPopup) {
         is NavAction.Popup.BottomSheet -> {
             ModalBottomSheet(
@@ -74,18 +74,12 @@ fun BottomBar(
         null -> {
         }
     }
-
     val colors = navColors()
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(colors.background)
-            .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        HorizontalDivider(
-            thickness = NavSize.DividerThickness,
-            color = colors.divider
-        )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
