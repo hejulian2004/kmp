@@ -5,7 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,20 +16,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import kotlinproject.composeapp.generated.resources.Res
+import kotlinproject.composeapp.generated.resources.add_interest
+import kotlinproject.composeapp.generated.resources.add_signature
+import kotlinproject.composeapp.generated.resources.stat_followers
+import kotlinproject.composeapp.generated.resources.stat_following
+import kotlinproject.composeapp.generated.resources.stat_posts
+import kotlinproject.composeapp.generated.resources.user_avatar
 import org.example.project.ui.theme.size
 import org.example.project.ui.theme.spacing
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ProfileInfoSection(
     avatarUrl: String = "",
-    username: String = "默认昵称",
+    username: String = "",
     postCount: String = "0",
     followerCount: String = "0",
     followingCount: String = "0",
-    signature: String = "添加个性签名",
-    interests: List<String> = listOf("添加兴趣"),
+    signature: String = "",
     onAvatarClick: () -> Unit = {},
     onSignatureClick: () -> Unit = {},
     onPostClick: () -> Unit = {},
@@ -43,7 +54,7 @@ fun ProfileInfoSection(
         ) {
             AsyncImage(
                 model = avatarUrl,
-                contentDescription = "用户头像",
+                contentDescription = stringResource(Res.string.user_avatar),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(MaterialTheme.size.avatarMd)
@@ -54,34 +65,78 @@ fun ProfileInfoSection(
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = username,
-                    style = MaterialTheme.typography.titleMedium
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = username,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.xs))
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.lg)
                 ) {
-                    StatItem(count = postCount, label = "帖子", onClick = onPostClick)
-                    StatItem(count = followerCount, label = "粉丝", onClick = onFollowerClick)
-                    StatItem(count = followingCount, label = "关注", onClick = onFollowingClick)
+                    StatItem(
+                        modifier = Modifier.weight(1f),
+                        count = postCount,
+                        label = stringResource(Res.string.stat_posts),
+                        onClick = onPostClick
+                    )
+                    StatItem(
+                        modifier = Modifier.weight(1f),
+                        count = followerCount,
+                        label = stringResource(Res.string.stat_followers),
+                        onClick = onFollowerClick
+                    )
+                    StatItem(
+                        modifier = Modifier.weight(1f),
+                        count = followingCount,
+                        label = stringResource(Res.string.stat_following),
+                        onClick = onFollowingClick
+                    )
                 }
             }
         }
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.sm))
-        Text(
-            text = signature,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.clickable { onSignatureClick() }
-        )
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.sm))
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm)
-        ) {
-            interests.forEach { interest ->
-                ChipItem(label = interest)
+        if(signature.isBlank()){
+            Text(
+                text = stringResource(Res.string.add_signature),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.clickable { onSignatureClick() }
+            )
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.sm))
+            Text(
+                text = stringResource(Res.string.add_interest),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.clickable { onSignatureClick() },
+                color = MaterialTheme.colorScheme.primary
+            )
+        } else{
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = signature,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Spacer(modifier = Modifier.width(MaterialTheme.spacing.xxs))
+                Icon(
+                    Icons.Filled.Circle,
+                    contentDescription = null,
+                    modifier = Modifier.size(5.dp)
+                )
+                Spacer(modifier = Modifier.width(MaterialTheme.spacing.xxs))
+                Text(
+                    text = stringResource(Res.string.add_interest),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.clickable { onSignatureClick() },
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
+
     }
 }
 
@@ -93,7 +148,6 @@ fun StatItem(
     modifier: Modifier = Modifier
 ) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .clickable(
                 enabled = onClick != null,
@@ -115,20 +169,9 @@ fun StatItem(
     }
 }
 
+
+@Preview
 @Composable
-fun ChipItem(label: String) {
-    Box(
-        modifier = Modifier
-            .background(
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                shape = CircleShape
-            )
-            .padding(horizontal = MaterialTheme.spacing.sm, vertical = MaterialTheme.spacing.xxs)
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-    }
+fun ProfileInfoSectionPreview(){
+    ProfileInfoSection()
 }

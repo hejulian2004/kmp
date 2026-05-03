@@ -27,4 +27,11 @@
     <string name="image_limit_reached">Maximum %1$d images reached</string>
     <string name="unknown_error">unknown error</string>
     <string name="collapse">Collapse</string>
+    <string name="user_avatar">User Avatar</string>
+    <string name="default_username">Default Username</string>
+    <string name="add_signature">Add a bio</string>
+    <string name="add_interest">Add interests</string>
+    <string name="stat_posts">Posts</string>
+    <string name="stat_followers">Followers</string>
+    <string name="stat_following">Following</string>
 </resources>

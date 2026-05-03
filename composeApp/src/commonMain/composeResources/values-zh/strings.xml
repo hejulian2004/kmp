@@ -26,4 +26,11 @@
     <string name="add">添加</string>
     <string name="image_limit_reached">已达到最多%1$d张图片</string>
     <string name="unknown_error">未知错误</string>
+    <string name="user_avatar">用户头像</string>
+    <string name="default_username">默认昵称</string>
+    <string name="add_signature">添加个性签名</string>
+    <string name="add_interest">添加兴趣</string>
+    <string name="stat_posts">帖子</string>
+    <string name="stat_followers">粉丝</string>
+    <string name="stat_following">关注</string>
 </resources>
