@@ -35,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -55,22 +56,25 @@ data class TabItem(
 @Composable
 fun TabSwitchLayout(
     tabs: List<TabItem>,
-    selectedTabId: String,
+    selectedTabId: String = "default",
     onTabSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable (tabId: String) -> Unit,
-){
+) {
     val selectedIndex = tabs.indexOfFirst { it.id == selectedTabId }
     val pagerState = rememberPagerState(
         initialPage = selectedIndex.coerceAtLeast(0),
         pageCount = { tabs.size }
     )
 
-    LaunchedEffect(pagerState.currentPage) {
-        val newId = tabs.getOrNull(pagerState.currentPage)?.id
-        if (newId != null && newId != selectedTabId) {
-            onTabSelected(newId)
-        }
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.settledPage }
+            .collect { page ->
+                val newId = tabs.getOrNull(page)?.id
+                if (newId != null && newId != selectedTabId) {
+                    onTabSelected(newId)
+                }
+            }
     }
 
     LaunchedEffect(selectedTabId) {
@@ -87,13 +91,13 @@ fun TabSwitchLayout(
             onTabSelected = onTabSelected,
         )
         HorizontalPager(
-            state = pagerState
+            state = pagerState,
+            modifier = Modifier.weight(1f)
         ) { page ->
             content(tabs[page].id)
         }
     }
 }
-
 @Composable
 fun ContentTabBar(
     tabs: List<TabItem> = listOf(
