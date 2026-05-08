@@ -1,11 +1,9 @@
 package org.example.project.ui.components.profilescreen.Content
 
-import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,21 +17,13 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
-import coil3.request.ImageRequest
+import org.example.project.domain.ContentThumbnailData
+import org.example.project.domain.PostType
 
-enum class PostType { SINGLE, CAROUSEL, VIDEO, REEL }
-
-data class ContentThumbnailData(
-    val id: String,
-    val imageUrl: String,
-    val type: PostType,
-    val duration: String? = null,
-)
 
 @Composable
 fun ContentThumbnail(
@@ -102,7 +92,7 @@ fun ContentThumbnail(
 
         if (data.duration != null) {
             Text(
-                text = data.duration,
+                text = data.duration!!,
                 color = Color.White,
                 fontSize = 11.sp,
                 maxLines = 1,
@@ -116,7 +106,7 @@ fun ContentThumbnail(
 }
 
 @Composable
-private fun ShimmerBox(modifier: Modifier = Modifier) {
+fun ShimmerBox(modifier: Modifier = Modifier) {
     val transition = rememberInfiniteTransition(label = "shimmer")
     val translateAnim by transition.animateFloat(
         initialValue = 0f,

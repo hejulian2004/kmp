@@ -21,18 +21,18 @@ fun BottomNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route,
+        startDestination = Screen.Profile.route,
         modifier = modifier
     ){
         composable(
             route = Screen.Home.route
         ) {
-            HomeScreen(navController)
+            HomeScreen()
         }
         composable(
             route = Screen.Profile.route
         ) {
-            ProfileScreen(navController)
+            ProfileScreen()
         }
         composable(
             route = Screen.Setting.route

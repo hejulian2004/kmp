@@ -1,5 +1,4 @@
 package org.example.project.domain
-enum class PostType {  IMAGE_TEXT, VIDEO }
 
 data class PostModel(
     val id: String,

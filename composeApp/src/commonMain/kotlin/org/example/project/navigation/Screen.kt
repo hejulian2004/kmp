@@ -50,7 +50,7 @@ sealed class Screen(
         )
     )
     object Profile : Screen(
-        route = "detail_screen",
+        route = "Profile_screen",
         icon = Icons.Filled.AccountCircle,
         title = Res.string.nav_profile
     )

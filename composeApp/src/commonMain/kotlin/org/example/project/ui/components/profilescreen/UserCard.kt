@@ -74,7 +74,7 @@ fun UserCard(
             .wrapContentHeight()
             .scale(scale)
             .clip(RoundedCornerShape(size.cardRadius))
-            .background(MaterialTheme.colorScheme.surface)
+            .background(MaterialTheme.colorScheme.background)
             .border(
                 width = size.borderWidth,
                 color = MaterialTheme.colorScheme.outlineVariant,
