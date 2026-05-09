@@ -198,10 +198,8 @@ fun ImageHorizontalList(
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(8.dp))
-                        .clickable { onImageClick(file) } // 点击查看大图
+                        .clickable { onImageClick(file) }
                 )
-
-                // 移除按钮
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -274,8 +272,6 @@ fun ImagePreviewDialog(
                     .fillMaxSize()
                     .clickable { onDismiss() }
             )
-
-            // 顶部工具栏
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

@@ -1,4 +1,4 @@
-package org.example.project.domain
+package org.example.project.model
 
 data class ProfileUser(
     val userId: String,

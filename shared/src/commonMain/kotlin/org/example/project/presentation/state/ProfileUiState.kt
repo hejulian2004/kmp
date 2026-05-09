@@ -1,8 +1,8 @@
 package org.example.project.presentation.state
 
-import org.example.project.domain.ContentThumbnailData
-import org.example.project.domain.DiscoverUser
-import org.example.project.domain.ProfileUser
+import org.example.project.model.ContentThumbnailData
+import org.example.project.model.DiscoverUser
+import org.example.project.model.ProfileUser
 
 data class ProfileUiState(
 

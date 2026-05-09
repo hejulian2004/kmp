@@ -46,7 +46,8 @@ data class TopBarSpan(
     val icon: ImageVector? = null,
     val contentDescription: String = "",
     val alignment: Alignment = Alignment.Center,
-    val onPress: () -> Unit = {}
+    val onPress: () -> Unit = {},
+    val testTag: String = ""
 )
 
 @Composable

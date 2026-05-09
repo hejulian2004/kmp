@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.invoke
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -24,12 +25,14 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     sourceSets {
+
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
         }
+
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -39,25 +42,33 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-            //noinspection UseTomlInstead
-            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.2")
-            //noinspection UseTomlInstead
-            implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
+            implementation(libs.navigation.compose)
+            implementation(libs.material.icons.extended)
             implementation(libs.filekit.core)
             implementation(libs.androidx.startup.runtime)
             implementation(libs.coil.compose)
             implementation(libs.filekit.dialogs.compose)
-            implementation(libs.filekit.core)
             implementation(libs.filekit.coil)
             implementation(libs.coil.network.ktor3)
             implementation(libs.ktor.client.cio)
             implementation(project(":shared"))
             implementation(libs.google.accompanist.systemuicontroller)
             implementation(libs.androidx.core.ktx.v1120)
-            implementation("com.google.accompanist:accompanist-systemuicontroller:0.31.3-beta")
+            implementation(libs.google.accompanist.systemuicontroller)
         }
+
         commonTest.dependencies {
+            implementation(kotlin("test"))
             implementation(libs.kotlin.test)
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+            implementation(compose.uiTest)
+            implementation(libs.androidx.uiautomator)
+        }
+        androidUnitTest.dependencies {
+            implementation(kotlin("test-junit"))
+            implementation(libs.junit)
+            implementation(libs.robolectric)
+            implementation(libs.androidx.testExt.junit)
         }
     }
 }
@@ -65,7 +76,7 @@ kotlin {
 android {
     namespace = "org.example.project"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
-
+    testOptions.unitTests.isIncludeAndroidResources = true
     defaultConfig {
         applicationId = "org.example.project"
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -87,9 +98,18 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
+    testImplementation(libs.junit.junit)
+    testImplementation(libs.junit.junit)
     debugImplementation(libs.compose.uiTooling)
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.4.0-alpha05")
+
 }
 

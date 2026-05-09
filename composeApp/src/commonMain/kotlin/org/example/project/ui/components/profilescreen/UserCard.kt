@@ -56,7 +56,9 @@ fun UserCard(
     extraInfo   : String? = null,
     onDismiss   : (() -> Unit)? = null,
     onClick     : (() -> Unit)? = null,
-    bottomAction: @Composable (() -> Unit)? = null
+    bottomAction: @Composable (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    dismissTestTag:String = "",
 ) {
     val spacing = MaterialTheme.spacing
     val size    = MaterialTheme.size

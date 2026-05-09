@@ -47,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -66,6 +67,32 @@ import org.example.project.ui.components.profilescreen.UserCard
 import org.example.project.ui.theme.InstagramTheme
 import org.example.project.ui.theme.size
 import org.example.project.ui.theme.spacing
+
+object ProfileTestTags {
+    // TopBar
+    const val TOPBAR_ROOT           = "topbar_root"
+    const val TOPBAR_BTN_ADD        = "topbar_btn_add"
+    const val TOPBAR_BTN_MENTION    = "topbar_btn_mention"
+    const val TOPBAR_BTN_MORE       = "topbar_btn_more"
+
+    // 操作按钮行
+    const val BTN_EDIT_PROFILE      = "btn_edit_profile"
+    const val BTN_SHARE_PROFILE     = "btn_share_profile"
+    const val BTN_TOGGLE_DISCOVER   = "btn_toggle_discover"
+
+    // 发现用户
+    const val DISCOVER_HEADER       = "discover_header"
+    const val DISCOVER_BTN_ALL      = "discover_btn_all"
+    fun userCard(userId: String)        = "user_card_$userId"
+    fun userCardDismiss(userId: String) = "user_card_dismiss_$userId"
+    fun userCardFollow(userId: String)  = "user_card_follow_$userId"
+
+    // Tab
+    fun tab(tabId: String)          = "tab_$tabId"
+
+    // Loading
+    const val LOADING_FOOTER        = "loading_footer"
+}
 
 @Composable
 fun ProfileScreen(
@@ -128,16 +155,21 @@ fun ProfileContent(
                 leftSpan1  = TopBarSpan(
                     icon    = Icons.Default.Add,
                     onPress = { onIntent(ProfileIntent.AddClicked) },
+                    testTag = ProfileTestTags.TOPBAR_BTN_ADD,
                 ),
                 rightSpan1 = TopBarSpan(
                     icon    = Icons.Default.AlternateEmail,
                     onPress = { onIntent(ProfileIntent.MentionClicked) },
+                    testTag = ProfileTestTags.TOPBAR_BTN_MENTION,
                 ),
                 rightSpan2 = TopBarSpan(
                     icon    = Icons.Default.MoreHoriz,
                     onPress = { onIntent(ProfileIntent.MoreOptionsClicked) },
+                    testTag = ProfileTestTags.TOPBAR_BTN_MORE,
                 ),
-                modifier = Modifier.height(MaterialTheme.size.topBarHeight),
+                modifier = Modifier
+                    .height(MaterialTheme.size.topBarHeight)
+                    .testTag(ProfileTestTags.TOPBAR_ROOT),
             )
         }
     }
@@ -166,9 +198,9 @@ private fun ProfileBody(
         "tagged" -> uiState.taggedSection
         else     -> null
     }
-    val currentData     = (currentSection as? UiState.Success)?.data
-    val isLoadingMore   = currentData?.isLoadingMore ?: false
-    val hasMore         = currentData?.hasMore ?: false
+    val currentData   = (currentSection as? UiState.Success)?.data
+    val isLoadingMore = currentData?.isLoadingMore ?: false
+    val hasMore       = currentData?.hasMore ?: false
 
     val shouldLoadMore by remember(hasMore, isLoadingMore) {
         derivedStateOf {
@@ -223,7 +255,9 @@ private fun ProfileBody(
                 OutlinedButton(
                     onClick  = { onIntent(ProfileIntent.EditProfileClicked) },
                     shape    = RoundedCornerShape(size.buttonRadius),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag(ProfileTestTags.BTN_EDIT_PROFILE),
                 ) {
                     Text(
                         text  = "编辑主页",
@@ -234,7 +268,9 @@ private fun ProfileBody(
                 OutlinedButton(
                     onClick  = { onIntent(ProfileIntent.ShareProfileClicked) },
                     shape    = RoundedCornerShape(size.buttonRadius),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag(ProfileTestTags.BTN_SHARE_PROFILE),
                 ) {
                     Text(
                         text  = "分享主页",
@@ -246,7 +282,9 @@ private fun ProfileBody(
                     onClick        = { onIntent(ProfileIntent.ToggleDiscoverSection) },
                     shape          = RoundedCornerShape(size.buttonRadius),
                     contentPadding = PaddingValues(spacing.xs),
-                    modifier       = Modifier.height(size.iconLg + spacing.md),
+                    modifier       = Modifier
+                        .height(size.iconLg + spacing.md)
+                        .testTag(ProfileTestTags.BTN_TOGGLE_DISCOVER),
                 ) {
                     androidx.compose.material3.Icon(
                         imageVector        = Icons.Outlined.PersonSearch,
@@ -263,7 +301,8 @@ private fun ProfileBody(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = spacing.md, vertical = spacing.xs),
+                        .padding(horizontal = spacing.md, vertical = spacing.xs)
+                        .testTag(ProfileTestTags.DISCOVER_HEADER),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment     = Alignment.CenterVertically,
                 ) {
@@ -276,7 +315,9 @@ private fun ProfileBody(
                         text     = "全部",
                         style    = MaterialTheme.typography.labelMedium,
                         color    = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.clickable { onIntent(ProfileIntent.DiscoverAllClicked) },
+                        modifier = Modifier
+                            .testTag(ProfileTestTags.DISCOVER_BTN_ALL)
+                            .clickable { onIntent(ProfileIntent.DiscoverAllClicked) },
                     )
                 }
             }
@@ -293,8 +334,12 @@ private fun ProfileBody(
                                 avatarUrl    = user.avatarUrl,
                                 username     = user.username,
                                 extraInfo    = user.extraInfo,
+                                modifier     = Modifier.testTag(
+                                    ProfileTestTags.userCard(user.userId)
+                                ),
                                 onClick      = { onIntent(ProfileIntent.UserCardClicked(user.userId)) },
                                 onDismiss    = { onIntent(ProfileIntent.UserCardDismissed(user.userId)) },
+                                dismissTestTag = ProfileTestTags.userCardDismiss(user.userId),
                                 bottomAction = {
                                     Button(
                                         onClick  = { onIntent(ProfileIntent.UserCardClicked(user.userId)) },
@@ -303,7 +348,9 @@ private fun ProfileBody(
                                             containerColor = MaterialTheme.colorScheme.primary,
                                             contentColor   = MaterialTheme.colorScheme.onPrimary,
                                         ),
-                                        modifier = Modifier.fillMaxWidth(),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .testTag(ProfileTestTags.userCardFollow(user.userId)), // ✅
                                     ) {
                                         Text(
                                             text  = "关注",
@@ -320,7 +367,7 @@ private fun ProfileBody(
 
         item(key = "tab_content") {
             TabSwitchLayout(
-                tabs = tabs,
+                tabs          = tabs,
                 selectedTabId = uiState.selectedTabId,
                 onTabSelected = { id -> onIntent(ProfileIntent.TabSelected(id)) },
             ) { tabId ->
@@ -332,14 +379,15 @@ private fun ProfileBody(
                 }
                 val data = (section as? UiState.Success)?.data
                 GridContent(
-                    posts = data?.posts ?: emptyList(),
-                    isLoadingMore = isLoadingMore,
-                    hasMore = hasMore,
-                    onLoadMore = { onIntent(ProfileIntent.LoadMore) },
-                    onItemClick = { id -> onIntent(ProfileIntent.PostClicked(id)) },
+                    posts           = data?.posts ?: emptyList(),
+                    isLoadingMore   = isLoadingMore,
+                    hasMore         = hasMore,
+                    onLoadMore      = { onIntent(ProfileIntent.LoadMore) },
+                    onItemClick     = { id -> onIntent(ProfileIntent.PostClicked(id)) },
                     onItemLongClick = { id -> onIntent(ProfileIntent.PostLongClicked(id)) },
-                    modifier = Modifier.padding(spacing.xs)
-                        .height(520.dp)
+                    modifier        = Modifier
+                        .padding(spacing.xs)
+                        .height(520.dp),
                 )
             }
         }
@@ -347,25 +395,26 @@ private fun ProfileBody(
         if (isLoadingMore) {
             item(key = "loading_footer") {
                 Box(
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    contentAlignment = Alignment.Center
+                    modifier         = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .testTag(ProfileTestTags.LOADING_FOOTER),
+                    contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
+                        modifier    = Modifier.size(24.dp),
                         strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                        color       = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                     )
                 }
             }
         }
 
-        // 底部额外间距
         item(key = "extra_content") {
             Box(modifier = Modifier.fillMaxWidth().height(size.navigationBarHeight + spacing.xl))
         }
     }
 }
-
 
 @Preview
 @Composable
