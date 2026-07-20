@@ -11,10 +11,10 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.example.project.model.ContentThumbnailData
-import org.example.project.model.DiscoverUser
-import org.example.project.model.PostType
-import org.example.project.model.ProfileUser
+import org.example.project.domain.model.ContentThumbnailData
+import org.example.project.domain.model.DiscoverUser
+import org.example.project.domain.model.PostType
+import org.example.project.domain.model.ProfileUser
 import org.example.project.presentation.state.PostsSection
 import org.example.project.presentation.state.ProfileUiState
 import org.example.project.presentation.state.UiState

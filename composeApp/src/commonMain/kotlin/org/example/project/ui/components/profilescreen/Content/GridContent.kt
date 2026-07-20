@@ -15,7 +15,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import org.example.project.model.ContentThumbnailData
+import org.example.project.domain.model.ContentThumbnailData
 
 @Composable
 fun GridContent(

@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
-import org.example.project.model.ContentThumbnailData
-import org.example.project.model.PostType
+import org.example.project.domain.model.ContentThumbnailData
+import org.example.project.domain.model.PostType
 
 
 @Composable

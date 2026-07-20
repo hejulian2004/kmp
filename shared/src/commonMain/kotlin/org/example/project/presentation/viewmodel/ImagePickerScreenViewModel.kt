@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.example.project.model.PostModel
+import org.example.project.domain.model.PostModel
 import org.example.project.presentation.intent.ImagePickerScreenIntent
 import org.example.project.presentation.state.UiState
 

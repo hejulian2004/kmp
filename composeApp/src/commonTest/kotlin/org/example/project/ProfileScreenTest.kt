@@ -7,8 +7,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runComposeUiTest
-import org.example.project.model.DiscoverUser
-import org.example.project.model.ProfileUser
+import org.example.project.domain.model.DiscoverUser
+import org.example.project.domain.model.ProfileUser
 import org.example.project.presentation.state.PostsSection
 import org.example.project.presentation.state.ProfileUiState
 import org.example.project.presentation.state.UiState
