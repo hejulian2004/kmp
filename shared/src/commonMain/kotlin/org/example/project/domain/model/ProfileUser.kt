@@ -1,3 +1,9 @@
+/**
+ * @File: ProfileUser.kt
+ * @Package: org.example.project.domain.model
+ * @Description: 用户主页个人信息数据模型
+ * @Date: 2026-07-20
+ */
 package org.example.project.domain.model
 
 data class ProfileUser(
@@ -16,5 +22,7 @@ data class DiscoverUser(
     val avatarUrl: String,
     val extraInfo: String? = null,
 )
+
+
 
 

@@ -1,3 +1,9 @@
+/**
+ * @File: FeedNotification.kt
+ * @Package: org.example.project.domain.model
+ * @Description: 朋友圈消息通知数据模型(点赞/评论)
+ * @Date: 2026-07-20
+ */
 package org.example.project.domain.model
 
 data class FeedNotification(
@@ -10,4 +16,6 @@ data class FeedNotification(
     val isRead: Boolean = false,
     val isDelete: Boolean = false
 )
+
+
 

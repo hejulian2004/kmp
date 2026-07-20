@@ -1,3 +1,9 @@
+/**
+ * @File: FeedIntent.kt
+ * @Package: org.example.project.presentation.feed
+ * @Description: 朋友圈MVI架构中的用户意图与操作定义
+ * @Date: 2026-07-20
+ */
 package org.example.project.presentation.feed
 
 import org.example.project.domain.model.FeedComment
@@ -64,3 +70,5 @@ sealed interface FeedIntent {
 
     data class NavigateTo(val screen: Screen): FeedIntent
 }
+
+

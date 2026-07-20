@@ -1,3 +1,9 @@
+/**
+ * @File: PublishScreen.kt
+ * @Package: org.example.project.ui.components.feed
+ * @Description: 发布新动态的图文编辑与上传界面
+ * @Date: 2026-07-20
+ */
 package org.example.project.ui.components.feed
 
 import android.graphics.Bitmap
@@ -463,4 +469,6 @@ private fun copyUriToLocalCache(context: android.content.Context, uri: Uri, isVi
         return uri.toString()
     }
 }
+
+
 

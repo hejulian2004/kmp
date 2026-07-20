@@ -1,3 +1,9 @@
+/**
+ * @File: Avatar.kt
+ * @Package: org.example.project.ui.components.feed
+ * @Description: 用户头像展示的通用Compose组件
+ * @Date: 2026-07-20
+ */
 package org.example.project.ui.components.feed
 
 import androidx.compose.foundation.excludeFromSystemGesture
@@ -54,3 +60,5 @@ fun AvatarPreview() {
         onClick = {}
     )
 }
+
+

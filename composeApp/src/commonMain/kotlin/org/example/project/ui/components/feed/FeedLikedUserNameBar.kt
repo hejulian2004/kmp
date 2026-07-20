@@ -1,3 +1,9 @@
+/**
+ * @File: FeedLikedUserNameBar.kt
+ * @Package: org.example.project.ui.components.feed
+ * @Description: 帖子点赞用户列表的文本摘要展示组件
+ * @Date: 2026-07-20
+ */
 package org.example.project.ui.components.feed
 
 import androidx.compose.foundation.background
@@ -75,5 +81,7 @@ fun FeedLikedUserAvatarBar(
         }
     }
 }
+
+
 
 

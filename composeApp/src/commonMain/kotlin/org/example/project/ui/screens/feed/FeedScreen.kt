@@ -1,8 +1,11 @@
+/**
+ * @File: FeedScreen.kt
+ * @Package: org.example.project.ui.screens.feed
+ * @Description: 朋友圈动态主界面的Compose视图入口
+ * @Date: 2026-07-20
+ */
 package org.example.project.ui.screens.feed
 
-import android.content.DialogInterface
-import android.widget.MultiAutoCompleteTextView
-import androidx.appcompat.widget.DialogTitle
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -42,12 +45,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.tooling.preview.Preview
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.example.project.components.MyAlertDialog
 import org.example.project.domain.repository.FeedRepository
-import org.example.project.data.FeedRepositoryImpl
-import org.example.project.data.createFakeData
+import org.example.project.data.repository.FeedRepositoryImpl
+import org.example.project.data.repository.createFakeData
 import org.example.project.domain.model.FeedComment
 import org.example.project.domain.model.FeedNotification
 import org.example.project.domain.model.FeedUser
@@ -71,9 +74,19 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import java.util.UUID
+
 import kotlin.time.Duration.Companion.milliseconds
 
+/**
+ * 朋友圈主页面组件
+ * 
+ * 包含：
+ * - 顶部导航栏 (FeedTopBar)
+ * - 下拉刷新列表 (PullToRefreshBox + LazyColumn)
+ * - 底部弹出层 (BottomSheet 用于发布/评论)
+ * 
+ * @param viewModel 朋友圈状态管理器
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedScreen(
@@ -483,7 +496,7 @@ fun FeedScreen(
 @Preview
 @Composable
 fun FeedScreenPreview(){
-    val uuid = UUID.randomUUID().toString()
+    val uuid = org.example.project.data.repository.generateUUID()
     val user = FeedUser(
         id = uuid,
         name = "何聚敛",
@@ -503,3 +516,5 @@ fun FeedScreenPreview(){
         )
     )
 }
+
+

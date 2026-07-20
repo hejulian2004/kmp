@@ -1,3 +1,9 @@
+/**
+ * @File: BottomSheetItem.kt
+ * @Package: org.example.project.ui.components.feed
+ * @Description: 底部弹出层列表项的Compose组件
+ * @Date: 2026-07-20
+ */
 package org.example.project.ui.components.feed
 
 import androidx.compose.foundation.clickable
@@ -40,3 +46,5 @@ fun BottomSheetItemPreview() {
         onClick = {}
     )
 }
+
+

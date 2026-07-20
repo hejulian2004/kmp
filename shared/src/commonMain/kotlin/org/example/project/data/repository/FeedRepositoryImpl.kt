@@ -1,3 +1,9 @@
+/**
+ * @File: FeedRepositoryImpl.kt
+ * @Package: org.example.project.data.repository
+ * @Description: 朋友圈数据仓库的具体内存与网络实现
+ * @Date: 2026-07-20
+ */
 package org.example.project.data.repository
 
 import org.example.project.domain.model.FeedComment
@@ -278,3 +284,5 @@ fun createFakePost(user: FeedUser): FeedPost {
         )
     )
 }
+
+

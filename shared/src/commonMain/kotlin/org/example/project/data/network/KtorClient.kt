@@ -1,3 +1,9 @@
+/**
+ * @File: KtorClient.kt
+ * @Package: org.example.project.data.network
+ * @Description: 基于Ktor的跨平台网络请求客户端配置
+ * @Date: 2026-07-20
+ */
 package org.example.project.data.network
 
 import io.ktor.client.HttpClient
@@ -49,3 +55,5 @@ object KtorClient {
         }
     }
 }
+
+

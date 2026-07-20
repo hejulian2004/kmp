@@ -1,3 +1,9 @@
+/**
+ * @File: FeedNotificationBar.kt
+ * @Package: org.example.project.ui.components.feed
+ * @Description: 新消息通知的顶部悬浮提示条组件
+ * @Date: 2026-07-20
+ */
 package org.example.project.ui.components.feed
 
 import androidx.compose.foundation.background
@@ -87,3 +93,5 @@ fun FeedNotificationBarPreview() {
         onClick = {}
     )
 }
+
+

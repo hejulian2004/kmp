@@ -1,3 +1,9 @@
+/**
+ * @File: Post.kt
+ * @Package: org.example.project.domain.model
+ * @Description: 通用帖子数据模型实体
+ * @Date: 2026-07-20
+ */
 package org.example.project.domain.model
 
 data class PostModel(
@@ -30,3 +36,5 @@ sealed class PostContent {
         val coverUrl: String,
     ) : PostContent()
 }
+
+

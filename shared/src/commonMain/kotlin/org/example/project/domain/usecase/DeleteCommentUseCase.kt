@@ -1,3 +1,9 @@
+/**
+ * @File: DeleteCommentUseCase.kt
+ * @Package: org.example.project.domain.usecase
+ * @Description: 删除指定的帖子评论业务用例
+ * @Date: 2026-07-20
+ */
 package org.example.project.domain.usecase
 
 import org.example.project.domain.model.FeedComment
@@ -15,4 +21,6 @@ class DeleteCommentUseCase(private val repository: FeedRepository) {
         return result
     }
 }
+
+
 

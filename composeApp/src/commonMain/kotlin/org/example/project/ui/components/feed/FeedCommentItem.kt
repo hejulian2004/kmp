@@ -1,3 +1,9 @@
+/**
+ * @File: FeedCommentItem.kt
+ * @Package: org.example.project.ui.components.feed
+ * @Description: 单条评论内容的列表项展示组件
+ * @Date: 2026-07-20
+ */
 package org.example.project.ui.components.feed
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -69,3 +75,5 @@ fun FeedCommentItem(
         }
     }
 }
+
+

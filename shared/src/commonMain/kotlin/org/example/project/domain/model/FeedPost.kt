@@ -1,3 +1,9 @@
+/**
+ * @File: FeedPost.kt
+ * @Package: org.example.project.domain.model
+ * @Description: 朋友圈动态帖子核心数据模型
+ * @Date: 2026-07-20
+ */
 package org.example.project.domain.model
 
 data class FeedPost (
@@ -14,4 +20,6 @@ data class FeedPost (
     val likesCount: Int get() = likedUsers.size
     val commentsCount: Int get() = commentsList.size
 }
+
+
 

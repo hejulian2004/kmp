@@ -1,3 +1,9 @@
+/**
+ * @File: UpdatePostUseCase.kt
+ * @Package: org.example.project.domain.usecase
+ * @Description: 更新指定帖子内容的业务用例
+ * @Date: 2026-07-20
+ */
 package org.example.project.domain.usecase
 
 import org.example.project.domain.model.FeedMedia
@@ -8,4 +14,6 @@ class UpdatePostUseCase(private val repository: FeedRepository) {
         repository.updatePost(postId, content, mediaList)
     }
 }
+
+
 

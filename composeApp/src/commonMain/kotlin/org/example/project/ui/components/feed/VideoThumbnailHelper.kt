@@ -1,3 +1,9 @@
+/**
+ * @File: VideoThumbnailHelper.kt
+ * @Package: org.example.project.ui.components.feed
+ * @Description: 视频封面帧提取的跨平台辅助工具类
+ * @Date: 2026-07-20
+ */
 package org.example.project.ui.components.feed
 
 import android.graphics.Bitmap
@@ -80,4 +86,6 @@ fun VideoThumbnail(
         )
     }
 }
+
+
 

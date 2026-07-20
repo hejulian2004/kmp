@@ -1,3 +1,9 @@
+/**
+ * @File: FeedActionBar.kt
+ * @Package: org.example.project.ui.components.feed
+ * @Description: 帖子底部的点赞与评论操作栏组件
+ * @Date: 2026-07-20
+ */
 package org.example.project.ui.components.feed
 
 import androidx.compose.animation.AnimatedVisibility
@@ -222,3 +228,5 @@ private fun FeedActionBarPreview() {
         currentTime = System.currentTimeMillis()
     )
 }
+
+

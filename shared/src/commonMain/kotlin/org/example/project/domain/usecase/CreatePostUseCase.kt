@@ -1,3 +1,9 @@
+/**
+ * @File: CreatePostUseCase.kt
+ * @Package: org.example.project.domain.usecase
+ * @Description: 发布新的朋友圈动态业务用例
+ * @Date: 2026-07-20
+ */
 package org.example.project.domain.usecase
 
 import org.example.project.domain.model.FeedMedia
@@ -9,4 +15,6 @@ class CreatePostUseCase(private val repository: FeedRepository) {
         repository.createPost(user, content, mediaList)
     }
 }
+
+
 

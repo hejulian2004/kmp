@@ -1,3 +1,9 @@
+/**
+ * @File: FeedTopBar.kt
+ * @Package: org.example.project.ui.components.feed
+ * @Description: 朋友圈主界面的顶部标题导航栏组件
+ * @Date: 2026-07-20
+ */
 package org.example.project.ui.components.feed
 
 import androidx.compose.foundation.background
@@ -76,3 +82,5 @@ fun FeedTopBarPreview(){
         onLongClickCreatePost = {}
     )
 }
+
+

@@ -1,3 +1,9 @@
+/**
+ * @File: FeedCommentBar.kt
+ * @Package: org.example.project.ui.components.feed
+ * @Description: 底部的评论输入框与发布操作栏组件
+ * @Date: 2026-07-20
+ */
 package org.example.project.ui.components.feed
 
 import androidx.compose.foundation.layout.Row
@@ -126,3 +132,5 @@ fun FeedCommentBarPreview() {
         onSendClick = {}
     )
 }
+
+

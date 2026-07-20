@@ -1,3 +1,9 @@
+/**
+ * @File: FeedPostItem.kt
+ * @Package: org.example.project.ui.components.feed
+ * @Description: 单条朋友圈动态帖子的完整卡片组件
+ * @Date: 2026-07-20
+ */
 package org.example.project.ui.components.feed
 
 import androidx.compose.foundation.background
@@ -442,3 +448,5 @@ fun PostMediaGrid(
         }
     }
 }
+
+

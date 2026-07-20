@@ -1,3 +1,9 @@
+/**
+ * @File: AddCommentUseCase.kt
+ * @Package: org.example.project.domain.usecase
+ * @Description: 添加朋友圈评论的具体业务用例
+ * @Date: 2026-07-20
+ */
 package org.example.project.domain.usecase
 
 import org.example.project.domain.model.FeedNotification
@@ -25,4 +31,6 @@ class AddCommentUseCase(private val repository: FeedRepository) {
         return result
     }
 }
+
+
 

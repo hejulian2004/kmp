@@ -1,3 +1,9 @@
+/**
+ * @File: BottomSheet.kt
+ * @Package: org.example.project.ui.components.feed
+ * @Description: 底部弹出层容器的通用Compose组件
+ * @Date: 2026-07-20
+ */
 package org.example.project.ui.components.feed
 
 import androidx.compose.foundation.layout.Column
@@ -64,3 +70,5 @@ fun BottomSheetPreview() {
         onCancelClick = {}
     )
 }
+
+

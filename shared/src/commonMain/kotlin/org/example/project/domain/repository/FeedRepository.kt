@@ -1,3 +1,9 @@
+/**
+ * @File: FeedRepository.kt
+ * @Package: org.example.project.domain.repository
+ * @Description: 朋友圈业务数据仓库抽象接口
+ * @Date: 2026-07-20
+ */
 package org.example.project.domain.repository
 
 import org.example.project.domain.model.FeedComment
@@ -74,4 +80,6 @@ interface FeedRepository {
 
     suspend fun markAllNotificationsAsRead()
 }
+
+
 

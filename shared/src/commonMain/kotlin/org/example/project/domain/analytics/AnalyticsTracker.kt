@@ -1,3 +1,9 @@
+/**
+ * @File: AnalyticsTracker.kt
+ * @Package: org.example.project.domain.analytics
+ * @Description: 数据埋点追踪器接口定义
+ * @Date: 2026-07-20
+ */
 package org.example.project.domain.analytics
 
 interface AnalyticsTracker {
@@ -35,4 +41,6 @@ object AnalyticsParams {
     const val MEDIA_COUNT = "media_count"         // 包含媒体（图片/视频）的数量
     const val HAS_TEXT = "has_text"               // 是否包含文字内容
 }
+
+
 

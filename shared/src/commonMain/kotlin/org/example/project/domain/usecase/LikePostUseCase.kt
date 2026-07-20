@@ -1,3 +1,9 @@
+/**
+ * @File: LikePostUseCase.kt
+ * @Package: org.example.project.domain.usecase
+ * @Description: 为指定动态帖子点赞的业务用例
+ * @Date: 2026-07-20
+ */
 package org.example.project.domain.usecase
 
 import org.example.project.domain.model.FeedNotification
@@ -23,4 +29,6 @@ class LikePostUseCase(private val repository: FeedRepository) {
         return result
     }
 }
+
+
 

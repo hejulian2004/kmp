@@ -1,3 +1,9 @@
+/**
+ * @File: NotificationScreen.kt
+ * @Package: org.example.project.ui.screens.feed
+ * @Description: 互动消息通知列表界面的Compose视图
+ * @Date: 2026-07-20
+ */
 package org.example.project.ui.screens.feed
 
 import androidx.compose.foundation.background
@@ -279,4 +285,6 @@ fun NotificationScreenPreview() {
     val fakeViewModel = FeedViewModel(fakeRepo, fakeUser)
     NotificationScreen(viewModel = fakeViewModel)
 }
+
+
 

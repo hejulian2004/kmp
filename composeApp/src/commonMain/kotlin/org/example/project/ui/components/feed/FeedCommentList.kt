@@ -1,3 +1,9 @@
+/**
+ * @File: FeedCommentList.kt
+ * @Package: org.example.project.ui.components.feed
+ * @Description: 帖子评论列表的组合展示组件
+ * @Date: 2026-07-20
+ */
 package org.example.project.ui.components.feed
 
 import androidx.compose.foundation.background
@@ -88,3 +94,5 @@ private fun FeedCommentListPreview() {
         onCommentUserClick = {}
     )
 }
+
+

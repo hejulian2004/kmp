@@ -1,3 +1,9 @@
+/**
+ * @File: FeedUiState.kt
+ * @Package: org.example.project.presentation.feed
+ * @Description: 朋友圈MVI架构中的界面状态数据定义
+ * @Date: 2026-07-20
+ */
 package org.example.project.presentation.feed
 
 import org.example.project.domain.model.FeedNotification
@@ -18,4 +24,6 @@ data class FeedUiState(
     val unreadNotificationCount: Int = 0,
     val errorMessage: String? = null
 )
+
+
 

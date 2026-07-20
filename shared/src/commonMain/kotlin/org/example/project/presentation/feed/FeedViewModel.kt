@@ -1,3 +1,9 @@
+/**
+ * @File: FeedViewModel.kt
+ * @Package: org.example.project.presentation.feed
+ * @Description: 朋友圈/动态模块的 MVI 核心视图模型，负责状态管理与事件处理
+ * @Date: 2026-07-20
+ */
 package org.example.project.presentation.feed
 
 import androidx.lifecycle.ViewModel
@@ -20,6 +26,13 @@ import org.example.project.domain.analytics.AnalyticsEvents
 import org.example.project.domain.analytics.AnalyticsParams
 import org.example.project.data.analytics.LogAnalyticsTracker
 
+/**
+ * 朋友圈状态管理器
+ *
+ * @param feedRepository 动态数据仓库接口
+ * @param currentUser 当前登录用户
+ * @param analyticsTracker 数据埋点追踪器
+ */
 class FeedViewModel(
     private val feedRepository: FeedRepository,
     currentUser: FeedUser,
