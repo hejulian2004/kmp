@@ -1,7 +1,5 @@
-package org.example.project.data
+package org.example.project.data.repository
 
-import org.example.project.BaseApplication
-import org.example.project.data.database.LocalDatabaseHelper
 import org.example.project.domain.model.FeedComment
 import org.example.project.domain.model.FeedMedia
 import org.example.project.domain.model.FeedNotification
@@ -14,20 +12,20 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.withContext
-import java.util.UUID
+import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
+fun generateUUID(): String {
+    return Random.nextLong().toString()
+}
+
 class FeedRepositoryImpl : FeedRepository {
-    private val dbHelper = LocalDatabaseHelper(BaseApplication.context)
-
+    // In-memory data structures
     private val _feedPosts = MutableStateFlow<List<FeedPost>>(emptyList())
-
     private val _feedNotifications = MutableStateFlow<List<FeedNotification>>(emptyList())
 
     init {
-        _feedPosts.value = dbHelper.getAllPosts()
-        _feedNotifications.value = dbHelper.getAllNotifications()
+        _feedPosts.value = createFakeData()
     }
 
     override fun getFeedPosts(): Flow<List<FeedPost>> {
@@ -44,31 +42,11 @@ class FeedRepositoryImpl : FeedRepository {
 
     override suspend fun refreshFeed() {
         delay(1000.milliseconds)
-        val networkPosts = try {
-            org.example.project.data.network.RetrofitClient.service.getFeedPosts()
-        } catch (e: Exception) {
-            null
-        }
-
-        if (networkPosts != null) {
-            dbHelper.deleteAllPosts()
-            dbHelper.insertPosts(networkPosts)
-            _feedPosts.value = networkPosts.sortedByDescending { it.createTime }
-        } else {
-            val localPosts = dbHelper.getAllPosts()
-            if (localPosts.isNotEmpty()) {
-                _feedPosts.value = localPosts
-            } else {
-                _feedPosts.value = createFakeData().sortedByDescending { it.createTime }
-            }
-        }
-    }
-
-    private suspend fun persistPostsToDb() {
-        withContext(Dispatchers.IO) {
-            dbHelper.deleteAllPosts()
-            dbHelper.insertPosts(_feedPosts.value)
-        }
+        // TODO: Replace with Ktor call
+        // val networkPosts = KtorClient.service.getFeedPosts()
+        
+        // Mock network delay and return fake data for now
+        _feedPosts.value = createFakeData().sortedByDescending { it.createTime }
     }
 
     override suspend fun likePost(
@@ -89,7 +67,6 @@ class FeedRepositoryImpl : FeedRepository {
                 } else it
             }
         }
-        persistPostsToDb()
         return "点赞成功"
     }
 
@@ -118,7 +95,6 @@ class FeedRepositoryImpl : FeedRepository {
                 } else p
             }
         }
-        persistPostsToDb()
         return "取消点赞成功"
     }
 
@@ -139,7 +115,6 @@ class FeedRepositoryImpl : FeedRepository {
                 } else it
             }
         }
-        persistPostsToDb()
         return "评论发布成功"
     }
 
@@ -155,7 +130,6 @@ class FeedRepositoryImpl : FeedRepository {
                 } else post
             }
         }
-        persistPostsToDb()
         return "评论删除成功"
     }
 
@@ -165,7 +139,7 @@ class FeedRepositoryImpl : FeedRepository {
         mediaList: List<FeedMedia>
     ) {
         val newPost = FeedPost(
-            id = UUID.randomUUID().toString(),
+            id = generateUUID(),
             postUser = user,
             content = content,
             mediaList = mediaList,
@@ -173,7 +147,6 @@ class FeedRepositoryImpl : FeedRepository {
         _feedPosts.update { posts ->
             posts + newPost
         }
-        persistPostsToDb()
     }
 
     override suspend fun deletePost(postId: String) {
@@ -183,8 +156,6 @@ class FeedRepositoryImpl : FeedRepository {
         _feedNotifications.update { notifications ->
             notifications.filterNot { it.post.id == postId }
         }
-        persistPostsToDb()
-        persistNotificationsToDb()
     }
 
     override suspend fun updatePost(
@@ -198,14 +169,6 @@ class FeedRepositoryImpl : FeedRepository {
                     post.copy(content = content, mediaList = mediaList)
                 } else post
             }
-        }
-        persistPostsToDb()
-    }
-
-    private suspend fun persistNotificationsToDb() {
-        withContext(Dispatchers.IO) {
-            dbHelper.deleteAllNotifications()
-            dbHelper.insertNotifications(_feedNotifications.value)
         }
     }
 
@@ -222,7 +185,6 @@ class FeedRepositoryImpl : FeedRepository {
             }
             if (exists) notifications else notifications + feedNotification
         }
-        persistNotificationsToDb()
     }
 
     override suspend fun deleteCommentNotification(feedNotification: FeedNotification) {
@@ -233,14 +195,12 @@ class FeedRepositoryImpl : FeedRepository {
                 } else notification
             }
         }
-        persistNotificationsToDb()
     }
 
     override suspend fun deleteLikeNotification(feedNotification: FeedNotification) {
         _feedNotifications.update { notifications ->
             notifications.filterNot { it.id == feedNotification.id || (it.post.id == feedNotification.post.id && it.user.id == feedNotification.user.id && it.isLikeNotification) }
         }
-        persistNotificationsToDb()
     }
 
     override fun getNotifications(): Flow<List<FeedNotification>> {
@@ -253,25 +213,25 @@ class FeedRepositoryImpl : FeedRepository {
         _feedNotifications.update { notifications ->
             notifications.map { it.copy(isRead = true) }
         }
-        persistNotificationsToDb()
     }
 }
 
 fun createFakeData(): List<FeedPost> {
-    val user = FeedUser(id = "1", name = "何聚敛1", avatarUrl = "https://i.pravatar.cc/300?t=" + System.currentTimeMillis())
+    import kotlinx.datetime.Clock // Not really needed if we just mock time
+    val user = FeedUser(id = "1", name = "何聚敛1", avatarUrl = "https://i.pravatar.cc/300?t=" + kotlin.math.abs(Random.nextLong() % 1000))
     return listOf(
         createFakePost(user),
-        createFakePost(user.copy(id = "2", name = "何聚敛2", avatarUrl = "https://i.pravatar.cc/300?t=1" + System.currentTimeMillis())),
-        createFakePost(user.copy(id = "3", name = "何聚敛3", avatarUrl = "https://i.pravatar.cc/300?t=2" + System.currentTimeMillis())),
-        createFakePost(user.copy(id = "4", name = "何聚敛4", avatarUrl = "https://i.pravatar.cc/300?t=3" + System.currentTimeMillis())),
-        createFakePost(user.copy(id = "5", name = "何聚敛5", avatarUrl = "https://i.pravatar.cc/300?t=4" + System.currentTimeMillis())),
-        createFakePost(user.copy(id = "6", name = "何聚敛6", avatarUrl = "https://i.pravatar.cc/300?t=5" + System.currentTimeMillis())),
+        createFakePost(user.copy(id = "2", name = "何聚敛2", avatarUrl = "https://i.pravatar.cc/300?t=" + kotlin.math.abs(Random.nextLong() % 1000))),
+        createFakePost(user.copy(id = "3", name = "何聚敛3", avatarUrl = "https://i.pravatar.cc/300?t=" + kotlin.math.abs(Random.nextLong() % 1000))),
+        createFakePost(user.copy(id = "4", name = "何聚敛4", avatarUrl = "https://i.pravatar.cc/300?t=" + kotlin.math.abs(Random.nextLong() % 1000))),
+        createFakePost(user.copy(id = "5", name = "何聚敛5", avatarUrl = "https://i.pravatar.cc/300?t=" + kotlin.math.abs(Random.nextLong() % 1000))),
+        createFakePost(user.copy(id = "6", name = "何聚敛6", avatarUrl = "https://i.pravatar.cc/300?t=" + kotlin.math.abs(Random.nextLong() % 1000))),
     )
 }
 
 private fun createComment(postId: String, commentUser: FeedUser, content: String): FeedComment {
     return FeedComment(
-        id = UUID.randomUUID().toString(),
+        id = generateUUID(),
         postId = postId,
         commentUser = commentUser,
         content = content
@@ -290,27 +250,27 @@ fun createFakePost(user: FeedUser): FeedPost {
         FeedUser(id = "88", name = "李四4", avatarUrl = "https://i.pravatar.cc/300?img=8"),
         FeedUser(id = "99", name = "王五5", avatarUrl = "https://i.pravatar.cc/300?img=9")
     )
-    val postId = UUID.randomUUID().toString()
+    val postId = generateUUID()
     return FeedPost(
         id = postId,
         postUser = user,
-        content = "这是一个测试内容,这是一个测试内容,这是一个测试内容,这是一个测试内容,这是一个测试内容-----------------------------------------------\n---\n---\n---\n" + System.currentTimeMillis(),
+        content = "这是一个测试内容,这是一个测试内容,这是一个测试内容,这是一个测试内容,这是一个测试内容-----------------------------------------------\n---\n---\n---\n" + kotlin.math.abs(Random.nextLong() % 1000),
         likedUsers = fakeLikedUser,
         commentsList = listOf(
             FeedComment(
-                id = UUID.randomUUID().toString(),
+                id = generateUUID(),
                 postId = postId,
                 commentUser = FeedUser(id = "11", name = "张三", avatarUrl = "https://i.pravatar.cc/300?img=1"),
                 content = "这个朋友圈写得不错"
             ),
             FeedComment(
-                id = UUID.randomUUID().toString(),
+                id = generateUUID(),
                 postId = postId,
                 commentUser = FeedUser(id = "22", name = "李四", avatarUrl = "https://i.pravatar.cc/300?img=2"),
                 content = "这个朋友圈写得不错，这个朋友圈写得不错"
             ),
             FeedComment(
-                id = UUID.randomUUID().toString(),
+                id = generateUUID(),
                 postId = postId,
                 commentUser = FeedUser(id = "3", name = "王五", avatarUrl = "https://i.pravatar.cc/300?img=3"),
                 content = "这个朋友圈写得不错，这个朋友圈写得不错，这个朋友圈写得不错"
