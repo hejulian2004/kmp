@@ -36,7 +36,7 @@ import org.example.project.domain.model.feedline.FeedLineMedia
 import org.example.project.domain.model.feedline.FeedLineNotification
 import org.example.project.domain.model.feedline.FeedLinePost
 import org.example.project.domain.model.feedline.FeedLineUser
-import java.util.UUID
+import org.example.project.data.repository.feedline.generateUUID
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -188,7 +188,7 @@ fun FeedPostItem(
 @Preview
 @Composable
 fun FeedPostItemPreview(){
-    val uuid = UUID.randomUUID().toString()
+    val uuid = generateUUID()
     val user = FeedLineUser(
         id = uuid,
         name = "何聚敛",

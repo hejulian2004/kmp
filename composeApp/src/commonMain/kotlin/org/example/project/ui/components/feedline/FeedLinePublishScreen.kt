@@ -454,7 +454,7 @@ private fun copyUriToLocalCache(context: android.content.Context, uri: Uri, isVi
     val extension = if (isVideo) "mp4" else "jpg"
     val localFile = java.io.File(
         context.cacheDir,
-        "picked_media_${System.currentTimeMillis()}_${java.util.UUID.randomUUID()}.$extension"
+        "picked_media_${System.currentTimeMillis()}_${org.example.project.data.repository.feedline.generateUUID()}.$extension"
     )
     try {
         context.contentResolver.openInputStream(uri)?.use { inputStream ->

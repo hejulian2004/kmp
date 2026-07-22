@@ -21,9 +21,12 @@ import kotlinx.coroutines.flow.update
 import kotlin.math.abs
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 fun generateUUID(): String {
-    return Random.nextLong().toString()
+    return Uuid.random().toString()
 }
 
 class FeedRepositoryImpl : FeedLineRepository {

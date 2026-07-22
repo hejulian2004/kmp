@@ -3,7 +3,6 @@ package org.example.project.navigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.outlined.AirplanemodeActive
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.NearMe
 import androidx.compose.material.icons.outlined.PlayCircle
@@ -12,7 +11,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
-import org.example.project.ui.components.PostPickerContent
+import org.example.project.ui.components.feedline.PostPickerContent
 import org.jetbrains.compose.resources.StringResource
 import kotlinproject.composeapp.generated.resources.*
 

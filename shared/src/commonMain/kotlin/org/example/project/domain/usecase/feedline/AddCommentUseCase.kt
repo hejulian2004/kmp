@@ -11,9 +11,11 @@ import org.example.project.domain.model.feedline.FeedLineNotification
 import org.example.project.domain.model.feedline.FeedLineUser
 import org.example.project.domain.repository.feedline.FeedLineRepository
 import kotlinx.coroutines.flow.first
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class AddCommentUseCase(private val repository: FeedLineRepository) {
+    @OptIn(ExperimentalUuidApi::class)
     suspend operator fun invoke(postId: String, user: FeedLineUser, content: String, currentUserId: String): String {
         val result = repository.addComment(postId, user, content)
         val post = repository.getFeedPost(postId).first()
@@ -21,7 +23,7 @@ class AddCommentUseCase(private val repository: FeedLineRepository) {
             val newComment = post.commentsList.findLast { it.commentUser.id == user.id && it.content == content }
             repository.addNotification(
                 FeedLineNotification(
-                    id = UUID.randomUUID().toString(),
+                    id = Uuid.random().toString(),
                     post = post,
                     user = user,
                     comment = newComment,

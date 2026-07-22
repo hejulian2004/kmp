@@ -1,4 +1,4 @@
-package org.example.project.ui.components
+package org.example.project.ui.components.feedline
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -29,7 +28,6 @@ import org.example.project.ui.theme.InstagramTypography
 
 import kotlinproject.composeapp.generated.resources.*
 import org.example.project.navigation.Screen
-import org.example.project.ui.screens.ImagePickerScreen
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

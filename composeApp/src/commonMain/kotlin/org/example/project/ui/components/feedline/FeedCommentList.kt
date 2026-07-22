@@ -21,7 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.example.project.domain.model.feedline.FeedLineComment
 import org.example.project.domain.model.feedline.FeedLineUser
-import java.util.UUID
+import org.example.project.data.repository.feedline.generateUUID
 
 @Composable
 fun FeedCommentList(
@@ -64,13 +64,13 @@ fun FeedCommentList(
 private fun FeedCommentListPreview() {
     FeedCommentList(
         currentUser = FeedLineUser(
-            id = UUID.randomUUID().toString(),
+            id = generateUUID(),
             name = "test",
             avatarUrl = ""
         ),
         commentsList = listOf(
             FeedLineComment(
-                id = UUID.randomUUID().toString(),
+                id = generateUUID(),
                 postId = "1",
                 commentUser = FeedLineUser(
                     id = "1",
@@ -80,7 +80,7 @@ private fun FeedCommentListPreview() {
                 content = "这个朋友圈写得不错"
             ),
             FeedLineComment(
-                id = UUID.randomUUID().toString(),
+                id = generateUUID(),
                 postId = "1",
                 commentUser = FeedLineUser(
                     id = "2",

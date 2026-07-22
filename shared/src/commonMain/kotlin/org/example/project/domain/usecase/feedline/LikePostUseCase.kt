@@ -11,16 +11,18 @@ import org.example.project.domain.model.feedline.FeedLineNotification
 import org.example.project.domain.model.feedline.FeedLineUser
 import org.example.project.domain.repository.feedline.FeedLineRepository
 import kotlinx.coroutines.flow.first
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class LikePostUseCase(private val repository: FeedLineRepository) {
+    @OptIn(ExperimentalUuidApi::class)
     suspend operator fun invoke(postId: String, user: FeedLineUser, currentUserId: String): String {
         val result = repository.likePost(postId, user)
         val post = repository.getFeedPost(postId).first()
         if (post != null && post.postUser.id == currentUserId) {
             repository.addNotification(
                 FeedLineNotification(
-                    id = UUID.randomUUID().toString(),
+                    id = Uuid.random().toString(),
                     post = post,
                     user = user,
                     isLikeNotification = true

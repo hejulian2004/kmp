@@ -44,7 +44,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.example.project.domain.model.feedline.FeedLinePost
 import org.example.project.domain.model.feedline.FeedLineUser
+import org.example.project.platform.currentTimeMillis
 import org.example.project.utils.TimeUtils
+import org.example.project.data.repository.feedline.generateUUID
 
 @Composable
 fun FeedActionBar(
@@ -206,7 +208,7 @@ fun showTime(postTime: Long, currentTime: Long): String {
 @Preview(showBackground = true)
 @Composable
 private fun FeedActionBarPreview() {
-    val uuid = UUID.randomUUID().toString()
+    val uuid = generateUUID()
     FeedActionBar(
         post = FeedLinePost(
             id = uuid,
@@ -225,7 +227,7 @@ private fun FeedActionBarPreview() {
         onLikeClick = { },
         onAddCommentClick = { },
         onDeletePostClick = { },
-        currentTime = System.currentTimeMillis()
+        currentTime = currentTimeMillis()
     )
 }
 
