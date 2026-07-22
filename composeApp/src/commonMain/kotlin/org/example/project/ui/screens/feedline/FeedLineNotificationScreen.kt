@@ -1,9 +1,9 @@
 /**
  * @File: FeedLineNotificationScreen.kt
  * @Package: org.example.project.ui.screens.feedline
- * @Description: 互动消息通知列表界面的Compose视图
+ * @Description: 互动消息通知列表界面的 Compose 视图
  * @Author: 何聚敛
- * @Date: 2026-07-20
+ * @Date: 2026-07-22
  */
 package org.example.project.ui.screens.feedline
 
@@ -42,22 +42,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import org.example.project.data.repository.feedline.FeedRepositoryImpl
 import org.example.project.domain.model.feedline.FeedLineMedia
 import org.example.project.domain.model.feedline.FeedLineNotification
+import org.example.project.domain.model.feedline.FeedLineUser
+import org.example.project.presentation.intent.feedline.FeedIntent
+import org.example.project.presentation.state.feedline.Screen
+import org.example.project.presentation.viewmodel.feedline.FeedLineViewModel
 import org.example.project.ui.components.feedline.Avatar
 import org.example.project.ui.components.feedline.VideoThumbnail
 import org.example.project.utils.TimeUtils
-import androidx.compose.ui.tooling.preview.Preview
-import org.example.project.data.FeedRepositoryImpl
-import org.example.project.domain.model.feedline.FeedLineUser
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationScreen(
-    viewModel: FeedViewModel,
+    viewModel: FeedLineViewModel,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -283,9 +286,6 @@ private fun PostTextPreview(text: String) {
 fun NotificationScreenPreview() {
     val fakeRepo = FeedRepositoryImpl()
     val fakeUser = FeedLineUser(id = "1", name = "测试用户", avatarUrl = "")
-    val fakeViewModel = FeedViewModel(fakeRepo, fakeUser)
+    val fakeViewModel = FeedLineViewModel(fakeRepo, fakeUser)
     NotificationScreen(viewModel = fakeViewModel)
 }
-
-
-
