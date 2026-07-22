@@ -4,5 +4,11 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>需要访问相机以拍摄动态照片或视频</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>需要访问相册以选择照片或视频上传</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>需要访问麦克风以录制动态视频</string>
 </dict>
 </plist>

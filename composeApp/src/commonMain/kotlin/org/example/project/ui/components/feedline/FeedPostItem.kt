@@ -1,77 +1,83 @@
 /**
  * @File: FeedPostItem.kt
  * @Package: org.example.project.ui.components.feedline
- * @Description: 朋友圈单条动态帖子卡片核心组件
+ * @Description: 朋友圈单条动态帖子卡片核心组件（支持KMP跨平台视频与图片展示）
  * @Author: 何聚敛
- * @Date: 2026-07-20
+ * @Date: 2026-07-22
  */
 package org.example.project.ui.components.feedline
 
-import org.example.project.platform.currentTimeMillis
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.example.project.data.createFakePost
+import coil3.compose.AsyncImage
+import org.example.project.data.repository.feedline.createFakePost
+import org.example.project.data.repository.feedline.generateUUID
 import org.example.project.domain.model.feedline.FeedLineComment
 import org.example.project.domain.model.feedline.FeedLineMedia
-import org.example.project.domain.model.feedline.FeedLineNotification
 import org.example.project.domain.model.feedline.FeedLinePost
 import org.example.project.domain.model.feedline.FeedLineUser
-import org.example.project.data.repository.feedline.generateUUID
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.Alignment
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.viewinterop.AndroidView
-import coil3.compose.AsyncImage
+import org.example.project.platform.currentTimeMillis
+
+/**
+ * 跨平台视频播放控件契约
+ */
+@Composable
+expect fun VideoPlayer(
+    videoUrl: String,
+    modifier: Modifier = Modifier
+)
 
 @Composable
 fun FeedPostItem(
     modifier: Modifier = Modifier,
     post: FeedLinePost,
     currentUser: FeedLineUser,
-    onClick: (FeedLinePost) -> Unit,//整体被点击
-    onNameClick: () -> Unit,//名字被点击
-    onLikeClick: () -> Unit,//点赞
-    onAddCommentClick: () -> Unit,//添加评论
+    onClick: (FeedLinePost) -> Unit, //整体被点击
+    onNameClick: () -> Unit, //名字被点击
+    onLikeClick: () -> Unit, //点赞
+    onAddCommentClick: () -> Unit, //添加评论
     onCommentClick: (FeedLineComment) -> Unit, //点击评论
     onCommentUserClick: (FeedLineUser) -> Unit,
-    onDeleteCommentClick: (FeedLineComment) -> Unit,//长按删除评论
-    onDeletePostClick: (FeedLinePost) -> Unit,//删除帖子按钮
-    onPostAvatarClick:() -> Unit,
+    onDeleteCommentClick: (FeedLineComment) -> Unit, //长按删除评论
+    onDeletePostClick: (FeedLinePost) -> Unit, //删除帖子按钮
+    onPostAvatarClick: () -> Unit,
     onLikedAvatarClick: (FeedLineUser) -> Unit,
     currentTime: Long
 ) {
@@ -80,7 +86,7 @@ fun FeedPostItem(
             .background(Color.White)
             .fillMaxWidth()
             .padding(12.dp)
-            .clickable{
+            .clickable {
                 onClick(post)
             }
     ) {
@@ -99,7 +105,7 @@ fun FeedPostItem(
         ) {
             Text(
                 modifier = Modifier
-                    .clickable{
+                    .clickable {
                         onNameClick()
                     },
                 text = post.postUser.name,
@@ -107,7 +113,7 @@ fun FeedPostItem(
                 color = Color(0xFF576B95)
             )
 
-            if(!post.content.isEmpty()){
+            if (post.content.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 SelectionContainer {
                     Text(
@@ -158,7 +164,7 @@ fun FeedPostItem(
                     }
                 )
 
-                if(post.likedUsers.isNotEmpty()&&post.commentsList.isNotEmpty()){
+                if (post.likedUsers.isNotEmpty() && post.commentsList.isNotEmpty()) {
                     HorizontalDivider(
                         thickness = 0.5.dp,
                         color = Color.LightGray
@@ -187,7 +193,7 @@ fun FeedPostItem(
 
 @Preview
 @Composable
-fun FeedPostItemPreview(){
+fun FeedPostItemPreview() {
     val uuid = generateUUID()
     val user = FeedLineUser(
         id = uuid,
@@ -228,19 +234,8 @@ fun VideoPlayerDialog(
                 .background(Color.Black),
             contentAlignment = Alignment.Center
         ) {
-            AndroidView(
-                factory = { context ->
-                    android.widget.VideoView(context).apply {
-                        val mediaController = android.widget.MediaController(context)
-                        mediaController.setAnchorView(this)
-                        setMediaController(mediaController)
-                        setVideoPath(videoUrl)
-                        setOnPreparedListener { mp ->
-                            mp.isLooping = true
-                            start()
-                        }
-                    }
-                },
+            VideoPlayer(
+                videoUrl = videoUrl,
                 modifier = Modifier.fillMaxSize()
             )
 
@@ -388,7 +383,7 @@ fun PostMediaGrid(
         val columns = if (mediaList.size == 4) 2 else 3
         val spacing = 4.dp
         val rows = mediaList.chunked(columns)
-        
+
         Column(
             verticalArrangement = Arrangement.spacedBy(spacing),
             modifier = Modifier.fillMaxWidth()
@@ -451,5 +446,3 @@ fun PostMediaGrid(
         }
     }
 }
-
-

@@ -1,19 +1,14 @@
 /**
  * @File: FeedLinePublishScreen.kt
  * @Package: org.example.project.ui.components.feedline
- * @Description: 发布新动态的图文编辑与上传界面
+ * @Description: 发布新动态的图文编辑与上传界面（基于FileKit0.13.0跨平台适配）
  * @Author: 何聚敛
- * @Date: 2026-07-20
+ * @Date: 2026-07-22
  */
 package org.example.project.ui.components.feedline
 
-import android.graphics.Bitmap
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,13 +16,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -35,40 +30,41 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
+import io.github.vinceglb.filekit.dialogs.FileKitMode
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import io.github.vinceglb.filekit.name
+import io.github.vinceglb.filekit.path
+import kotlinx.coroutines.launch
 import org.example.project.domain.model.feedline.FeedLineMedia
-import java.io.File
-import java.io.FileOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -79,7 +75,6 @@ fun PublishScreen(
     modifier: Modifier = Modifier,
     isTextOnly: Boolean = false
 ) {
-    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var textContent by remember { mutableStateOf("") }
     var selectedMedia by remember { mutableStateOf(initialMediaList) }
@@ -106,7 +101,7 @@ fun PublishScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    androidx.compose.material3.CircularProgressIndicator(
+                    CircularProgressIndicator(
                         color = Color(0xFF07C160)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -130,47 +125,54 @@ fun PublishScreen(
         )
     }
 
-    // 发布页内部用于添加更多照片/视频的启动器
-    val photoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickMultipleVisualMedia(9)
-    ) { uris ->
-        if (uris.isNotEmpty()) {
-            val newMedia = uris.map { uri ->
-                val isVideo = context.contentResolver.getType(uri)?.startsWith("video") == true
-                if (isVideo) {
-                    FeedLineMedia.Video(coverUrl = uri.toString(), videoUrl = uri.toString())
-                } else {
-                    FeedLineMedia.Image(url = uri.toString())
+    // 从相册选择图片或视频Launcher (FileKit 0.13.0)
+    val photoPickerLauncher = rememberFilePickerLauncher(
+        type = FileKitType.ImageAndVideo,
+        mode = FileKitMode.Multiple(maxItems = (9 - selectedMedia.size).coerceAtLeast(1)),
+        onResult = { files ->
+            files?.let { list ->
+                val newMedia = list.map { file ->
+                    val filePath = file.path ?: ""
+                    val fileName = file.name
+                    val isVideo = fileName.endsWith(".mp4", ignoreCase = true) ||
+                            fileName.endsWith(".mov", ignoreCase = true) ||
+                            fileName.endsWith(".mkv", ignoreCase = true)
+                    if (isVideo) {
+                        FeedLineMedia.Video(coverUrl = filePath, videoUrl = filePath)
+                    } else {
+                        FeedLineMedia.Image(url = filePath)
+                    }
                 }
-            }
-            selectedMedia = (selectedMedia + newMedia).take(9)
-        }
-    }
-
-    val takePictureLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicturePreview()
-    ) { bitmap ->
-        if (bitmap != null) {
-            val file = File(context.cacheDir, "captured_image_${System.currentTimeMillis()}.jpg")
-            FileOutputStream(file).use { out ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
-            }
-            val newMedia = FeedLineMedia.Image(url = Uri.fromFile(file).toString())
-            selectedMedia = (selectedMedia + newMedia).take(9)
-        }
-    }
-
-    val takeVideoLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == android.app.Activity.RESULT_OK) {
-            val videoUri = result.data?.data
-            if (videoUri != null) {
-                val newMedia = FeedLineMedia.Video(coverUrl = videoUri.toString(), videoUrl = videoUri.toString())
                 selectedMedia = (selectedMedia + newMedia).take(9)
             }
         }
-    }
+    )
+
+    // 拍摄照片Launcher (FileKit 0.13.0)
+    val takePictureLauncher = rememberFilePickerLauncher(
+        type = FileKitType.Image,
+        mode = FileKitMode.Single,
+        onResult = { file ->
+            file?.let {
+                val filePath = it.path ?: ""
+                val newMedia = FeedLineMedia.Image(url = filePath)
+                selectedMedia = (selectedMedia + newMedia).take(9)
+            }
+        }
+    )
+
+    // 拍摄视频Launcher (FileKit 0.13.0)
+    val takeVideoLauncher = rememberFilePickerLauncher(
+        type = FileKitType.Video,
+        mode = FileKitMode.Single,
+        onResult = { file ->
+            file?.let {
+                val filePath = it.path ?: ""
+                val newMedia = FeedLineMedia.Video(coverUrl = filePath, videoUrl = filePath)
+                selectedMedia = (selectedMedia + newMedia).take(9)
+            }
+        }
+    )
 
     var showAddMoreBottomSheet by remember { mutableStateOf(false) }
 
@@ -215,26 +217,7 @@ fun PublishScreen(
                     onClick = {
                         isPublishing = true
                         coroutineScope.launch {
-                            val persistentMedia = withContext(Dispatchers.IO) {
-                                selectedMedia.map { media ->
-                                    val isVideo = media is FeedLineMedia.Video
-                                    val uriString = when (media) {
-                                        is FeedLineMedia.Image -> media.url
-                                        is FeedLineMedia.Video -> media.videoUrl
-                                    }
-                                    if (uriString.startsWith("content://")) {
-                                        val localPath = copyUriToLocalCache(context, Uri.parse(uriString), isVideo)
-                                        if (isVideo) {
-                                            FeedLineMedia.Video(coverUrl = localPath, videoUrl = localPath)
-                                        } else {
-                                            FeedLineMedia.Image(url = localPath)
-                                        }
-                                    } else {
-                                        media
-                                    }
-                                }
-                            }
-                            onPostClick(textContent, persistentMedia)
+                            onPostClick(textContent, selectedMedia)
                             isPublishing = false
                         }
                     }
@@ -405,21 +388,18 @@ fun PublishScreen(
             onDismissRequest = { showAddMoreBottomSheet = false },
             dragHandle = { BottomSheetDefaults.DragHandle() }
         ) {
-            org.example.project.ui.screens.feedline.components.BottomSheet(
+            BottomSheet(
                 onTakePhotoClick = {
                     showAddMoreBottomSheet = false
                     takePictureLauncher.launch()
                 },
                 onRecordVideoClick = {
                     showAddMoreBottomSheet = false
-                    val intent = android.content.Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE)
-                    takeVideoLauncher.launch(intent)
+                    takeVideoLauncher.launch()
                 },
                 onChooseClick = {
                     showAddMoreBottomSheet = false
-                    photoPickerLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
-                    )
+                    photoPickerLauncher.launch()
                 },
                 onCancelClick = {
                     showAddMoreBottomSheet = false
@@ -449,25 +429,3 @@ fun PublishScreenTextOnlyPreview() {
         onPostClick = { _, _ -> }
     )
 }
-
-private fun copyUriToLocalCache(context: android.content.Context, uri: Uri, isVideo: Boolean): String {
-    val extension = if (isVideo) "mp4" else "jpg"
-    val localFile = java.io.File(
-        context.cacheDir,
-        "picked_media_${System.currentTimeMillis()}_${org.example.project.data.repository.feedline.generateUUID()}.$extension"
-    )
-    try {
-        context.contentResolver.openInputStream(uri)?.use { inputStream ->
-            java.io.FileOutputStream(localFile).use { outputStream ->
-                inputStream.copyTo(outputStream)
-            }
-        }
-        return Uri.fromFile(localFile).toString()
-    } catch (e: Exception) {
-        e.printStackTrace()
-        return uri.toString()
-    }
-}
-
-
-
