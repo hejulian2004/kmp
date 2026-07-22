@@ -7,3 +7,6 @@ package org.example.project.platform
  */
 
 expect fun getPlatformName(): String
+
+//获取系统时间
+expect fun currentTimeMillis(): Long
