@@ -43,48 +43,48 @@ fun App() {
             .crossfade(true)
             .build()
     }
-    InstagramTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            val rootNavController = rememberNavController()
-            NavHost(
-                navController = rootNavController,
-                startDestination = "launch"
-            ) {
-                composable("launch") {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+    Surface(modifier = Modifier.fillMaxSize()) {
+        val rootNavController = rememberNavController()
+        NavHost(
+            navController = rootNavController,
+            startDestination = "launch"
+        ) {
+            composable("launch") {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Button(onClick = { rootNavController.navigate("feedline") }) {
-                                Text("FeedLine")
-                            }
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(onClick = { rootNavController.navigate("instagram") }) {
-                                Text("Instagram")
-                            }
+                        Button(onClick = { rootNavController.navigate("feedline") }) {
+                            Text("FeedLine")
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { rootNavController.navigate("instagram") }) {
+                            Text("Instagram")
                         }
                     }
                 }
-                composable("feedline") {
-                    val viewModel = remember {
-                        val currentUser = FeedLineUser(
-                            id = generateUUID(),
-                            name = "何聚敛",
-                            avatarUrl = "https://i.pravatar.cc/300"
-                        )
-                        val feedRepository = FeedRepositoryImpl()
-                        FeedLineViewModel(
-                            feedRepository = feedRepository,
-                            currentUser = currentUser
-                        )
-                    }
-                    FeedScreen(viewModel = viewModel)
+            }
+            composable("feedline") {
+                val viewModel = remember {
+                    val currentUser = FeedLineUser(
+                        id = generateUUID(),
+                        name = "何聚敛",
+                        avatarUrl = "https://i.pravatar.cc/300"
+                    )
+                    val feedRepository = FeedRepositoryImpl()
+                    FeedLineViewModel(
+                        feedRepository = feedRepository,
+                        currentUser = currentUser
+                    )
                 }
-                composable("instagram") {
+                FeedScreen(viewModel = viewModel)
+            }
+            composable("instagram") {
+                InstagramTheme {
                     InstagramMainScreen()
                 }
             }
