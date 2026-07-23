@@ -1,5 +1,5 @@
 /**
- * @File: FeedCommentList.kt
+ * @File: FeedLineCommentList.kt
  * @Package: org.example.project.ui.components.feedline
  * @Description: 帖子评论列表整合展示组件
  * @Author: 何聚敛

@@ -1,5 +1,5 @@
 /**
- * @File: FeedTopBar.kt
+ * @File: FeedLineTopBar.kt
  * @Package: org.example.project.ui.components.feedline
  * @Description: 朋友圈主页顶部导航栏组件
  * @Author: 何聚敛

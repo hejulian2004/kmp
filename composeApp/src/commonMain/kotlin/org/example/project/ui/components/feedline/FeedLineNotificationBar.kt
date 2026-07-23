@@ -1,5 +1,5 @@
 /**
- * @File: FeedNotificationBar.kt
+ * @File: FeedLineNotificationBar.kt
  * @Package: org.example.project.ui.components.feedline
  * @Description: 朋友圈顶部未读消息通知提示栏组件
  * @Author: 何聚敛

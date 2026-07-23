@@ -1,5 +1,5 @@
 /**
- * @File: FeedLikedUserNameBar.kt
+ * @File: FeedLineLikedUserNameBar.kt
  * @Package: org.example.project.ui.components.feedline
  * @Description: 帖子点赞用户姓名列表展现组件
  * @Author: 何聚敛

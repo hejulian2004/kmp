@@ -1,5 +1,5 @@
 /**
- * @File: FeedCommentBar.kt
+ * @File: FeedLineCommentBar.kt
  * @Package: org.example.project.ui.components.feedline
  * @Description: 底部弹出框评论输入栏组件
  * @Author: 何聚敛

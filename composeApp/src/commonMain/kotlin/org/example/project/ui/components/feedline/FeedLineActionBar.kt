@@ -1,5 +1,5 @@
 /**
- * @File: FeedActionBar.kt
+ * @File: FeedLineActionBar.kt
  * @Package: org.example.project.ui.components.feedline
  * @Description: 帖子底部的点赞与评论操作栏组件
  * @Author: 何聚敛

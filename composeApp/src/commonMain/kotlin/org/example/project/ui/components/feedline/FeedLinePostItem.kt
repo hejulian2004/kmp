@@ -1,5 +1,5 @@
 /**
- * @File: FeedPostItem.kt
+ * @File: FeedLinePostItem.kt
  * @Package: org.example.project.ui.components.feedline
  * @Description: 朋友圈单条动态帖子卡片核心组件（支持KMP跨平台视频与图片展示）
  * @Author: 何聚敛
