@@ -19,12 +19,12 @@ class MainActivity : ComponentActivity() {
         FileKit.init(this)
         SingletonImageLoader.setSafe { context ->
             ImageLoader.Builder(context)
-                .components {
-                    add(KtorNetworkFetcherFactory())
-                    addPlatformFileSupport()
-                }
-                .crossfade(true)
-                .build()
+            .components {
+                add(KtorNetworkFetcherFactory())
+                addPlatformFileSupport()
+            }
+            .crossfade(true)
+            .build()
         }
         enableEdgeToEdge()
         setContent {
