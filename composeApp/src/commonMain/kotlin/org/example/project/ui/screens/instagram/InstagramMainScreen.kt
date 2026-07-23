@@ -42,6 +42,3 @@ fun InstagramMainScreen() {
         )
     }
 }
-
-@Composable
-fun MainScreen() = InstagramMainScreen()
