@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import org.example.project.ui.utils.BackHandler
 import org.example.project.ui.utils.CameraMediaType
 import org.example.project.ui.utils.rememberCameraPickerLauncher
 import io.github.vinceglb.filekit.name
@@ -205,6 +206,10 @@ fun FeedScreen(
                 }
             }
         }
+    }
+
+    BackHandler(enabled = uiState.currentScreen != Screen.Feed) {
+        viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Feed))
     }
 
     if (uiState.currentScreen == Screen.Notification) {
