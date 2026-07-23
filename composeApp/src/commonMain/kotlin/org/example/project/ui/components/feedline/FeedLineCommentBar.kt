@@ -8,12 +8,9 @@
 package org.example.project.ui.components.feedline
 
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -53,7 +50,6 @@ fun FeedCommentBar(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .imePadding()
             .navigationBarsPadding(),
         color = Color.White,
         shadowElevation = 6.dp
@@ -61,7 +57,7 @@ fun FeedCommentBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(horizontal = 8.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
@@ -98,8 +94,6 @@ fun FeedCommentBar(
                     unfocusedIndicatorColor = Color.Transparent
                 )
             )
-
-            Spacer(modifier = Modifier.width(8.dp))
 
             TextButton(
                 enabled = canSend,
