@@ -93,23 +93,22 @@ fun FeedActionBar(
                     )
                     .padding(horizontal = 16.dp)
             ){
-                if(post.postUser.id == currentUser.id) {
+                if (post.postUser.id == currentUser.id) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable {
+                            onDeletePostClick(post)
+                            isShowMore = false
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "删除",
-                            modifier = Modifier
-                                .size(16.dp),
+                            modifier = Modifier.size(16.dp),
                             tint = Color.White
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            modifier = Modifier
-                                .clickable {
-                                    onDeletePostClick(post)
-                                },
                             text = "删除",
                             fontSize = 14.sp,
                             color = Color.White

@@ -127,10 +127,11 @@ fun PublishScreen(
         )
     }
 
+    val remainingMediaSpace = (9 - selectedMedia.size).coerceAtLeast(1)
     // 从相册选择图片或视频Launcher (FileKit 0.13.0)
     val photoPickerLauncher = rememberFilePickerLauncher(
         type = FileKitType.ImageAndVideo,
-        mode = FileKitMode.Multiple(maxItems = (9 - selectedMedia.size).coerceAtLeast(1)),
+        mode = FileKitMode.Multiple(maxItems = remainingMediaSpace),
         onResult = { files ->
             files?.let { list ->
                 val newMedia = list.map { file ->
@@ -391,15 +392,15 @@ fun PublishScreen(
             BottomSheet(
                 onTakePhotoClick = {
                     showAddMoreBottomSheet = false
-                    takePictureLauncher.launch()
+                    if (selectedMedia.size < 9) takePictureLauncher.launch()
                 },
                 onRecordVideoClick = {
                     showAddMoreBottomSheet = false
-                    takeVideoLauncher.launch()
+                    if (selectedMedia.size < 9) takeVideoLauncher.launch()
                 },
                 onChooseClick = {
                     showAddMoreBottomSheet = false
-                    photoPickerLauncher.launch()
+                    if (selectedMedia.size < 9) photoPickerLauncher.launch()
                 },
                 onCancelClick = {
                     showAddMoreBottomSheet = false
