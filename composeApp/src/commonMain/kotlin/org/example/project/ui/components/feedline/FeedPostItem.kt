@@ -125,12 +125,12 @@ fun FeedPostItem(
                 }
             }
 
-            val validMediaList = post.mediaList?.filter {
+            val validMediaList = post.mediaList.filter {
                 when (it) {
                     is FeedLineMedia.Image -> !it.url.isNullOrBlank()
                     is FeedLineMedia.Video -> !it.videoUrl.isNullOrBlank() || !it.coverUrl.isNullOrBlank()
                 }
-            } ?: emptyList()
+            }
 
             if (validMediaList.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))

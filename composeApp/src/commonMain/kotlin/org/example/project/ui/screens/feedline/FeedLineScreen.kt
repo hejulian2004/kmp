@@ -120,7 +120,7 @@ fun FeedScreen(
         onResult = { files ->
             files?.let { list ->
                 val media = list.map { file ->
-                    val filePath = file.path ?: ""
+                    val filePath = file.path
                     val fileName = file.name
                     val isVideo = fileName.endsWith(".mp4", ignoreCase = true) ||
                             fileName.endsWith(".mov", ignoreCase = true) ||
@@ -143,7 +143,7 @@ fun FeedScreen(
         mode = FileKitMode.Single,
         onResult = { file ->
             file?.let {
-                val filePath = it.path ?: ""
+                val filePath = it.path
                 publishMediaList = listOf(FeedLineMedia.Image(url = filePath))
                 isPublishTextOnly = false
                 viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Publish))
@@ -156,7 +156,7 @@ fun FeedScreen(
         mode = FileKitMode.Single,
         onResult = { file ->
             file?.let {
-                val filePath = it.path ?: ""
+                val filePath = it.path
                 publishMediaList = listOf(FeedLineMedia.Video(coverUrl = filePath, videoUrl = filePath))
                 isPublishTextOnly = false
                 viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Publish))

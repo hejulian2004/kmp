@@ -132,7 +132,7 @@ fun PublishScreen(
         onResult = { files ->
             files?.let { list ->
                 val newMedia = list.map { file ->
-                    val filePath = file.path ?: ""
+                    val filePath = file.path
                     val fileName = file.name
                     val isVideo = fileName.endsWith(".mp4", ignoreCase = true) ||
                             fileName.endsWith(".mov", ignoreCase = true) ||
@@ -154,7 +154,7 @@ fun PublishScreen(
         mode = FileKitMode.Single,
         onResult = { file ->
             file?.let {
-                val filePath = it.path ?: ""
+                val filePath = it.path
                 val newMedia = FeedLineMedia.Image(url = filePath)
                 selectedMedia = (selectedMedia + newMedia).take(9)
             }
@@ -167,7 +167,7 @@ fun PublishScreen(
         mode = FileKitMode.Single,
         onResult = { file ->
             file?.let {
-                val filePath = it.path ?: ""
+                val filePath = it.path
                 val newMedia = FeedLineMedia.Video(coverUrl = filePath, videoUrl = filePath)
                 selectedMedia = (selectedMedia + newMedia).take(9)
             }
