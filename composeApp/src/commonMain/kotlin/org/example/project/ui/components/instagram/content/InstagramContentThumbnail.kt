@@ -1,4 +1,4 @@
-package org.example.project.ui.components.profilescreen.Content
+package org.example.project.ui.components.instagram.content
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -21,12 +21,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
-import org.example.project.domain.model.ContentThumbnailData
-import org.example.project.domain.model.PostType
-
+import org.example.project.domain.model.instagram.ContentThumbnailData
+import org.example.project.domain.model.instagram.PostType
 
 @Composable
-fun ContentThumbnail(
+fun InstagramContentThumbnail(
     modifier: Modifier = Modifier,
     data: ContentThumbnailData,
     onClick: () -> Unit = {},
@@ -51,7 +50,7 @@ fun ContentThumbnail(
         val isLoading = imageState is AsyncImagePainter.State.Loading
                 || imageState is AsyncImagePainter.State.Empty
         if (isLoading) {
-            ShimmerBox(modifier = Modifier.fillMaxSize())
+            InstagramShimmerBox(modifier = Modifier.fillMaxSize())
         }
         AsyncImage(
             model = data.imageUrl.ifBlank { null },
@@ -106,7 +105,15 @@ fun ContentThumbnail(
 }
 
 @Composable
-fun ShimmerBox(modifier: Modifier = Modifier) {
+fun ContentThumbnail(
+    modifier: Modifier = Modifier,
+    data: ContentThumbnailData,
+    onClick: () -> Unit = {},
+    onLongClick: () -> Unit = {},
+) = InstagramContentThumbnail(modifier, data, onClick, onLongClick)
+
+@Composable
+fun InstagramShimmerBox(modifier: Modifier = Modifier) {
     val transition = rememberInfiniteTransition(label = "shimmer")
     val translateAnim by transition.animateFloat(
         initialValue = 0f,
@@ -132,19 +139,19 @@ fun ShimmerBox(modifier: Modifier = Modifier) {
     )
 }
 
-
-
+@Composable
+fun ShimmerBox(modifier: Modifier = Modifier) = InstagramShimmerBox(modifier)
 
 @Preview
 @Composable
-fun ContentThumbnailPreview(){
-    ContentThumbnail(
+fun InstagramContentThumbnailPreview() {
+    InstagramContentThumbnail(
         data = ContentThumbnailData(
             id = "1",
             type = PostType.CAROUSEL,
             imageUrl = "",
         ),
         onClick = {},
-        onLongClick = {  }
+        onLongClick = {}
     )
 }

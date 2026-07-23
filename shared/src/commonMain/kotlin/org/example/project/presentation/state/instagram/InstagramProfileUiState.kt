@@ -1,10 +1,11 @@
-package org.example.project.presentation.state
+package org.example.project.presentation.state.instagram
 
-import org.example.project.domain.model.ContentThumbnailData
-import org.example.project.domain.model.DiscoverUser
-import org.example.project.domain.model.ProfileUser
+import org.example.project.domain.model.instagram.ContentThumbnailData
+import org.example.project.domain.model.instagram.DiscoverUser
+import org.example.project.domain.model.instagram.ProfileUser
+import org.example.project.presentation.state.UiState
 
-data class ProfileUiState(
+data class InstagramProfileUiState(
 
     // 用户信息
     val profileState: UiState<ProfileUser> = UiState.Idle,
@@ -34,6 +35,9 @@ data class ProfileUiState(
         const val TAB_TAGGED = "tagged"
     }
 }
+
+typealias ProfileUiState = InstagramProfileUiState
+
 data class PostsSection(
     val posts: List<ContentThumbnailData> = emptyList(),
     val isLoadingMore: Boolean = false,

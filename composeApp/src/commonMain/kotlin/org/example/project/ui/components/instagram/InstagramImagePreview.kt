@@ -1,9 +1,8 @@
-package org.example.project.ui.components
+package org.example.project.ui.components.instagram
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -31,26 +30,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinproject.composeapp.generated.resources.Res
 import kotlinproject.composeapp.generated.resources.reset
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun ImagePreview(
+fun InstagramImagePreview(
     model: Any?,
     modifier: Modifier = Modifier
 ) {
@@ -153,24 +147,22 @@ fun ImagePreview(
             )
         }
     }
-    fun setImage(bitmap: ImageBitmap) {
-        imageBitmap = bitmap
-        scope.launch {
-            offsetX.snapTo(0f)
-            offsetY.snapTo(0f)
-            scale.snapTo(1f)
-        }
-    }
 }
+
+@Composable
+fun ImagePreview(
+    model: Any?,
+    modifier: Modifier = Modifier
+) = InstagramImagePreview(model, modifier)
+
+@Composable
+fun InstagramImagePreview(
+    image: ImageBitmap,
+    modifier: Modifier = Modifier
+) = InstagramImagePreview(model = image, modifier = modifier)
 
 @Composable
 fun ImagePreview(
     image: ImageBitmap,
     modifier: Modifier = Modifier
-) = ImagePreview(model = image, modifier = modifier)
-
-@androidx.compose.ui.tooling.preview.Preview
-@Composable
-private fun ImagePreviewPreview() {
-    ImagePreview(model = "https://picsum.photos/800/800")
-}
+) = InstagramImagePreview(image = image, modifier = modifier)

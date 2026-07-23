@@ -1,4 +1,4 @@
-package org.example.project.presentation.viewmodel
+package org.example.project.presentation.viewmodel.instagram
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,18 +9,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.example.project.domain.model.PostModel
-import org.example.project.presentation.intent.ImagePickerScreenIntent
+import org.example.project.domain.model.instagram.InstagramPostModel
+import org.example.project.presentation.intent.instagram.InstagramImagePickerIntent
 import org.example.project.presentation.state.UiState
 
-class ImagePickerScreenViewModel: ViewModel() {
-    private val _state = MutableStateFlow<UiState<PostModel>>(UiState.Idle)
-    val state: StateFlow<UiState<PostModel>> = _state.asStateFlow()
+class InstagramImagePickerViewModel : ViewModel() {
+    private val _state = MutableStateFlow<UiState<InstagramPostModel>>(UiState.Idle)
+    val state: StateFlow<UiState<InstagramPostModel>> = _state.asStateFlow()
 
-    fun onIntent(intent: ImagePickerScreenIntent) {
+    fun onIntent(intent: InstagramImagePickerIntent) {
         when (intent) {
-            is ImagePickerScreenIntent.PickImage -> pickImage()
-            is ImagePickerScreenIntent.ClearImage -> _state.value = UiState.Idle
+            is InstagramImagePickerIntent.PickImage -> pickImage()
+            is InstagramImagePickerIntent.ClearImage -> _state.value = UiState.Idle
         }
     }
 
@@ -38,5 +38,6 @@ class ImagePickerScreenViewModel: ViewModel() {
             }
         }
     }
-
 }
+
+typealias ImagePickerScreenViewModel = InstagramImagePickerViewModel

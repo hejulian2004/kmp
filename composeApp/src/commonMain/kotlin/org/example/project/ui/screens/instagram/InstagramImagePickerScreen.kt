@@ -1,4 +1,4 @@
-package org.example.project.ui.screens
+package org.example.project.ui.screens.instagram
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -36,15 +36,15 @@ import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.name
 import kotlinx.coroutines.delay
-import org.example.project.presentation.intent.PostEditIntent
-import org.example.project.presentation.viewmodel.PostEditViewModel
+import org.example.project.presentation.intent.instagram.InstagramPostEditIntent
+import org.example.project.presentation.viewmodel.instagram.InstagramPostEditViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ImagePickerScreen(
+fun InstagramImagePickerScreen(
     navController: NavHostController
 ) {
-    val viewModel: PostEditViewModel = viewModel { PostEditViewModel() }
+    val viewModel: InstagramPostEditViewModel = viewModel { InstagramPostEditViewModel() }
     val state by viewModel.state.collectAsState()
 
     var previewImage by remember { mutableStateOf<PlatformFile?>(null) }
@@ -55,7 +55,7 @@ fun ImagePickerScreen(
         onResult = { files ->
             files?.let {
                 it.forEach { image ->
-                    viewModel.onIntent(PostEditIntent.AddImages(image))
+                    viewModel.onIntent(InstagramPostEditIntent.AddImages(image))
                 }
             }
         }
@@ -91,11 +91,11 @@ fun ImagePickerScreen(
                     .padding(horizontal = 16.dp)
                     .padding(top = 12.dp)
             ) {
-                ImageHorizontalList(
+                InstagramImageHorizontalList(
                     images = state.images,
                     maxCount = state.maxImageCount,
                     onAddClick = { launcher.launch() },
-                    onRemoveClick = { index -> viewModel.onIntent(PostEditIntent.RemoveImage(index)) },
+                    onRemoveClick = { index -> viewModel.onIntent(InstagramPostEditIntent.RemoveImage(index)) },
                     onImageClick = { file -> previewImage = file }
                 )
 
@@ -103,7 +103,7 @@ fun ImagePickerScreen(
 
                 TextField(
                     value = state.title,
-                    onValueChange = { viewModel.onIntent(PostEditIntent.UpdateTitle(it)) },
+                    onValueChange = { viewModel.onIntent(InstagramPostEditIntent.UpdateTitle(it)) },
                     placeholder = { Text("标题", color = Color.Gray) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
@@ -119,7 +119,7 @@ fun ImagePickerScreen(
 
                 TextField(
                     value = state.body,
-                    onValueChange = { viewModel.onIntent(PostEditIntent.UpdateBody(it)) },
+                    onValueChange = { viewModel.onIntent(InstagramPostEditIntent.UpdateBody(it)) },
                     placeholder = { Text("正文", color = Color.Gray) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -135,7 +135,7 @@ fun ImagePickerScreen(
             }
 
             Button(
-                onClick = { viewModel.onIntent(PostEditIntent.Publish) },
+                onClick = { viewModel.onIntent(InstagramPostEditIntent.Publish) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -155,19 +155,19 @@ fun ImagePickerScreen(
             }
         }
 
-        ErrorOverlay(
+        InstagramErrorOverlay(
             error = state.errorMessage,
-            onDismiss = { viewModel.onIntent(PostEditIntent.ClearError) }
+            onDismiss = { viewModel.onIntent(InstagramPostEditIntent.ClearError) }
         )
     }
 
     previewImage?.let { file ->
-        ImagePreviewDialog(
+        InstagramImagePreviewDialog(
             file = file,
             onDismiss = { previewImage = null },
             onRemove = {
                 val index = state.images.indexOf(file)
-                if (index >= 0) viewModel.onIntent(PostEditIntent.RemoveImage(index))
+                if (index >= 0) viewModel.onIntent(InstagramPostEditIntent.RemoveImage(index))
                 previewImage = null
             }
         )
@@ -175,7 +175,10 @@ fun ImagePickerScreen(
 }
 
 @Composable
-fun ImageHorizontalList(
+fun ImagePickerScreen(navController: NavHostController) = InstagramImagePickerScreen(navController)
+
+@Composable
+fun InstagramImageHorizontalList(
     images: List<PlatformFile>,
     maxCount: Int,
     onAddClick: () -> Unit,
@@ -248,9 +251,8 @@ fun ImageHorizontalList(
     }
 }
 
-
 @Composable
-fun ImagePreviewDialog(
+fun InstagramImagePreviewDialog(
     file: PlatformFile,
     onDismiss: () -> Unit,
     onRemove: () -> Unit
@@ -297,7 +299,7 @@ fun ImagePreviewDialog(
 }
 
 @Composable
-fun ErrorOverlay(
+fun InstagramErrorOverlay(
     error: String?,
     onDismiss: () -> Unit
 ) {
@@ -335,10 +337,4 @@ fun ErrorOverlay(
             }
         }
     }
-}
-
-@Composable
-@Preview
-fun ImagePreviewDialogPreview(){
-
 }

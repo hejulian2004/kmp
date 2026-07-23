@@ -1,4 +1,4 @@
-package org.example.project.navigation
+package org.example.project.navigation.instagram
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -26,21 +26,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import org.example.project.ui.theme.NavAnim
 import org.example.project.ui.theme.NavColors
 import org.example.project.ui.theme.NavSize
 import org.example.project.ui.theme.navColors
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomBar(
+fun InstagramBottomBar(
     navController: NavHostController,
-    screens: List<Screen>,
+    screens: List<InstagramScreen>,
     modifier: Modifier = Modifier
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -70,7 +67,7 @@ fun BottomBar(
     }
     val colors = navColors()
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
     ) {
@@ -83,7 +80,7 @@ fun BottomBar(
                 ),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
-        ){
+        ) {
             screens.forEach { screen ->
                 val isSelected = currentDestination?.route == screen.route
                 NavItem(
@@ -115,33 +112,40 @@ fun BottomBar(
 }
 
 @Composable
+fun BottomBar(
+    navController: NavHostController,
+    screens: List<InstagramScreen>,
+    modifier: Modifier = Modifier
+) = InstagramBottomBar(navController, screens, modifier)
+
+@Composable
 private fun NavItem(
-    screen: Screen,
+    screen: InstagramScreen,
     isSelected: Boolean,
-    colors : NavColors,
+    colors: NavColors,
     onClick: () -> Unit
-){
+) {
     val iconScale by animateFloatAsState(
-        targetValue =  if(isSelected) NavSize.IconScaleSelected else NavSize.IconScaleUnselected,
+        targetValue = if (isSelected) NavSize.IconScaleSelected else NavSize.IconScaleUnselected,
         animationSpec = tween(NavAnim.DurationMs),
-        label         = "iconScale"
+        label = "iconScale"
     )
     val iconColor by animateColorAsState(
-        targetValue   = if (isSelected) colors.selectedIcon else colors.unselectedIcon,
+        targetValue = if (isSelected) colors.selectedIcon else colors.unselectedIcon,
         animationSpec = tween(NavAnim.DurationMs),
-        label         = "iconColor"
+        label = "iconColor"
     )
 
     Box(
         modifier = Modifier
-            .size(NavSize.IconSize*2)
+            .size(NavSize.IconSize * 2)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick
             ),
         contentAlignment = Alignment.Center
-    ){
+    ) {
         Icon(
             imageVector = screen.icon,
             contentDescription = null,
@@ -151,11 +155,4 @@ private fun NavItem(
                 .scale(iconScale)
         )
     }
-}
-
-@Composable
-@Preview
-fun BottomNavigationPreview(){
-    val screens = bottomNavScreens
-    BottomBar(rememberNavController(),screens)
 }

@@ -1,4 +1,4 @@
-package org.example.project.ui.screens.profilescreen
+package org.example.project.ui.screens.instagram
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -52,18 +52,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import org.example.project.presentation.state.ProfileUiState
 import org.example.project.presentation.state.UiState
-import org.example.project.presentation.viewmodel.ProfileIntent
-import org.example.project.presentation.viewmodel.ProfileSingleEvent
-import org.example.project.presentation.viewmodel.ProfileViewModel
-import org.example.project.ui.components.profilescreen.Content.GridContent
-import org.example.project.ui.components.profilescreen.ProfileInfoSection
-import org.example.project.ui.components.profilescreen.TabItem
-import org.example.project.ui.components.profilescreen.TabSwitchLayout
-import org.example.project.ui.components.profilescreen.TopBar
-import org.example.project.ui.components.profilescreen.TopBarSpan
-import org.example.project.ui.components.profilescreen.UserCard
+import org.example.project.presentation.state.instagram.InstagramProfileUiState
+import org.example.project.presentation.viewmodel.instagram.InstagramProfileIntent
+import org.example.project.presentation.viewmodel.instagram.InstagramProfileSingleEvent
+import org.example.project.presentation.viewmodel.instagram.InstagramProfileViewModel
+import org.example.project.ui.components.instagram.InstagramProfileInfoSection
+import org.example.project.ui.components.instagram.InstagramTabItem
+import org.example.project.ui.components.instagram.InstagramTabSwitchLayout
+import org.example.project.ui.components.instagram.InstagramTopBar
+import org.example.project.ui.components.instagram.InstagramTopBarSpan
+import org.example.project.ui.components.instagram.InstagramUserCard
+import org.example.project.ui.components.instagram.content.InstagramGridContent
 import org.example.project.ui.theme.InstagramTheme
 import org.example.project.ui.theme.size
 import org.example.project.ui.theme.spacing
@@ -95,8 +95,8 @@ object ProfileTestTags {
 }
 
 @Composable
-fun ProfileScreen(
-    viewModel          : ProfileViewModel = viewModel { ProfileViewModel() },
+fun InstagramProfileScreen(
+    viewModel          : InstagramProfileViewModel = viewModel { InstagramProfileViewModel() },
     onNavigateToPost   : (String) -> Unit = {},
     onShowEditProfile  : () -> Unit = {},
     onShowShareProfile : () -> Unit = {},
@@ -107,30 +107,39 @@ fun ProfileScreen(
     LaunchedEffect(Unit) {
         viewModel.singleEvent.collect { event ->
             when (event) {
-                is ProfileSingleEvent.NavigateToUser   -> onNavigateToUser(event.userId)
-                is ProfileSingleEvent.NavigateToPost   -> onNavigateToPost(event.postId)
-                is ProfileSingleEvent.ShowEditProfile  -> onShowEditProfile()
-                is ProfileSingleEvent.ShowShareProfile -> onShowShareProfile()
+                is InstagramProfileSingleEvent.NavigateToUser   -> onNavigateToUser(event.userId)
+                is InstagramProfileSingleEvent.NavigateToPost   -> onNavigateToPost(event.postId)
+                is InstagramProfileSingleEvent.ShowEditProfile  -> onShowEditProfile()
+                is InstagramProfileSingleEvent.ShowShareProfile -> onShowShareProfile()
             }
         }
     }
 
-    ProfileContent(
+    InstagramProfileContent(
         uiState  = uiState,
         onIntent = viewModel::onIntent,
     )
 }
 
 @Composable
-fun ProfileContent(
-    uiState  : ProfileUiState,
-    onIntent : (ProfileIntent) -> Unit,
+fun ProfileScreen(
+    viewModel          : InstagramProfileViewModel = viewModel { InstagramProfileViewModel() },
+    onNavigateToPost   : (String) -> Unit = {},
+    onShowEditProfile  : () -> Unit = {},
+    onShowShareProfile : () -> Unit = {},
+    onNavigateToUser   : (String) -> Unit = {},
+) = InstagramProfileScreen(viewModel, onNavigateToPost, onShowEditProfile, onShowShareProfile, onNavigateToUser)
+
+@Composable
+fun InstagramProfileContent(
+    uiState  : InstagramProfileUiState,
+    onIntent : (InstagramProfileIntent) -> Unit,
 ) {
     val listState = rememberLazyListState()
 
     LaunchedEffect(listState) {
         snapshotFlow { listState.firstVisibleItemScrollOffset }
-            .collect { offset -> onIntent(ProfileIntent.ScrollOffsetChanged(offset)) }
+            .collect { offset -> onIntent(InstagramProfileIntent.ScrollOffsetChanged(offset)) }
     }
 
     BoxWithConstraints(
@@ -138,7 +147,7 @@ fun ProfileContent(
             .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding(),
     ) {
-        ProfileBody(
+        InstagramProfileBody(
             uiState   = uiState,
             listState = listState,
             onIntent  = onIntent,
@@ -150,21 +159,21 @@ fun ProfileContent(
             exit    = fadeOut() + slideOutVertically(),
         ) {
             val username = (uiState.profileState as? UiState.Success)?.data?.username ?: ""
-            TopBar(
+            InstagramTopBar(
                 title      = username,
-                leftSpan1  = TopBarSpan(
+                leftSpan1  = InstagramTopBarSpan(
                     icon    = Icons.Default.Add,
-                    onPress = { onIntent(ProfileIntent.AddClicked) },
+                    onPress = { onIntent(InstagramProfileIntent.AddClicked) },
                     testTag = ProfileTestTags.TOPBAR_BTN_ADD,
                 ),
-                rightSpan1 = TopBarSpan(
+                rightSpan1 = InstagramTopBarSpan(
                     icon    = Icons.Default.AlternateEmail,
-                    onPress = { onIntent(ProfileIntent.MentionClicked) },
+                    onPress = { onIntent(InstagramProfileIntent.MentionClicked) },
                     testTag = ProfileTestTags.TOPBAR_BTN_MENTION,
                 ),
-                rightSpan2 = TopBarSpan(
+                rightSpan2 = InstagramTopBarSpan(
                     icon    = Icons.Default.MoreHoriz,
-                    onPress = { onIntent(ProfileIntent.MoreOptionsClicked) },
+                    onPress = { onIntent(InstagramProfileIntent.MoreOptionsClicked) },
                     testTag = ProfileTestTags.TOPBAR_BTN_MORE,
                 ),
                 modifier = Modifier
@@ -176,19 +185,19 @@ fun ProfileContent(
 }
 
 @Composable
-private fun ProfileBody(
-    uiState   : ProfileUiState,
+private fun InstagramProfileBody(
+    uiState   : InstagramProfileUiState,
     listState : LazyListState,
-    onIntent  : (ProfileIntent) -> Unit,
+    onIntent  : (InstagramProfileIntent) -> Unit,
 ) {
     val spacing = MaterialTheme.spacing
     val size    = MaterialTheme.size
 
     val tabs = remember {
         listOf(
-            TabItem("posts",  Icons.Outlined.GridOn,             "帖子"),
-            TabItem("reels",  Icons.Outlined.VideoLibrary,       "Reels"),
-            TabItem("tagged", Icons.AutoMirrored.Outlined.Label, "标记"),
+            InstagramTabItem("posts",  Icons.Outlined.GridOn,             "帖子"),
+            InstagramTabItem("reels",  Icons.Outlined.VideoLibrary,       "Reels"),
+            InstagramTabItem("tagged", Icons.AutoMirrored.Outlined.Label, "标记"),
         )
     }
 
@@ -211,7 +220,7 @@ private fun ProfileBody(
         }
     }
     LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) onIntent(ProfileIntent.LoadMore)
+        if (shouldLoadMore) onIntent(InstagramProfileIntent.LoadMore)
     }
 
     LazyColumn(
@@ -226,21 +235,21 @@ private fun ProfileBody(
         item(key = "profile_info") {
             val state = uiState.profileState
             if (state is UiState.Success) {
-                ProfileInfoSection(
+                InstagramProfileInfoSection(
                     avatarUrl        = state.data.avatarUrl,
                     username         = state.data.username,
                     postCount        = state.data.postCount,
                     followerCount    = state.data.followerCount,
                     followingCount   = state.data.followingCount,
                     signature        = state.data.signature,
-                    onAvatarClick    = { onIntent(ProfileIntent.AvatarClicked) },
-                    onPostClick      = { onIntent(ProfileIntent.PostCountClicked) },
-                    onFollowerClick  = { onIntent(ProfileIntent.FollowerClicked) },
-                    onFollowingClick = { onIntent(ProfileIntent.FollowingClicked) },
-                    onSignatureClick = { onIntent(ProfileIntent.SignatureClicked) },
+                    onAvatarClick    = { onIntent(InstagramProfileIntent.AvatarClicked) },
+                    onPostClick      = { onIntent(InstagramProfileIntent.PostCountClicked) },
+                    onFollowerClick  = { onIntent(InstagramProfileIntent.FollowerClicked) },
+                    onFollowingClick = { onIntent(InstagramProfileIntent.FollowingClicked) },
+                    onSignatureClick = { onIntent(InstagramProfileIntent.SignatureClicked) },
                 )
             } else {
-                ProfileInfoSection()
+                InstagramProfileInfoSection()
             }
         }
 
@@ -253,7 +262,7 @@ private fun ProfileBody(
                 verticalAlignment     = Alignment.CenterVertically,
             ) {
                 OutlinedButton(
-                    onClick  = { onIntent(ProfileIntent.EditProfileClicked) },
+                    onClick  = { onIntent(InstagramProfileIntent.EditProfileClicked) },
                     shape    = RoundedCornerShape(size.buttonRadius),
                     modifier = Modifier
                         .weight(1f)
@@ -266,7 +275,7 @@ private fun ProfileBody(
                     )
                 }
                 OutlinedButton(
-                    onClick  = { onIntent(ProfileIntent.ShareProfileClicked) },
+                    onClick  = { onIntent(InstagramProfileIntent.ShareProfileClicked) },
                     shape    = RoundedCornerShape(size.buttonRadius),
                     modifier = Modifier
                         .weight(1f)
@@ -279,7 +288,7 @@ private fun ProfileBody(
                     )
                 }
                 OutlinedButton(
-                    onClick        = { onIntent(ProfileIntent.ToggleDiscoverSection) },
+                    onClick        = { onIntent(InstagramProfileIntent.ToggleDiscoverSection) },
                     shape          = RoundedCornerShape(size.buttonRadius),
                     contentPadding = PaddingValues(spacing.xs),
                     modifier       = Modifier
@@ -317,7 +326,7 @@ private fun ProfileBody(
                         color    = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
                             .testTag(ProfileTestTags.DISCOVER_BTN_ALL)
-                            .clickable { onIntent(ProfileIntent.DiscoverAllClicked) },
+                            .clickable { onIntent(InstagramProfileIntent.DiscoverAllClicked) },
                     )
                 }
             }
@@ -330,19 +339,19 @@ private fun ProfileBody(
                         horizontalArrangement = Arrangement.spacedBy(spacing.sm),
                     ) {
                         items(items = state.data, key = { it.userId }) { user ->
-                            UserCard(
+                            InstagramUserCard(
                                 avatarUrl    = user.avatarUrl,
                                 username     = user.username,
                                 extraInfo    = user.extraInfo,
                                 modifier     = Modifier.testTag(
                                     ProfileTestTags.userCard(user.userId)
                                 ),
-                                onClick      = { onIntent(ProfileIntent.UserCardClicked(user.userId)) },
-                                onDismiss    = { onIntent(ProfileIntent.UserCardDismissed(user.userId)) },
+                                onClick      = { onIntent(InstagramProfileIntent.UserCardClicked(user.userId)) },
+                                onDismiss    = { onIntent(InstagramProfileIntent.UserCardDismissed(user.userId)) },
                                 dismissTestTag = ProfileTestTags.userCardDismiss(user.userId),
                                 bottomAction = {
                                     Button(
-                                        onClick  = { onIntent(ProfileIntent.UserCardClicked(user.userId)) },
+                                        onClick  = { onIntent(InstagramProfileIntent.UserCardClicked(user.userId)) },
                                         shape    = RoundedCornerShape(size.buttonRadius),
                                         colors   = ButtonDefaults.buttonColors(
                                             containerColor = MaterialTheme.colorScheme.primary,
@@ -366,10 +375,10 @@ private fun ProfileBody(
         }
 
         item(key = "tab_content") {
-            TabSwitchLayout(
+            InstagramTabSwitchLayout(
                 tabs          = tabs,
                 selectedTabId = uiState.selectedTabId,
-                onTabSelected = { id -> onIntent(ProfileIntent.TabSelected(id)) },
+                onTabSelected = { id -> onIntent(InstagramProfileIntent.TabSelected(id)) },
             ) { tabId ->
                 val section = when (tabId) {
                     "posts"  -> uiState.postsSection
@@ -378,13 +387,13 @@ private fun ProfileBody(
                     else     -> null
                 }
                 val data = (section as? UiState.Success)?.data
-                GridContent(
+                InstagramGridContent(
                     posts           = data?.posts ?: emptyList(),
                     isLoadingMore   = isLoadingMore,
                     hasMore         = hasMore,
-                    onLoadMore      = { onIntent(ProfileIntent.LoadMore) },
-                    onItemClick     = { id -> onIntent(ProfileIntent.PostClicked(id)) },
-                    onItemLongClick = { id -> onIntent(ProfileIntent.PostLongClicked(id)) },
+                    onLoadMore      = { onIntent(InstagramProfileIntent.LoadMore) },
+                    onItemClick     = { id -> onIntent(InstagramProfileIntent.PostClicked(id)) },
+                    onItemLongClick = { id -> onIntent(InstagramProfileIntent.PostLongClicked(id)) },
                     modifier        = Modifier
                         .padding(spacing.xs)
                         .height(520.dp),
@@ -418,10 +427,10 @@ private fun ProfileBody(
 
 @Preview
 @Composable
-fun ProfileContentPreview() {
+fun InstagramProfileContentPreview() {
     InstagramTheme {
-        ProfileContent(
-            uiState  = ProfileUiState(),
+        InstagramProfileContent(
+            uiState  = InstagramProfileUiState(),
             onIntent = {},
         )
     }

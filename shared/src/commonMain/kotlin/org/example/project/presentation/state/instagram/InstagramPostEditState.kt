@@ -1,13 +1,15 @@
-package org.example.project.presentation.state
+package org.example.project.presentation.state.instagram
 
 import io.github.vinceglb.filekit.PlatformFile
 
-enum class PostEditError {
+enum class InstagramPostEditError {
     TITLE_BODY_REQUIRED,
     PUBLISH_FAILED
 }
 
-data class PostEditState(
+typealias PostEditError = InstagramPostEditError
+
+data class InstagramPostEditState(
     val images: List<PlatformFile> = emptyList(),
     val title: String = "",
     val body: String = "",
@@ -19,3 +21,5 @@ data class PostEditState(
     val canPublish: Boolean
         get() = title.isNotBlank() && body.isNotBlank() && images.isNotEmpty()
 }
+
+typealias PostEditState = InstagramPostEditState

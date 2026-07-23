@@ -1,12 +1,12 @@
 /**
- * @File: Post.kt
- * @Package: org.example.project.domain.model
- * @Description: 通用帖子数据模型实体
- * @Date: 2026-07-20
+ * @File: InstagramPost.kt
+ * @Package: org.example.project.domain.model.instagram
+ * @Description: Instagram 模块帖子数据模型实体
+ * @Date: 2026-07-22
  */
-package org.example.project.domain.model
+package org.example.project.domain.model.instagram
 
-data class PostModel(
+data class InstagramPostModel(
     val id: String,
     val userId: String,
     val createdAt: Long,
@@ -17,16 +17,19 @@ data class PostModel(
     val contentId: String
 )
 
-sealed class PostContent {
-    abstract val title: String
+// 向后兼容/通用别名
+typealias PostModel = InstagramPostModel
 
+sealed class InstagramPostContent {
+    abstract val title: String
     abstract val id: String
+
     data class ImageTextContent(
         override val id: String,
         override val title: String,
         val body: String,
         val images: List<String>,
-    ) : PostContent()
+    ) : InstagramPostContent()
 
     data class VideoContent(
         override val id: String,
@@ -34,7 +37,7 @@ sealed class PostContent {
         val description: String,
         val videoUrl: String,
         val coverUrl: String,
-    ) : PostContent()
+    ) : InstagramPostContent()
 }
 
-
+typealias PostContent = InstagramPostContent

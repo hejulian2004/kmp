@@ -1,4 +1,4 @@
-package org.example.project.ui.components.profilescreen
+package org.example.project.ui.components.instagram
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -50,7 +50,7 @@ import org.example.project.ui.theme.spacing
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun UserCard(
+fun InstagramUserCard(
     avatarUrl   : String,
     username    : String,
     extraInfo   : String? = null,
@@ -58,7 +58,7 @@ fun UserCard(
     onClick     : (() -> Unit)? = null,
     bottomAction: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier,
-    dismissTestTag:String = "",
+    dismissTestTag: String = "",
 ) {
     val spacing = MaterialTheme.spacing
     val size    = MaterialTheme.size
@@ -71,7 +71,7 @@ fun UserCard(
     )
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .width(size.cardWidth)
             .wrapContentHeight()
             .scale(scale)
@@ -169,10 +169,22 @@ fun UserCard(
     }
 }
 
+@Composable
+fun UserCard(
+    avatarUrl   : String,
+    username    : String,
+    extraInfo   : String? = null,
+    onDismiss   : (() -> Unit)? = null,
+    onClick     : (() -> Unit)? = null,
+    bottomAction: @Composable (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    dismissTestTag: String = "",
+) = InstagramUserCard(avatarUrl, username, extraInfo, onDismiss, onClick, bottomAction, modifier, dismissTestTag)
+
 @Preview(showBackground = true)
 @Composable
-fun UserCardPreview() {
-    UserCard(
+fun InstagramUserCardPreview() {
+    InstagramUserCard(
         avatarUrl    = "https://picsum.photos/200",
         username     = "Chuckles",
         extraInfo    = "为你推荐",

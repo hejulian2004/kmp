@@ -1,12 +1,10 @@
-package org.example.project.ui.components.profilescreen
+package org.example.project.ui.components.instagram
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -14,18 +12,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 
-data class TabItem(
+data class InstagramTabItem(
     val id: String,
     val icon: ImageVector,
     val contentDescription: String? = null,
 )
 
+typealias TabItem = InstagramTabItem
+
 @Composable
-fun TabSwitchLayout(
-    tabs: List<TabItem>,
+fun InstagramTabSwitchLayout(
+    tabs: List<InstagramTabItem>,
     selectedTabId: String,
     onTabSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -65,8 +63,17 @@ fun TabSwitchLayout(
 }
 
 @Composable
-fun ContentTabBar(
-    tabs: List<TabItem>,
+fun TabSwitchLayout(
+    tabs: List<InstagramTabItem>,
+    selectedTabId: String,
+    onTabSelected: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable (tabId: String) -> Unit
+) = InstagramTabSwitchLayout(tabs, selectedTabId, onTabSelected, modifier, content)
+
+@Composable
+fun InstagramContentTabBar(
+    tabs: List<InstagramTabItem>,
     selectedTabId: String,
     pagerState: androidx.compose.foundation.pager.PagerState,
     onTabSelected: (String) -> Unit,
@@ -97,7 +104,6 @@ fun ContentTabBar(
             }
         }
 
-        // 指示器
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
@@ -119,3 +125,12 @@ fun ContentTabBar(
         }
     }
 }
+
+@Composable
+fun ContentTabBar(
+    tabs: List<InstagramTabItem>,
+    selectedTabId: String,
+    pagerState: androidx.compose.foundation.pager.PagerState,
+    onTabSelected: (String) -> Unit,
+    modifier: Modifier = Modifier
+) = InstagramContentTabBar(tabs, selectedTabId, pagerState, onTabSelected, modifier)

@@ -27,7 +27,7 @@ import org.example.project.ui.theme.InstagramTheme
 import org.example.project.ui.theme.InstagramTypography
 
 import kotlinproject.composeapp.generated.resources.*
-import org.example.project.navigation.Screen
+import org.example.project.navigation.instagram.InstagramScreen
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -56,7 +56,7 @@ fun PostPickerContent(
                 label = stringResource(Res.string.post_option_image),
                 onClick = {
                     onDismiss()
-                    navController.navigate(Screen.ImagePickerScreen.route)
+                    navController.navigate(InstagramScreen.ImagePickerScreen.route)
                 }
             )
             PostOption(

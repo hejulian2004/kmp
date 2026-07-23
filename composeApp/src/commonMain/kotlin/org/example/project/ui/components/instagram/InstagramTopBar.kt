@@ -1,6 +1,5 @@
-package org.example.project.ui.components.profilescreen
+package org.example.project.ui.components.instagram
 
-import androidx.compose.runtime.Composable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
@@ -23,6 +22,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,7 +42,7 @@ import org.example.project.ui.theme.size
 import org.example.project.ui.theme.spacing
 import org.jetbrains.compose.resources.stringResource
 
-data class TopBarSpan(
+data class InstagramTopBarSpan(
     val icon: ImageVector? = null,
     val contentDescription: String = "",
     val alignment: Alignment = Alignment.Center,
@@ -50,13 +50,15 @@ data class TopBarSpan(
     val testTag: String = ""
 )
 
+typealias TopBarSpan = InstagramTopBarSpan
+
 @Composable
-fun TopBar(
+fun InstagramTopBar(
     title: String = "Title",
-    leftSpan1: TopBarSpan = TopBarSpan(),
-    leftSpan2: TopBarSpan = TopBarSpan(),
-    rightSpan1: TopBarSpan = TopBarSpan(),
-    rightSpan2: TopBarSpan = TopBarSpan(),
+    leftSpan1: InstagramTopBarSpan = InstagramTopBarSpan(),
+    leftSpan2: InstagramTopBarSpan = InstagramTopBarSpan(),
+    rightSpan1: InstagramTopBarSpan = InstagramTopBarSpan(),
+    rightSpan2: InstagramTopBarSpan = InstagramTopBarSpan(),
     titleClickable: Boolean = true,
     onTitlePress: (isExpanded: Boolean) -> Unit = {},
     modifier: Modifier = Modifier
@@ -95,7 +97,19 @@ fun TopBar(
 }
 
 @Composable
-private fun SpanCell(span: TopBarSpan, modifier: Modifier = Modifier) {
+fun TopBar(
+    title: String = "Title",
+    leftSpan1: InstagramTopBarSpan = InstagramTopBarSpan(),
+    leftSpan2: InstagramTopBarSpan = InstagramTopBarSpan(),
+    rightSpan1: InstagramTopBarSpan = InstagramTopBarSpan(),
+    rightSpan2: InstagramTopBarSpan = InstagramTopBarSpan(),
+    titleClickable: Boolean = true,
+    onTitlePress: (isExpanded: Boolean) -> Unit = {},
+    modifier: Modifier = Modifier
+) = InstagramTopBar(title, leftSpan1, leftSpan2, rightSpan1, rightSpan2, titleClickable, onTitlePress, modifier)
+
+@Composable
+private fun SpanCell(span: InstagramTopBarSpan, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier.height(MaterialTheme.size.avatarMd),
         contentAlignment = span.alignment
@@ -186,28 +200,26 @@ private fun TitleSlot(
     }
 }
 
-
 @Preview
 @Composable
-fun TopBarPreview() {
-    TopBar(
-        leftSpan1 = TopBarSpan(
+fun InstagramTopBarPreview() {
+    InstagramTopBar(
+        leftSpan1 = InstagramTopBarSpan(
             icon = Icons.AutoMirrored.Rounded.ArrowBackIos,
             alignment = Alignment.CenterStart,
             onPress = { }
         ),
-        leftSpan2 = TopBarSpan(),
-        rightSpan1 = TopBarSpan(
+        leftSpan2 = InstagramTopBarSpan(),
+        rightSpan1 = InstagramTopBarSpan(
             icon = Icons.Rounded.Search,
             alignment = Alignment.Center,
-            onPress = {  }
+            onPress = { }
         ),
-        rightSpan2 = TopBarSpan(
+        rightSpan2 = InstagramTopBarSpan(
             icon = Icons.Rounded.MoreVert,
             alignment = Alignment.CenterEnd,
-            onPress = {  }
+            onPress = { }
         ),
-        onTitlePress = { isExpanded ->
-        }
+        onTitlePress = { isExpanded -> }
     )
 }

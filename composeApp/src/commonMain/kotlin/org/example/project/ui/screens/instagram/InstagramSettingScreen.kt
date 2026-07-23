@@ -1,4 +1,4 @@
-package org.example.project.ui.screens
+package org.example.project.ui.screens.instagram
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,12 +7,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import org.example.project.navigation.Screen
-
 import kotlinproject.composeapp.generated.resources.Res
 import kotlinproject.composeapp.generated.resources.setting_content
 import kotlinproject.composeapp.generated.resources.setting_title
@@ -20,7 +17,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingScreen(
+fun InstagramSettingScreen(
     navController: NavController
 ) {
     Scaffold(
@@ -50,7 +47,10 @@ fun SettingScreen(
 }
 
 @Composable
+fun SettingScreen(navController: NavController) = InstagramSettingScreen(navController)
+
+@Composable
 @Preview(showBackground = true)
-fun SettingScreenPreview(){
-    SettingScreen(rememberNavController())
+fun InstagramSettingScreenPreview() {
+    InstagramSettingScreen(rememberNavController())
 }

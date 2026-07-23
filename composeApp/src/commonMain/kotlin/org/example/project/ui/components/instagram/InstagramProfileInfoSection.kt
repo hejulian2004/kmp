@@ -1,4 +1,4 @@
-package org.example.project.ui.components.profilescreen
+package org.example.project.ui.components.instagram
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -29,7 +29,7 @@ import org.example.project.ui.theme.spacing
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun ProfileInfoSection(
+fun InstagramProfileInfoSection(
     avatarUrl: String = "",
     username: String = "",
     postCount: String = "0",
@@ -76,19 +76,19 @@ fun ProfileInfoSection(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.lg)
                 ) {
-                    StatItem(
+                    InstagramStatItem(
                         modifier = Modifier.weight(1f),
                         count = postCount,
                         label = stringResource(Res.string.stat_posts),
                         onClick = onPostClick
                     )
-                    StatItem(
+                    InstagramStatItem(
                         modifier = Modifier.weight(1f),
                         count = followerCount,
                         label = stringResource(Res.string.stat_followers),
                         onClick = onFollowerClick
                     )
-                    StatItem(
+                    InstagramStatItem(
                         modifier = Modifier.weight(1f),
                         count = followingCount,
                         label = stringResource(Res.string.stat_following),
@@ -98,7 +98,7 @@ fun ProfileInfoSection(
             }
         }
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.sm))
-        if(signature.isBlank()){
+        if (signature.isBlank()) {
             Text(
                 text = stringResource(Res.string.add_signature),
                 style = MaterialTheme.typography.bodyMedium,
@@ -111,7 +111,7 @@ fun ProfileInfoSection(
                 modifier = Modifier.clickable { onSignatureClick() },
                 color = MaterialTheme.colorScheme.primary
             )
-        } else{
+        } else {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -139,7 +139,22 @@ fun ProfileInfoSection(
 }
 
 @Composable
-fun StatItem(
+fun ProfileInfoSection(
+    avatarUrl: String = "",
+    username: String = "",
+    postCount: String = "0",
+    followerCount: String = "0",
+    followingCount: String = "0",
+    signature: String = "",
+    onAvatarClick: () -> Unit = {},
+    onSignatureClick: () -> Unit = {},
+    onPostClick: () -> Unit = {},
+    onFollowerClick: () -> Unit = {},
+    onFollowingClick: () -> Unit = {},
+) = InstagramProfileInfoSection(avatarUrl, username, postCount, followerCount, followingCount, signature, onAvatarClick, onSignatureClick, onPostClick, onFollowerClick, onFollowingClick)
+
+@Composable
+fun InstagramStatItem(
     count: String,
     label: String,
     onClick: (() -> Unit)? = null,
@@ -167,9 +182,16 @@ fun StatItem(
     }
 }
 
+@Composable
+fun StatItem(
+    count: String,
+    label: String,
+    onClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier
+) = InstagramStatItem(count, label, onClick, modifier)
 
 @Preview
 @Composable
-fun ProfileInfoSectionPreview(){
-    ProfileInfoSection()
+fun InstagramProfileInfoSectionPreview() {
+    InstagramProfileInfoSection()
 }

@@ -1,4 +1,4 @@
-package org.example.project.ui.components.profilescreen.Content
+package org.example.project.ui.components.instagram.content
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
@@ -15,10 +15,10 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import org.example.project.domain.model.ContentThumbnailData
+import org.example.project.domain.model.instagram.ContentThumbnailData
 
 @Composable
-fun GridContent(
+fun InstagramGridContent(
     modifier: Modifier = Modifier,
     posts: List<ContentThumbnailData> = emptyList(),
     isLoadingMore: Boolean = false,
@@ -64,7 +64,7 @@ fun GridContent(
             items = posts,
             key = { it.id },
         ) { post ->
-            ContentThumbnail(
+            InstagramContentThumbnail(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f),
@@ -86,6 +86,20 @@ fun GridContent(
 }
 
 @Composable
+fun GridContent(
+    modifier: Modifier = Modifier,
+    posts: List<ContentThumbnailData> = emptyList(),
+    isLoadingMore: Boolean = false,
+    hasMore: Boolean = true,
+    minItemWidth: Dp = 100.dp,
+    itemSpacing: Dp = 2.dp,
+    emptyContent: @Composable () -> Unit = {},
+    onLoadMore: () -> Unit = {},
+    onItemClick: (id: String) -> Unit = {},
+    onItemLongClick: (id: String) -> Unit = {},
+) = InstagramGridContent(modifier, posts, isLoadingMore, hasMore, minItemWidth, itemSpacing, emptyContent, onLoadMore, onItemClick, onItemLongClick)
+
+@Composable
 private fun LoadingFooter(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
@@ -102,7 +116,7 @@ private fun LoadingFooter(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun PostEmptyState(
+fun InstagramPostEmptyState(
     modifier: Modifier = Modifier,
     title: String = "发布你的第一个帖子",
     subtitle: String = "让这个空间充满爱。",
@@ -145,7 +159,16 @@ fun PostEmptyState(
 }
 
 @Composable
-fun ReelsEmptyState(
+fun PostEmptyState(
+    modifier: Modifier = Modifier,
+    title: String = "发布你的第一个帖子",
+    subtitle: String = "让这个空间充满爱。",
+    actionLabel: String = "创建",
+    onAction: () -> Unit = {},
+) = InstagramPostEmptyState(modifier, title, subtitle, actionLabel, onAction)
+
+@Composable
+fun InstagramReelsEmptyState(
     modifier: Modifier = Modifier,
     title: String = "与世界分享精彩时刻",
     actionLabel: String = "创建首条Reels",
@@ -184,7 +207,15 @@ fun ReelsEmptyState(
 }
 
 @Composable
-fun TaggedEmptyState(
+fun ReelsEmptyState(
+    modifier: Modifier = Modifier,
+    title: String = "与世界分享精彩时刻",
+    actionLabel: String = "创建首条Reels",
+    onAction: () -> Unit = {},
+) = InstagramReelsEmptyState(modifier, title, actionLabel, onAction)
+
+@Composable
+fun InstagramTaggedEmptyState(
     modifier: Modifier = Modifier,
     title: String = "与世界分享精彩时刻",
     subtitle: String = "标记你的照片和视频都展示在这里",
@@ -213,9 +244,15 @@ fun TaggedEmptyState(
     }
 }
 
+@Composable
+fun TaggedEmptyState(
+    modifier: Modifier = Modifier,
+    title: String = "与世界分享精彩时刻",
+    subtitle: String = "标记你的照片和视频都展示在这里",
+) = InstagramTaggedEmptyState(modifier, title, subtitle)
 
 @Preview
 @Composable
-fun GridContentPreview(){
-    GridContent()
+fun InstagramGridContentPreview() {
+    InstagramGridContent()
 }

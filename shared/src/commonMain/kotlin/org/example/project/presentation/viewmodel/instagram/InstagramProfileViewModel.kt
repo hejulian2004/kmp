@@ -1,4 +1,4 @@
-package org.example.project.presentation.viewmodel
+package org.example.project.presentation.viewmodel.instagram
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,66 +11,66 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.example.project.domain.model.ContentThumbnailData
-import org.example.project.domain.model.DiscoverUser
-import org.example.project.domain.model.PostType
-import org.example.project.domain.model.ProfileUser
-import org.example.project.presentation.state.PostsSection
-import org.example.project.presentation.state.ProfileUiState
+import org.example.project.domain.model.instagram.ContentThumbnailData
+import org.example.project.domain.model.instagram.DiscoverUser
+import org.example.project.domain.model.instagram.PostType
+import org.example.project.domain.model.instagram.ProfileUser
 import org.example.project.presentation.state.UiState
+import org.example.project.presentation.state.instagram.InstagramProfileUiState
+import org.example.project.presentation.state.instagram.PostsSection
 
-class ProfileViewModel : ViewModel() {
+class InstagramProfileViewModel : ViewModel() {
 
     // StateFlow 持有当前页面状态
-    private val _uiState = MutableStateFlow(ProfileUiState())
-    val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(InstagramProfileUiState())
+    val uiState: StateFlow<InstagramProfileUiState> = _uiState.asStateFlow()
 
     // SingleEvent 用于一次性事件
-    private val _singleEvent = MutableSharedFlow<ProfileSingleEvent>()
-    val singleEvent: SharedFlow<ProfileSingleEvent> = _singleEvent.asSharedFlow()
+    private val _singleEvent = MutableSharedFlow<InstagramProfileSingleEvent>()
+    val singleEvent: SharedFlow<InstagramProfileSingleEvent> = _singleEvent.asSharedFlow()
 
     @OptIn(ExperimentalStdlibApi::class)
-    fun onIntent(intent: ProfileIntent) {
+    fun onIntent(intent: InstagramProfileIntent) {
         when (intent) {
-            is ProfileIntent.AddClicked -> {
-                viewModelScope.launch { _singleEvent.emit(ProfileSingleEvent.ShowEditProfile) }
+            is InstagramProfileIntent.AddClicked -> {
+                viewModelScope.launch { _singleEvent.emit(InstagramProfileSingleEvent.ShowEditProfile) }
             }
-            is ProfileIntent.MentionClicked -> {
+            is InstagramProfileIntent.MentionClicked -> {
                 // 处理消息入口
             }
-            is ProfileIntent.MoreOptionsClicked -> {
+            is InstagramProfileIntent.MoreOptionsClicked -> {
                 // 弹出更多操作菜单
             }
-            is ProfileIntent.TitleToggled -> {
+            is InstagramProfileIntent.TitleToggled -> {
                 _uiState.update { it.copy(isTitleExpanded = intent.isExpanded) }
             }
 
-            is ProfileIntent.AvatarClicked -> {
+            is InstagramProfileIntent.AvatarClicked -> {
                 // 触发头像查看/编辑
             }
-            is ProfileIntent.PostCountClicked -> {
-                viewModelScope.launch { _singleEvent.emit(ProfileSingleEvent.NavigateToPost("some_post_id")) }
+            is InstagramProfileIntent.PostCountClicked -> {
+                viewModelScope.launch { _singleEvent.emit(InstagramProfileSingleEvent.NavigateToPost("some_post_id")) }
             }
-            is ProfileIntent.FollowerClicked,
-            is ProfileIntent.FollowingClicked -> {
+            is InstagramProfileIntent.FollowerClicked,
+            is InstagramProfileIntent.FollowingClicked -> {
                 // 可以触发导航
             }
 
-            is ProfileIntent.EditProfileClicked -> {
-                viewModelScope.launch { _singleEvent.emit(ProfileSingleEvent.ShowEditProfile) }
+            is InstagramProfileIntent.EditProfileClicked -> {
+                viewModelScope.launch { _singleEvent.emit(InstagramProfileSingleEvent.ShowEditProfile) }
             }
-            is ProfileIntent.ShareProfileClicked -> {
-                viewModelScope.launch { _singleEvent.emit(ProfileSingleEvent.ShowShareProfile) }
+            is InstagramProfileIntent.ShareProfileClicked -> {
+                viewModelScope.launch { _singleEvent.emit(InstagramProfileSingleEvent.ShowShareProfile) }
             }
-            is ProfileIntent.ToggleDiscoverSection -> {
+            is InstagramProfileIntent.ToggleDiscoverSection -> {
                 _uiState.update { it.copy(isDiscoverVisible = !it.isDiscoverVisible) }
             }
-            is ProfileIntent.DiscoverAllClicked -> {
+            is InstagramProfileIntent.DiscoverAllClicked -> {
             }
-            is ProfileIntent.UserCardClicked -> {
-                viewModelScope.launch { _singleEvent.emit(ProfileSingleEvent.NavigateToUser(intent.userId)) }
+            is InstagramProfileIntent.UserCardClicked -> {
+                viewModelScope.launch { _singleEvent.emit(InstagramProfileSingleEvent.NavigateToUser(intent.userId)) }
             }
-            is ProfileIntent.UserCardDismissed -> {
+            is InstagramProfileIntent.UserCardDismissed -> {
                 _uiState.update { state ->
                     val updated = (state.discoverState as? UiState.Success)?.data.orEmpty()
                         .filterNot { it.userId == intent.userId }
@@ -78,13 +78,13 @@ class ProfileViewModel : ViewModel() {
                 }
             }
 
-            is ProfileIntent.TabSelected -> {
+            is InstagramProfileIntent.TabSelected -> {
                 _uiState.update { it.copy(selectedTabId = intent.tabId) }
             }
-            is ProfileIntent.PostClicked -> {
-                viewModelScope.launch { _singleEvent.emit(ProfileSingleEvent.NavigateToPost(intent.id)) }
+            is InstagramProfileIntent.PostClicked -> {
+                viewModelScope.launch { _singleEvent.emit(InstagramProfileSingleEvent.NavigateToPost(intent.id)) }
             }
-            is ProfileIntent.LoadMore -> {
+            is InstagramProfileIntent.LoadMore -> {
                 val currentState = _uiState.value
                 val currentSection = when (currentState.selectedTabId) {
                     "posts"  -> currentState.postsSection
@@ -108,15 +108,15 @@ class ProfileViewModel : ViewModel() {
                 }
             }
 
-            is ProfileIntent.ScrollOffsetChanged -> {
+            is InstagramProfileIntent.ScrollOffsetChanged -> {
                 val isTopBarVisible = intent.scrollOffset < 200
                 _uiState.update { it.copy(isTopBarVisible = isTopBarVisible) }
             }
 
-            is ProfileIntent.CreatePostClicked -> {
-                viewModelScope.launch { _singleEvent.emit(ProfileSingleEvent.NavigateToPost("new")) }
+            is InstagramProfileIntent.CreatePostClicked -> {
+                viewModelScope.launch { _singleEvent.emit(InstagramProfileSingleEvent.NavigateToPost("new")) }
             }
-            is ProfileIntent.CreateReelClicked -> {
+            is InstagramProfileIntent.CreateReelClicked -> {
 
             }
             else -> {}
@@ -174,103 +174,105 @@ class ProfileViewModel : ViewModel() {
     }
 }
 
-sealed interface ProfileIntent {
+typealias ProfileViewModel = InstagramProfileViewModel
+
+sealed interface InstagramProfileIntent {
 
     // ==================================================
     // TopBar
     // ==================================================
 
     /** 左侧 "+" 按钮 */
-    data object AddClicked : ProfileIntent
+    data object AddClicked : InstagramProfileIntent
 
     /** 标题（userId）点击，驱动下拉展开/收起 */
-    data class TitleToggled(val isExpanded: Boolean) : ProfileIntent
+    data class TitleToggled(val isExpanded: Boolean) : InstagramProfileIntent
 
     /** 右侧 "@" 按钮（提及 / 消息入口） */
-    data object MentionClicked : ProfileIntent
+    data object MentionClicked : InstagramProfileIntent
 
     /** 右侧 "—" 按钮（更多选项） */
-    data object MoreOptionsClicked : ProfileIntent
+    data object MoreOptionsClicked : InstagramProfileIntent
 
     // ==================================================
     // ProfileInfoSection
     // ==================================================
 
     /** 头像点击（查看大图 / 修改头像） */
-    data object AvatarClicked : ProfileIntent
+    data object AvatarClicked : InstagramProfileIntent
 
     /** 帖子数点击，导航至帖子列表 */
-    data object PostCountClicked : ProfileIntent
+    data object PostCountClicked : InstagramProfileIntent
 
     /** 粉丝数点击，导航至粉丝列表 */
-    data object FollowerClicked : ProfileIntent
+    data object FollowerClicked : InstagramProfileIntent
 
     /** 关注数点击，导航至关注列表 */
-    data object FollowingClicked : ProfileIntent
+    data object FollowingClicked : InstagramProfileIntent
 
     /** 点击已有签名（进入编辑） */
-    data object SignatureClicked : ProfileIntent
+    data object SignatureClicked : InstagramProfileIntent
 
     /** 点击"添加兴趣" */
-    data object AddInterestClicked : ProfileIntent
+    data object AddInterestClicked : InstagramProfileIntent
 
     // ==================================================
     // 操作按钮行（编辑主页 / 分享主页 / 隐藏推荐）
     // ==================================================
 
     /** 编辑主页按钮 */
-    data object EditProfileClicked : ProfileIntent
+    data object EditProfileClicked : InstagramProfileIntent
 
     /** 分享主页按钮 */
-    data object ShareProfileClicked : ProfileIntent
+    data object ShareProfileClicked : InstagramProfileIntent
 
     /**
      * 切换推荐用户区域的显示状态。
      */
-    data object ToggleDiscoverSection : ProfileIntent
+    data object ToggleDiscoverSection : InstagramProfileIntent
 
     // ==================================================
     // 发现用户区域
     // ==================================================
 
     /** "全部" 入口，导航至完整推荐列表页 */
-    data object DiscoverAllClicked : ProfileIntent
+    data object DiscoverAllClicked : InstagramProfileIntent
 
     /** 点击某张 UserCard，导航至该用户主页 */
-    data class UserCardClicked(val userId: String) : ProfileIntent
+    data class UserCardClicked(val userId: String) : InstagramProfileIntent
 
     /** 关闭（X）某张 UserCard，将该用户从推荐列表移除 */
-    data class UserCardDismissed(val userId: String) : ProfileIntent
+    data class UserCardDismissed(val userId: String) : InstagramProfileIntent
 
     // ==================================================
     // Tab 切换
     // ==================================================
 
     /** 用户切换 Tab（帖子 / Reels / 标记） */
-    data class TabSelected(val tabId: String) : ProfileIntent
+    data class TabSelected(val tabId: String) : InstagramProfileIntent
 
     // ==================================================
     // GridContent — 内容列表
     // ==================================================
 
     /** 点击某个内容缩略图 */
-    data class PostClicked(val id: String) : ProfileIntent
+    data class PostClicked(val id: String) : InstagramProfileIntent
 
     /** 长按某个内容缩略图 */
-    data class PostLongClicked(val id: String) : ProfileIntent
+    data class PostLongClicked(val id: String) : InstagramProfileIntent
 
     /** 列表滚动到底部，触发分页加载 */
-    data object LoadMore : ProfileIntent
+    data object LoadMore : InstagramProfileIntent
 
     // ==================================================
     // Empty State CTA
     // ==================================================
 
     /** PostEmptyState — "创建" 按钮 */
-    data object CreatePostClicked : ProfileIntent
+    data object CreatePostClicked : InstagramProfileIntent
 
     /** ReelsEmptyState — "创建首条 Reels" 按钮 */
-    data object CreateReelClicked : ProfileIntent
+    data object CreateReelClicked : InstagramProfileIntent
 
     // ==================================================
     // 页面级滚动行为（LazyColumn 驱动 TopBar 显隐）
@@ -279,15 +281,19 @@ sealed interface ProfileIntent {
     /**
      * 滚动偏移变化时由 UI 上报，ViewModel 根据阈值决定是否更新
      */
-    data class ScrollOffsetChanged(val scrollOffset: Int) : ProfileIntent
+    data class ScrollOffsetChanged(val scrollOffset: Int) : InstagramProfileIntent
 }
 
-sealed class ProfileSingleEvent {
-    data class NavigateToUser(val userId: String) : ProfileSingleEvent()
-    data class NavigateToPost(val postId: String) : ProfileSingleEvent()
-    object ShowEditProfile : ProfileSingleEvent()
-    object ShowShareProfile : ProfileSingleEvent()
+typealias ProfileIntent = InstagramProfileIntent
+
+sealed class InstagramProfileSingleEvent {
+    data class NavigateToUser(val userId: String) : InstagramProfileSingleEvent()
+    data class NavigateToPost(val postId: String) : InstagramProfileSingleEvent()
+    data object ShowEditProfile : InstagramProfileSingleEvent()
+    data object ShowShareProfile : InstagramProfileSingleEvent()
 }
+
+typealias ProfileSingleEvent = InstagramProfileSingleEvent
 
 fun generateMockPosts(count: Int = 12): List<ContentThumbnailData> {
     val types = PostType.entries
@@ -313,4 +319,3 @@ fun generateMockRecommendedUsers(count: Int = 12): List<DiscoverUser> {
         )
     }
 }
-
