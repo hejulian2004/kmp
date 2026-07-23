@@ -61,6 +61,8 @@ import coil3.compose.AsyncImage
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import org.example.project.ui.utils.CameraMediaType
+import org.example.project.ui.utils.rememberCameraPickerLauncher
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.launch
@@ -148,10 +150,9 @@ fun PublishScreen(
         }
     )
 
-    // 拍摄照片Launcher (FileKit 0.13.0)
-    val takePictureLauncher = rememberFilePickerLauncher(
-        type = FileKitType.Image,
-        mode = FileKitMode.Single,
+    // 拍摄照片Launcher
+    val takePictureLauncher = rememberCameraPickerLauncher(
+        type = CameraMediaType.Photo,
         onResult = { file ->
             file?.let {
                 val filePath = it.path
@@ -161,10 +162,9 @@ fun PublishScreen(
         }
     )
 
-    // 拍摄视频Launcher (FileKit 0.13.0)
-    val takeVideoLauncher = rememberFilePickerLauncher(
-        type = FileKitType.Video,
-        mode = FileKitMode.Single,
+    // 拍摄视频Launcher
+    val takeVideoLauncher = rememberCameraPickerLauncher(
+        type = CameraMediaType.Video,
         onResult = { file ->
             file?.let {
                 val filePath = it.path

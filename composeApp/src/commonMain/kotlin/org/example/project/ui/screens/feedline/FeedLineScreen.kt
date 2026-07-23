@@ -45,6 +45,8 @@ import androidx.compose.ui.unit.dp
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import org.example.project.ui.utils.CameraMediaType
+import org.example.project.ui.utils.rememberCameraPickerLauncher
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.Job
@@ -138,9 +140,8 @@ fun FeedScreen(
         }
     )
 
-    val takePictureLauncher = rememberFilePickerLauncher(
-        type = FileKitType.Image,
-        mode = FileKitMode.Single,
+    val takePictureLauncher = rememberCameraPickerLauncher(
+        type = CameraMediaType.Photo,
         onResult = { file ->
             file?.let {
                 val filePath = it.path
@@ -151,9 +152,8 @@ fun FeedScreen(
         }
     )
 
-    val takeVideoLauncher = rememberFilePickerLauncher(
-        type = FileKitType.Video,
-        mode = FileKitMode.Single,
+    val takeVideoLauncher = rememberCameraPickerLauncher(
+        type = CameraMediaType.Video,
         onResult = { file ->
             file?.let {
                 val filePath = it.path
