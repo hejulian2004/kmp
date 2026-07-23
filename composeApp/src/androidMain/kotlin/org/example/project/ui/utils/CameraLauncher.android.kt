@@ -7,14 +7,9 @@
  */
 package org.example.project.ui.utils
 
-import android.app.Activity
-import android.content.ClipData
-import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,24 +20,6 @@ import androidx.core.content.FileProvider
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.compose.rememberCameraPickerLauncher as rememberFileKitCameraPickerLauncher
 import java.io.File
-import java.io.FileOutputStream
-
-/**
- * 视频录制的 ActivityResult 契约，兼容更多厂商相机与 URI 授权
- */
-private class CaptureVideoContract : ActivityResultContract<Uri, Intent?>() {
-    override fun createIntent(context: Context, input: Uri): Intent {
-        val intent = Intent(MediaStore.ACTION_VIDEO_CAPTURE)
-            .putExtra(MediaStore.EXTRA_OUTPUT, input)
-            .addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        intent.clipData = ClipData.newUri(context.contentResolver, "Video", input)
-        return intent
-    }
-
-    override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
-        return if (resultCode == Activity.RESULT_OK) intent ?: Intent() else null
-    }
-}
 
 /**
  * Android 平台相机的组合式实现
@@ -62,32 +39,14 @@ actual fun rememberCameraPickerLauncher(
         var currentVideoFile by remember { mutableStateOf<File?>(null) }
 
         val launcher = rememberLauncherForActivityResult(
-            contract = CaptureVideoContract()
-        ) { resultIntent ->
+            contract = ActivityResultContracts.CaptureVideo()
+        ) { success ->
             val file = currentVideoFile
-            if (resultIntent != null && file != null) {
-                if (file.exists() && file.length() > 0) {
-                    onResult(PlatformFile(file))
-                    return@rememberLauncherForActivityResult
-                }
-                // 兼容部分系统相机返回 Intent.data URI 的情况
-                val returnUri = resultIntent.data
-                if (returnUri != null) {
-                    try {
-                        context.contentResolver.openInputStream(returnUri)?.use { input ->
-                            FileOutputStream(file).use { output ->
-                                input.copyTo(output)
-                            }
-                        }
-                        if (file.exists() && file.length() > 0) {
-                            onResult(PlatformFile(file))
-                            return@rememberLauncherForActivityResult
-                        }
-                    } catch (_: Exception) {
-                    }
-                }
+            if (success && file != null && file.exists() && file.length() > 0) {
+                onResult(PlatformFile(file))
+            } else {
+                onResult(null)
             }
-            onResult(null)
         }
 
         remember(launcher, context) {
@@ -97,11 +56,10 @@ actual fun rememberCameraPickerLauncher(
                     val videoFile = File(videoDir, "video_${System.currentTimeMillis()}.mp4")
                     currentVideoFile = videoFile
 
-                    val authority = "${context.packageName}.FileKitFileProvider"
+                    val authority = "${context.packageName}.filekit.fileprovider"
                     val uri: Uri = FileProvider.getUriForFile(context, authority, videoFile)
                     launcher.launch(uri)
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                } catch (_: Exception) {
                     onResult(null)
                 }
             }

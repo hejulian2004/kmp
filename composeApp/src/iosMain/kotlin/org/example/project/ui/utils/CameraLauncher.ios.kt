@@ -8,11 +8,7 @@
 package org.example.project.ui.utils
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.compose.rememberCameraPickerLauncher as rememberFileKitCameraPickerLauncher
 import platform.Foundation.NSURL
@@ -61,22 +57,15 @@ actual fun rememberCameraPickerLauncher(
             CameraLauncherWrapper { launcher.launch() }
         }
     } else {
-        val updatedOnResult by rememberUpdatedState(onResult)
-        var activeDelegate by remember { mutableStateOf<VideoCameraControllerDelegate?>(null) }
-
         remember {
             CameraLauncherWrapper {
                 val delegate = VideoCameraControllerDelegate { url ->
-                    activeDelegate = null
                     if (url != null) {
-                        updatedOnResult(PlatformFile(url))
+                        onResult(PlatformFile(url))
                     } else {
-                        updatedOnResult(null)
+                        onResult(null)
                     }
                 }
-                // 保持强引用，防止 Kotlin/Native GC 在录制期间回收 weak 代理
-                activeDelegate = delegate
-
                 val picker = UIImagePickerController()
                 picker.sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
                 picker.mediaTypes = listOf("public.movie")
