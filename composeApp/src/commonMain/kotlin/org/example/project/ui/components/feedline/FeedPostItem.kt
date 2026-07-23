@@ -157,7 +157,7 @@ fun FeedPostItem(
                         shape = RoundedCornerShape(4.dp)
                     )
             ) {
-                FeedLikedUserAvatarBar(
+                FeedLikedUserNameBar(
                     likedUserList = post.likedUsers,
                     onUserClick = { user ->
                         onLikedAvatarClick(user)
