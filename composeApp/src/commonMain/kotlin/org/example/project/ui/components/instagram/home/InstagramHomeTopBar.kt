@@ -70,21 +70,19 @@ fun InstagramHomeTopBar(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background)
-            .statusBarsPadding()
-            .height(54.dp),
+        modifier = modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.background,
         shadowElevation = 0.5.dp
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .statusBarsPadding()
+                .height(54.dp)
                 .padding(horizontal = 16.dp),
             contentAlignment = Alignment.Center
         ) {
-            // Left Action: "+" Add Icon Button
+            // 左侧操作：“+”加号图标按钮
             Box(
                 modifier = Modifier.align(Alignment.CenterStart)
             ) {
@@ -95,7 +93,7 @@ fun InstagramHomeTopBar(
                 )
             }
 
-            // Center: Instagram Logo Branding
+            // 中间：InstagramLogo品牌标识
             Text(
                 text = "Instagram",
                 style = MaterialTheme.typography.headlineMedium.copy(
@@ -112,7 +110,7 @@ fun InstagramHomeTopBar(
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             )
 
-            // Right Action: Heart Notification Icon Button (with optional badge)
+            // 右侧操作：爱心通知图标按钮（含未读数Badge红点提示）
             Box(
                 modifier = Modifier.align(Alignment.CenterEnd)
             ) {
