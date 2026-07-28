@@ -1,43 +1,44 @@
 /**
  * @File: InstagramPost.kt
  * @Package: org.example.project.domain.model.instagram
- * @Description: Instagram 模块帖子数据模型实体
- * @Date: 2026-07-22
+ * @Description: Instagram 帖子数据模型实体（对标 FeedLinePost）
+ * @Date: 2026-07-28
  */
 package org.example.project.domain.model.instagram
 
-data class InstagramPostModel(
+import org.example.project.platform.currentTimeMillis
+
+data class InstagramPost(
     val id: String,
-    val userId: String,
-    val createdAt: Long,
-    val updatedAt: Long,
-    val type: PostType,
-    val thumbnail: String?,
-    val summary: String,
-    val contentId: String
-)
+    val postUser: ProfileUser,
+    val content: String,
+    val mediaList: List<InstagramMedia> = emptyList(),
+    val commentsList: List<InstagramComment> = emptyList(),
+    val likedUsers: List<ProfileUser> = emptyList(),
+    val isLiked: Boolean = false,
+    val createTime: Long = currentTimeMillis(),
+    val unreadNotificationCount: Int = 0,
+    
+    // Instagram 特有字段
+    val location: String? = null,
+    val taggedUsers: List<ProfileUser> = emptyList(),
+    val hashtags: List<String> = emptyList(),
+    val collaborators: List<ProfileUser> = emptyList(),
+    val isSaved: Boolean = false,
+    val savedCount: Long? = null,
+    val shareCount: Long? = null,
+    val viewCount: Long? = null,
 
-// 向后兼容/通用别名
-typealias PostModel = InstagramPostModel
-
-sealed class InstagramPostContent {
-    abstract val title: String
-    abstract val id: String
-
-    data class ImageTextContent(
-        override val id: String,
-        override val title: String,
-        val body: String,
-        val images: List<String>,
-    ) : InstagramPostContent()
-
-    data class VideoContent(
-        override val id: String,
-        override val title: String,
-        val description: String,
-        val videoUrl: String,
-        val coverUrl: String,
-    ) : InstagramPostContent()
+    // 互动控制与高级开关
+    val isCommentsDisabled: Boolean = false,
+    val isLikeCountHidden: Boolean = false,
+    val isPinned: Boolean = false,
+    val audioTitle: String? = null
+) {
+    val likesCount: Int get() = likedUsers.size
+    val commentsCount: Int get() = commentsList.size
 }
 
-typealias PostContent = InstagramPostContent
+// 向后兼容/通用别名
+typealias PostModel = InstagramPost
+typealias InstagramPostModel = InstagramPost

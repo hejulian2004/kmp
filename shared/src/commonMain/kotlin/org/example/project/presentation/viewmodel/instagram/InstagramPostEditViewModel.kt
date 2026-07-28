@@ -20,8 +20,8 @@ class InstagramPostEditViewModel : ViewModel() {
         when (intent) {
             is InstagramPostEditIntent.AddImages -> addImages(intent.newImages)
             is InstagramPostEditIntent.RemoveImage -> removeImage(intent.index)
-            is InstagramPostEditIntent.UpdateTitle -> _state.update { it.copy(title = intent.title) }
-            is InstagramPostEditIntent.UpdateBody -> _state.update { it.copy(body = intent.body) }
+            is InstagramPostEditIntent.UpdateContent -> _state.update { it.copy(content = intent.content) }
+            is InstagramPostEditIntent.UpdateLocation -> _state.update { it.copy(location = intent.location) }
             is InstagramPostEditIntent.Publish -> publish()
             is InstagramPostEditIntent.ClearError -> _state.update { it.copy(error = null, errorMessage = null) }
         }
@@ -46,14 +46,14 @@ class InstagramPostEditViewModel : ViewModel() {
     private fun publish() {
         val currentState = _state.value
         if (!currentState.canPublish) {
-            _state.update { it.copy(error = InstagramPostEditError.TITLE_BODY_REQUIRED) }
+            _state.update { it.copy(error = InstagramPostEditError.CONTENT_REQUIRED) }
             return
         }
 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             try {
-                //todo:
+                // TODO: 实现发布逻辑
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, error = InstagramPostEditError.PUBLISH_FAILED, errorMessage = e.message) }
             }

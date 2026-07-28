@@ -104,25 +104,9 @@ fun InstagramImagePickerScreen(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 TextField(
-                    value = state.title,
-                    onValueChange = { viewModel.onIntent(InstagramPostEditIntent.UpdateTitle(it)) },
-                    placeholder = { Text("标题", color = Color.Gray) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                        unfocusedIndicatorColor = Color.LightGray
-                    ),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                TextField(
-                    value = state.body,
-                    onValueChange = { viewModel.onIntent(InstagramPostEditIntent.UpdateBody(it)) },
-                    placeholder = { Text("正文", color = Color.Gray) },
+                    value = state.content,
+                    onValueChange = { viewModel.onIntent(InstagramPostEditIntent.UpdateContent(it)) },
+                    placeholder = { Text("撰写配文...", color = Color.Gray) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 150.dp),
