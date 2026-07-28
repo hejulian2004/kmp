@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import org.example.project.ui.theme.feedline.FeedLineVideoThumbnailBackgroundGray
 
 /**
  * 跨平台异步获取视频首帧缩略图
@@ -55,7 +56,7 @@ fun VideoThumbnail(
         )
     } else {
         Box(
-            modifier = modifier.background(Color(0xFFEFEFEF))
+            modifier = modifier.background(FeedLineVideoThumbnailBackgroundGray)
         )
     }
 }

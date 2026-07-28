@@ -30,6 +30,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import org.example.project.ui.theme.feedline.FeedLineBackgroundGray
+
 @Composable
 fun FeedTopBar (
     modifier: Modifier = Modifier,
@@ -39,7 +41,7 @@ fun FeedTopBar (
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(color = Color(0xFFF5F5F5))
+            .background(color = FeedLineBackgroundGray)
             .statusBarsPadding()//避开顶部系统信息栏
             .height(56.dp)
             .padding(horizontal = 12.dp),

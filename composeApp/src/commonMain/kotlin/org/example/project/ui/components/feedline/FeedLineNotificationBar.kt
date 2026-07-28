@@ -31,6 +31,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.example.project.ui.theme.feedline.FeedLineNotificationBarDarkGray
+import kotlinproject.composeapp.generated.resources.Res
+import kotlinproject.composeapp.generated.resources.feedline_new_messages_suffix
+import kotlinproject.composeapp.generated.resources.feedline_notification_title
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun FeedNotificationBar(
@@ -50,7 +55,7 @@ fun FeedNotificationBar(
         Row(
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFF3F3F3F))
+                .background(FeedLineNotificationBarDarkGray)
                 .clickable { onClick() }
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -66,7 +71,7 @@ fun FeedNotificationBar(
             }
             
             Text(
-                text = "$unreadCount 条新消息",
+                text = "$unreadCount ${stringResource(Res.string.feedline_new_messages_suffix)}",
                 color = Color.White,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
@@ -76,7 +81,7 @@ fun FeedNotificationBar(
             
             Icon(
                 imageVector = Icons.Default.ChevronRight,
-                contentDescription = "查看消息",
+                contentDescription = stringResource(Res.string.feedline_notification_title),
                 tint = Color.White,
                 modifier = Modifier.size(16.dp)
             )

@@ -28,10 +28,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import org.example.project.ui.theme.NavAnim
-import org.example.project.ui.theme.NavColors
-import org.example.project.ui.theme.NavSize
-import org.example.project.ui.theme.navColors
+import org.example.project.ui.theme.instagram.NavAnim
+import org.example.project.ui.theme.instagram.NavColors
+import org.example.project.ui.theme.instagram.NavSize
+import org.example.project.ui.theme.instagram.navColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

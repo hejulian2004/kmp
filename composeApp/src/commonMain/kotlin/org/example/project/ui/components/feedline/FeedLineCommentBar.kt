@@ -33,6 +33,8 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.example.project.ui.theme.feedline.FeedLineBackgroundGray
+import org.example.project.ui.theme.feedline.FeedLinePrimaryGreen
 
 @Composable
 fun FeedCommentBar(
@@ -88,8 +90,8 @@ fun FeedCommentBar(
                     }
                 ),
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFFF5F5F5),
-                    unfocusedContainerColor = Color(0xFFF5F5F5),
+                    focusedContainerColor = FeedLineBackgroundGray,
+                    unfocusedContainerColor = FeedLineBackgroundGray,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 )
@@ -107,7 +109,7 @@ fun FeedCommentBar(
             ) {
                 Text(
                     text = "发送",
-                    color = if (canSend) Color(0xFF07C160) else Color.Gray
+                    color = if (canSend) FeedLinePrimaryGreen else Color.Gray
                 )
             }
         }

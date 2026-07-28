@@ -24,8 +24,8 @@ import kotlinproject.composeapp.generated.resources.stat_followers
 import kotlinproject.composeapp.generated.resources.stat_following
 import kotlinproject.composeapp.generated.resources.stat_posts
 import kotlinproject.composeapp.generated.resources.user_avatar
-import org.example.project.ui.theme.size
-import org.example.project.ui.theme.spacing
+import org.example.project.ui.theme.instagram.size
+import org.example.project.ui.theme.instagram.spacing
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

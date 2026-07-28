@@ -28,6 +28,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.example.project.domain.model.feedline.FeedLineUser
+import org.example.project.ui.theme.feedline.FeedLineCommentBackgroundGray
+import org.example.project.ui.theme.feedline.FeedLineLinkBlue
 
 @Composable
 fun FeedLikedUserNameBar(
@@ -40,7 +42,7 @@ fun FeedLikedUserNameBar(
     Row(
         modifier = modifier
             .background(
-                color = Color(0xFFF3F3F3),
+                color = FeedLineCommentBackgroundGray,
                 shape = RoundedCornerShape(4.dp)
             )
             .padding(horizontal = 6.dp, vertical = 6.dp)
@@ -49,7 +51,7 @@ fun FeedLikedUserNameBar(
         Icon(
             imageVector = Icons.Default.FavoriteBorder,
             contentDescription = "点赞",
-            tint = Color(0xFF576B95),
+            tint = FeedLineLinkBlue,
             modifier = Modifier
                 .size(15.dp)
                 .alignBy { measured -> measured.measuredHeight * 4 / 5 }
@@ -66,7 +68,7 @@ fun FeedLikedUserNameBar(
                 Text(
                     text = user.name,
                     fontSize = 14.sp,
-                    color = Color(0xFF576B95),
+                    color = FeedLineLinkBlue,
                     modifier = Modifier.clickable {
                         onUserClick(user)
                     }
@@ -76,7 +78,7 @@ fun FeedLikedUserNameBar(
                     Text(
                         text = ",",
                         fontSize = 14.sp,
-                        color = Color(0xFF576B95)
+                        color = FeedLineLinkBlue
                     )
                 }
             }

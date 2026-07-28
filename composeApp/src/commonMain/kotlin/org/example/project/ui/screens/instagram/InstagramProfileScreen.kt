@@ -64,9 +64,9 @@ import org.example.project.ui.components.instagram.InstagramTopBar
 import org.example.project.ui.components.instagram.InstagramTopBarSpan
 import org.example.project.ui.components.instagram.InstagramUserCard
 import org.example.project.ui.components.instagram.content.InstagramGridContent
-import org.example.project.ui.theme.InstagramTheme
-import org.example.project.ui.theme.size
-import org.example.project.ui.theme.spacing
+import org.example.project.ui.theme.instagram.InstagramTheme
+import org.example.project.ui.theme.instagram.size
+import org.example.project.ui.theme.instagram.spacing
 
 object ProfileTestTags {
     // TopBar

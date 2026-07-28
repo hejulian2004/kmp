@@ -54,6 +54,9 @@ import org.example.project.domain.model.feedline.FeedLineMedia
 import org.example.project.domain.model.feedline.FeedLinePost
 import org.example.project.domain.model.feedline.FeedLineUser
 import org.example.project.platform.currentTimeMillis
+import org.example.project.ui.theme.feedline.FeedLineBackgroundGray
+import org.example.project.ui.theme.feedline.FeedLineCommentBackgroundGray
+import org.example.project.ui.theme.feedline.FeedLineLinkBlue
 
 /**
  * 跨平台视频播放控件契约
@@ -110,7 +113,7 @@ fun FeedPostItem(
                     },
                 text = post.postUser.name,
                 fontSize = 18.sp,
-                color = Color(0xFF576B95)
+                color = FeedLineLinkBlue
             )
 
             if (post.content.isNotEmpty()) {
@@ -153,7 +156,7 @@ fun FeedPostItem(
             Column(
                 modifier = Modifier
                     .background(
-                        color = Color(0xFFF3F3F3),
+                        color = FeedLineCommentBackgroundGray,
                         shape = RoundedCornerShape(4.dp)
                     )
             ) {
@@ -334,7 +337,7 @@ fun PostMediaGrid(
                 .fillMaxWidth(0.5f)
                 .aspectRatio(ratio)
                 .clip(RoundedCornerShape(4.dp))
-                .background(Color(0xFFF5F5F5))
+                .background(FeedLineBackgroundGray)
                 .clickable {
                     if (media is FeedLineMedia.Video) {
                         activeVideoUrl = media.videoUrl
@@ -401,7 +404,7 @@ fun PostMediaGrid(
                                     .weight(1f)
                                     .aspectRatio(1f)
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(Color(0xFFF5F5F5))
+                                    .background(FeedLineBackgroundGray)
                                     .clickable {
                                         if (media is FeedLineMedia.Video) {
                                             activeVideoUrl = media.videoUrl

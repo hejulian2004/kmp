@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import org.example.project.domain.model.feedline.FeedLineComment
 import org.example.project.domain.model.feedline.FeedLineUser
 import org.example.project.data.repository.feedline.generateUUID
+import org.example.project.ui.theme.feedline.FeedLineCommentBackgroundGray
 
 @Composable
 fun FeedCommentList(
@@ -38,7 +39,7 @@ fun FeedCommentList(
         modifier = modifier
             .fillMaxWidth()
             .background(
-                color = Color(0xFFF3F3F3),
+                color = FeedLineCommentBackgroundGray,
                 shape = RoundedCornerShape(4.dp)
             )
             .padding(horizontal = 8.dp, vertical = 6.dp),

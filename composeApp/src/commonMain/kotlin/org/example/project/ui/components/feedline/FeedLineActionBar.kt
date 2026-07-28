@@ -47,6 +47,17 @@ import org.example.project.domain.model.feedline.FeedLineUser
 import org.example.project.platform.currentTimeMillis
 import org.example.project.utils.TimeUtils
 import org.example.project.data.repository.feedline.generateUUID
+import org.example.project.ui.theme.feedline.FeedLineActionMenuDarkGray
+import org.example.project.ui.theme.feedline.FeedLineDangerRed
+import org.example.project.ui.theme.feedline.FeedLineSurfaceWhite
+import org.example.project.ui.theme.feedline.FeedLineTextMuted
+import org.example.project.ui.theme.feedline.FeedLineTextSecondary
+import org.jetbrains.compose.resources.stringResource
+import kotlinproject.composeapp.generated.resources.Res
+import kotlinproject.composeapp.generated.resources.feedline_comment
+import kotlinproject.composeapp.generated.resources.feedline_delete
+import kotlinproject.composeapp.generated.resources.feedline_like
+import kotlinproject.composeapp.generated.resources.feedline_unlike
 
 @Composable
 fun FeedActionBar(
@@ -68,9 +79,9 @@ fun FeedActionBar(
     ) {
         Text(
             text = showTime(post.createTime, currentTime),
-            fontSize = 14.sp,
-            color = Color.Gray,
-            modifier = Modifier.align(Alignment.CenterStart)
+            fontSize = 12.sp,
+            color = FeedLineTextSecondary,
+            modifier = Modifier.align(Alignment.CenterStart).padding(end = 8.dp)
         )
 
         AnimatedVisibility(
@@ -88,10 +99,10 @@ fun FeedActionBar(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .background(
-                        color = Color(0xFF353535),
+                        color = FeedLineActionMenuDarkGray,
                         shape = RoundedCornerShape(4.dp)
                     )
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 15.dp, vertical = 8.dp)
             ){
                 if (post.postUser.id == currentUser.id) {
                     Row(
@@ -103,20 +114,20 @@ fun FeedActionBar(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = "删除",
+                            contentDescription = stringResource(Res.string.feedline_delete),
                             modifier = Modifier.size(16.dp),
-                            tint = Color.White
+                            tint = FeedLineSurfaceWhite
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "删除",
+                            text = stringResource(Res.string.feedline_delete),
                             fontSize = 14.sp,
-                            color = Color.White
+                            color = FeedLineSurfaceWhite
                         )
                         Spacer(modifier = Modifier.width(15.dp))
                         VerticalDivider(
                             thickness = 0.5.dp,
-                            color = Color.LightGray
+                            color = FeedLineTextMuted
                         )
                         Spacer(modifier = Modifier.width(15.dp))
                     }
@@ -127,10 +138,10 @@ fun FeedActionBar(
                 ){
                     Icon(
                         imageVector =  Icons.Default.Favorite,
-                        contentDescription = "赞",
+                        contentDescription = if(post.isLiked) stringResource(Res.string.feedline_unlike) else stringResource(Res.string.feedline_like),
                         modifier = Modifier
                             .size(16.dp),
-                        tint = if(post.isLiked) Color.Red else Color.White
+                        tint = if(post.isLiked) FeedLineDangerRed else FeedLineSurfaceWhite
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
@@ -139,14 +150,14 @@ fun FeedActionBar(
                                 onLikeClick()
                                 isShowMore = false
                             },
-                        text = if(post.isLiked)"取消" else "点赞",
+                        text = if(post.isLiked) stringResource(Res.string.feedline_unlike) else stringResource(Res.string.feedline_like),
                         fontSize = 14.sp,
-                        color = Color.White
+                        color = FeedLineSurfaceWhite
                     )
                     Spacer(modifier = Modifier.width(15.dp))
                     VerticalDivider(
                         thickness = 0.5.dp,
-                        color = Color.LightGray
+                        color = FeedLineTextMuted
                     )
                     Spacer(modifier = Modifier.width(15.dp))
                 }
@@ -155,11 +166,10 @@ fun FeedActionBar(
                     verticalAlignment = Alignment.CenterVertically
                 ){
                     Icon(
-                        //imageVector = Icons.AutoMirrored.Filled.Comment,
                         imageVector = Icons.Default.CommentBank,
-                        contentDescription = "评论",
+                        contentDescription = stringResource(Res.string.feedline_comment),
                         modifier = Modifier.size(16.dp),
-                        tint = Color.White
+                        tint = FeedLineSurfaceWhite
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
@@ -168,9 +178,9 @@ fun FeedActionBar(
                                 onAddCommentClick()
                                 isShowMore = false
                             },
-                        text = "评论",
+                        text = stringResource(Res.string.feedline_comment),
                         fontSize = 14.sp,
-                        color = Color.White
+                        color = FeedLineSurfaceWhite
                     )
                 }
             }
@@ -184,7 +194,7 @@ fun FeedActionBar(
                     isShowMore = !isShowMore
                 }
                 .size(24.dp),
-            tint = Color.Gray
+            tint = FeedLineTextSecondary
         )
     }
 }

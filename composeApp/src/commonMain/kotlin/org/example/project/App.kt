@@ -29,7 +29,7 @@ import org.example.project.domain.model.feedline.FeedLineUser
 import org.example.project.presentation.viewmodel.feedline.FeedLineViewModel
 import org.example.project.ui.screens.feedline.FeedScreen
 import org.example.project.ui.screens.instagram.InstagramMainScreen
-import org.example.project.ui.theme.InstagramTheme
+import org.example.project.ui.theme.instagram.InstagramTheme
 
 @Composable
 @Preview

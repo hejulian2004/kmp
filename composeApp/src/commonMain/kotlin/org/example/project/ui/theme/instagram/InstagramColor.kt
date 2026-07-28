@@ -1,10 +1,10 @@
 /**
- * @File: Color.kt
+ * @File: InstagramColor.kt
+ * @Package: org.example.project.ui.theme.instagram
  * @Description: 定义 Instagram 品牌色及应用内使用的各类颜色常量
  * @Date: 2026-04-20
  */
-
-package org.example.project.ui.theme
+package org.example.project.ui.theme.instagram
 
 import androidx.compose.ui.graphics.Color
 

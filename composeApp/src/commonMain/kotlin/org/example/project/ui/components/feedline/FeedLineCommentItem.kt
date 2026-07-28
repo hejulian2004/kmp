@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import org.example.project.domain.model.feedline.FeedLineComment
 import org.example.project.domain.model.feedline.FeedLineUser
+import org.example.project.ui.theme.feedline.FeedLineLinkBlue
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -38,7 +39,7 @@ fun FeedCommentItem(
     ) {
         Text(
             text = "${comment.commentUser.name}:",
-            color = Color(0xFF576B95),
+            color = FeedLineLinkBlue,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.clickable{

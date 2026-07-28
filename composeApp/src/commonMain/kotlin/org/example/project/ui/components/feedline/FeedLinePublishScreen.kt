@@ -67,6 +67,19 @@ import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.launch
 import org.example.project.domain.model.feedline.FeedLineMedia
+import org.example.project.ui.theme.feedline.FeedLineBackgroundGray
+import org.example.project.ui.theme.feedline.FeedLineMediaPlaceholderGray
+import org.example.project.ui.theme.feedline.FeedLinePrimaryGreen
+import kotlinproject.composeapp.generated.resources.Res
+import kotlinproject.composeapp.generated.resources.cancel
+import kotlinproject.composeapp.generated.resources.feedline_confirm_delete
+import kotlinproject.composeapp.generated.resources.feedline_delete
+import kotlinproject.composeapp.generated.resources.feedline_delete_photo_prompt
+import kotlinproject.composeapp.generated.resources.feedline_delete_video_prompt
+import kotlinproject.composeapp.generated.resources.feedline_placeholder
+import kotlinproject.composeapp.generated.resources.feedline_publish
+import kotlinproject.composeapp.generated.resources.feedline_publish_text
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -104,7 +117,7 @@ fun PublishScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     CircularProgressIndicator(
-                        color = Color(0xFF07C160)
+                        color = FeedLinePrimaryGreen
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(text = "正在发表...", fontSize = 14.sp, color = Color.Gray)
@@ -180,7 +193,7 @@ fun PublishScreen(
     Surface(
         modifier = modifier
             .fillMaxSize()
-            .background(color = Color(0xFFF5F5F5))
+            .background(color = FeedLineBackgroundGray)
             .statusBarsPadding()
     ) {
         Column(
@@ -191,7 +204,7 @@ fun PublishScreen(
             // 顶部栏
             Box(
                 modifier = Modifier
-                    .background(color = Color(0xFFF5F5F5))
+                    .background(color = FeedLineBackgroundGray)
                     .padding(horizontal = 12.dp)
                     .height(56.dp)
                     .fillMaxWidth()
@@ -201,13 +214,13 @@ fun PublishScreen(
                         .align(Alignment.CenterStart)
                         .clickable { onCancelClick() }
                         .padding(8.dp),
-                    text = "取消",
+                    text = stringResource(Res.string.cancel),
                     fontSize = 17.sp,
                     color = Color.Black
                 )
                 Text(
                     modifier = Modifier.align(Alignment.Center),
-                    text = if (isTextOnly) "发表文字" else "发表",
+                    text = if (isTextOnly) stringResource(Res.string.feedline_publish_text) else stringResource(Res.string.feedline_publish),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
@@ -224,10 +237,10 @@ fun PublishScreen(
                     }
                 ) {
                     Text(
-                        text = "发表",
+                        text = stringResource(Res.string.feedline_publish),
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (textContent.isBlank() && (isTextOnly || selectedMedia.isEmpty())) Color.LightGray else Color(0xFF07C160)
+                        color = if (textContent.isBlank() && (isTextOnly || selectedMedia.isEmpty())) Color.LightGray else FeedLinePrimaryGreen
                     )
                 }
             }
@@ -243,7 +256,7 @@ fun PublishScreen(
                 TextField(
                     value = textContent,
                     onValueChange = { textContent = it },
-                    placeholder = { Text("这一刻的想法...", color = Color.Gray, fontSize = 16.sp) },
+                    placeholder = { Text(stringResource(Res.string.feedline_placeholder), color = Color.Gray, fontSize = 16.sp) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp),
@@ -285,7 +298,7 @@ fun PublishScreen(
                                                     .weight(1f)
                                                     .aspectRatio(1f)
                                                     .clip(RoundedCornerShape(4.dp))
-                                                    .background(Color(0xFFF7F7F7))
+                                                    .background(FeedLineMediaPlaceholderGray)
                                                     .clickable {
                                                         showAddMoreBottomSheet = true
                                                     },
@@ -304,7 +317,7 @@ fun PublishScreen(
                                                     .weight(1f)
                                                     .aspectRatio(1f)
                                                     .clip(RoundedCornerShape(4.dp))
-                                                    .background(Color(0xFFF5F5F5))
+                                                    .background(FeedLineBackgroundGray)
                                                     .combinedClickable(
                                                         onClick = {
                                                             if (media is FeedLineMedia.Video) {
@@ -363,8 +376,8 @@ fun PublishScreen(
         val isVideo = mediaToDelete is FeedLineMedia.Video
         AlertDialog(
             onDismissRequest = { mediaToDelete = null },
-            title = { Text("确认删除") },
-            text = { Text(if (isVideo) "要删除这段视频吗？" else "要删除这张照片吗？") },
+            title = { Text(stringResource(Res.string.feedline_confirm_delete)) },
+            text = { Text(if (isVideo) stringResource(Res.string.feedline_delete_video_prompt) else stringResource(Res.string.feedline_delete_photo_prompt)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -372,12 +385,12 @@ fun PublishScreen(
                         mediaToDelete = null
                     }
                 ) {
-                    Text("删除", color = Color.Red)
+                    Text(stringResource(Res.string.feedline_delete), color = Color.Red)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { mediaToDelete = null }) {
-                    Text("取消")
+                    Text(stringResource(Res.string.cancel))
                 }
             }
         )

@@ -17,6 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+import kotlinproject.composeapp.generated.resources.Res
+import kotlinproject.composeapp.generated.resources.cancel
+import kotlinproject.composeapp.generated.resources.feedline_select_from_album
+import kotlinproject.composeapp.generated.resources.feedline_take_photo
+import kotlinproject.composeapp.generated.resources.feedline_take_video
+import org.jetbrains.compose.resources.stringResource
+
 @Composable
 fun BottomSheet(
     modifier: Modifier = Modifier,
@@ -31,7 +38,7 @@ fun BottomSheet(
             .padding(bottom = 32.dp)
     ) {
         BottomSheetItem(
-            text = "拍摄照片",
+            text = stringResource(Res.string.feedline_take_photo),
             onClick = onTakePhotoClick
         )
         HorizontalDivider(
@@ -39,7 +46,7 @@ fun BottomSheet(
             color = Color.LightGray
         )
         BottomSheetItem(
-            text = "录制视频",
+            text = stringResource(Res.string.feedline_take_video),
             onClick = onRecordVideoClick
         )
         HorizontalDivider(
@@ -47,7 +54,7 @@ fun BottomSheet(
             color = Color.LightGray
         )
         BottomSheetItem(
-            text = "从手机相册选择",
+            text = stringResource(Res.string.feedline_select_from_album),
             onClick = onChooseClick
         )
         HorizontalDivider(
@@ -55,7 +62,7 @@ fun BottomSheet(
             color = Color.LightGray
         )
         BottomSheetItem(
-            text = "取消",
+            text = stringResource(Res.string.cancel),
             onClick = onCancelClick
         )
     }

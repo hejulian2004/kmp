@@ -14,12 +14,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 
+import org.example.project.ui.theme.feedline.FeedLineDangerRed
+import org.example.project.ui.theme.feedline.FeedLineTextPrimary
+import kotlinproject.composeapp.generated.resources.Res
+import kotlinproject.composeapp.generated.resources.cancel
+import kotlinproject.composeapp.generated.resources.feedline_confirm_delete
+import kotlinproject.composeapp.generated.resources.feedline_delete
+import kotlinproject.composeapp.generated.resources.feedline_delete_post_prompt
+import org.jetbrains.compose.resources.stringResource
+
 @Composable
 fun FeedLineConfirmDialog(
     title: String,
     text: String,
-    confirmText: String = "删除",
-    dismissText: String = "取消",
+    confirmText: String = stringResource(Res.string.feedline_delete),
+    dismissText: String = stringResource(Res.string.cancel),
     onConfirmClick: () -> Unit,
     onDismissClick: () -> Unit,
     onDismissRequest: () -> Unit
@@ -30,12 +39,12 @@ fun FeedLineConfirmDialog(
         text = { Text(text) },
         confirmButton = {
             TextButton(onClick = onConfirmClick) {
-                Text(confirmText, color = Color.Red)
+                Text(confirmText, color = FeedLineDangerRed)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissClick) {
-                Text(dismissText, color = Color.Black)
+                Text(dismissText, color = FeedLineTextPrimary)
             }
         }
     )
@@ -45,10 +54,10 @@ fun FeedLineConfirmDialog(
 @Composable
 fun FeedLineConfirmDialogPreview(){
     FeedLineConfirmDialog(
-        title = "确认删除",
-        text = "确定要删除这条动态吗？删除后不可恢复",
-        confirmText = "删除",
-        dismissText = "取消",
+        title = stringResource(Res.string.feedline_confirm_delete),
+        text = stringResource(Res.string.feedline_delete_post_prompt),
+        confirmText = stringResource(Res.string.feedline_delete),
+        dismissText = stringResource(Res.string.cancel),
         onConfirmClick = {},
         onDismissClick = {},
         onDismissRequest = {}

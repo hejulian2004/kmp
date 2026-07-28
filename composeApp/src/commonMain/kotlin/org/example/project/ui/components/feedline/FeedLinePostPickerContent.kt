@@ -23,8 +23,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import org.example.project.ui.theme.InstagramTheme
-import org.example.project.ui.theme.InstagramTypography
+import org.example.project.ui.theme.instagram.InstagramTheme
+import org.example.project.ui.theme.instagram.InstagramTypography
 
 import kotlinproject.composeapp.generated.resources.*
 import org.example.project.navigation.instagram.InstagramScreen

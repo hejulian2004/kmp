@@ -55,7 +55,18 @@ import org.example.project.presentation.state.feedline.Screen
 import org.example.project.presentation.viewmodel.feedline.FeedLineViewModel
 import org.example.project.ui.components.feedline.Avatar
 import org.example.project.ui.components.feedline.VideoThumbnail
+import org.example.project.ui.theme.feedline.FeedLineBackgroundGray
+import org.example.project.ui.theme.feedline.FeedLineLinkBlue
 import org.example.project.utils.TimeUtils
+import kotlinproject.composeapp.generated.resources.Res
+import kotlinproject.composeapp.generated.resources.back
+import kotlinproject.composeapp.generated.resources.feedline_clear
+import kotlinproject.composeapp.generated.resources.feedline_commented_your_post
+import kotlinproject.composeapp.generated.resources.feedline_liked_your_post
+import kotlinproject.composeapp.generated.resources.feedline_no_notifications
+import kotlinproject.composeapp.generated.resources.feedline_notification_title
+import kotlinproject.composeapp.generated.resources.feedline_title
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,7 +83,7 @@ fun NotificationScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = Color(0xFFF5F5F5))
+                    .background(color = FeedLineBackgroundGray)
                     .statusBarsPadding()
                     .height(56.dp)
                     .padding(horizontal = 12.dp),
@@ -96,13 +107,13 @@ fun NotificationScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回",
+                            contentDescription = stringResource(Res.string.back),
                             tint = Color.Black,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "朋友圈",
+                            text = stringResource(Res.string.feedline_title),
                             fontSize = 16.sp,
                             color = Color.Black
                         )
@@ -111,7 +122,7 @@ fun NotificationScreen(
 
                 // 标题
                 Text(
-                    text = "消息",
+                    text = stringResource(Res.string.feedline_notification_title),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
@@ -126,9 +137,9 @@ fun NotificationScreen(
                         modifier = Modifier.align(Alignment.CenterEnd)
                     ) {
                         Text(
-                            text = "清空",
+                            text = stringResource(Res.string.feedline_clear),
                             fontSize = 16.sp,
-                            color = Color(0xFF576B95),
+                            color = FeedLineLinkBlue,
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -151,7 +162,7 @@ fun NotificationScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "暂无新消息",
+                        text = stringResource(Res.string.feedline_no_notifications),
                         color = Color.Gray,
                         fontSize = 16.sp
                     )
@@ -203,20 +214,20 @@ private fun NotificationItem(
                 text = notification.user.name,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF576B95)
+                color = FeedLineLinkBlue
             )
 
             Spacer(modifier = Modifier.height(4.dp))
 
             if (notification.isLikeNotification) {
                 Text(
-                    text = "赞了你的动态",
+                    text = stringResource(Res.string.feedline_liked_your_post),
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
             } else {
                 Text(
-                    text = notification.comment?.content ?: "评论了你的动态",
+                    text = notification.comment?.content ?: stringResource(Res.string.feedline_commented_your_post),
                     fontSize = 14.sp,
                     color = Color.Black
                 )
@@ -238,7 +249,7 @@ private fun NotificationItem(
             modifier = Modifier
                 .size(50.dp)
                 .clip(RoundedCornerShape(4.dp))
-                .background(Color(0xFFF5F5F5))
+                .background(FeedLineBackgroundGray)
                 .padding(4.dp),
             contentAlignment = Alignment.Center
         ) {

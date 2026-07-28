@@ -37,9 +37,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import kotlinproject.composeapp.generated.resources.Res
 import kotlinproject.composeapp.generated.resources.collapse
-import org.example.project.ui.theme.AppFontWeight
-import org.example.project.ui.theme.size
-import org.example.project.ui.theme.spacing
+import org.example.project.ui.theme.instagram.AppFontWeight
+import org.example.project.ui.theme.instagram.size
+import org.example.project.ui.theme.instagram.spacing
 import org.jetbrains.compose.resources.stringResource
 
 data class InstagramTopBarSpan(

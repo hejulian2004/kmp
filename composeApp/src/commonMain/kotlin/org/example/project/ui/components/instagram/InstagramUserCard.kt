@@ -45,8 +45,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
 import kotlinproject.composeapp.generated.resources.Res
 import kotlinproject.composeapp.generated.resources.close
-import org.example.project.ui.theme.size
-import org.example.project.ui.theme.spacing
+import org.example.project.ui.theme.instagram.size
+import org.example.project.ui.theme.instagram.spacing
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

@@ -1,10 +1,10 @@
 /**
- * @File: Type.kt
- * @Description: 定义应用程序的排版系统，包含字体家族、字号及行高
+ * @File: InstagramType.kt
+ * @Package: org.example.project.ui.theme.instagram
+ * @Description: 定义 Instagram 模块的排版系统与导航控件样式定义
  * @Date: 2026-04-20
  */
-
-package org.example.project.ui.theme
+package org.example.project.ui.theme.instagram
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -18,13 +18,9 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// 字体家族
-
 object AppFontFamily {
     val Default = FontFamily.SansSerif
 }
-
-// 字重
 
 object AppFontWeight {
     val Normal = FontWeight.Normal
@@ -32,14 +28,6 @@ object AppFontWeight {
     val Bold   = FontWeight.Bold
 }
 
-/**
- *  字号
- *  xs  11sp  —— 角标、时间戳等最小辅助文字
- *  sm  13sp  —— 次要信息、标签
- *  md  16sp  —— 正文、列表主要内容
- *  lg  22sp  —— 页面标题
- *  xl  28sp  —— 品牌 Logo / 大标题
- */
 object AppFontSize {
     val xs : TextUnit = 11.sp
     val sm : TextUnit = 13.sp
@@ -48,8 +36,6 @@ object AppFontSize {
     val xl : TextUnit = 28.sp
 }
 
-// 行高
-
 object AppLineHeight {
     val xs : TextUnit = 16.sp
     val sm : TextUnit = 20.sp
@@ -57,34 +43,13 @@ object AppLineHeight {
     val lg : TextUnit = 28.sp
 }
 
-// 字间距
-
 object AppLetterSpacing {
     val none : TextUnit = 0.sp
     val sm   : TextUnit = 0.5.sp
     val md   : TextUnit = 1.sp
 }
 
-
-/**
- * 项目标准排版配置
- *
- * 已定义样式：
- * - [Typography.titleLarge]  用于页面标题及品牌 Logo
- * - [Typography.bodyLarge]   用于主要列表项及正文
- * - [Typography.bodyMedium]  用于次要正文内容
- * - [Typography.labelSmall]  用于辅助信息、时间戳
- * - [Typography.labelMedium] 用于标签、角标文字
- *
- * 使用方式：
- * ```
- * Text("标题", style = MaterialTheme.typography.titleLarge)
- * Text("正文", style = MaterialTheme.typography.bodyLarge)
- * ```
- */
 val InstagramTypography = Typography(
-
-    // 页面标题 / 品牌 Logo
     titleLarge = TextStyle(
         fontFamily    = AppFontFamily.Default,
         fontWeight    = AppFontWeight.Bold,
@@ -92,8 +57,6 @@ val InstagramTypography = Typography(
         lineHeight    = AppLineHeight.lg,
         letterSpacing = AppLetterSpacing.none
     ),
-
-    // 主要正文 / 列表项
     bodyLarge = TextStyle(
         fontFamily    = AppFontFamily.Default,
         fontWeight    = AppFontWeight.Normal,
@@ -101,8 +64,6 @@ val InstagramTypography = Typography(
         lineHeight    = AppLineHeight.md,
         letterSpacing = AppLetterSpacing.sm
     ),
-
-    // 次要正文
     bodyMedium = TextStyle(
         fontFamily    = AppFontFamily.Default,
         fontWeight    = AppFontWeight.Normal,
@@ -110,8 +71,6 @@ val InstagramTypography = Typography(
         lineHeight    = AppLineHeight.sm,
         letterSpacing = AppLetterSpacing.sm
     ),
-
-    // 辅助信息 / 时间戳
     labelSmall = TextStyle(
         fontFamily    = AppFontFamily.Default,
         fontWeight    = AppFontWeight.Medium,
@@ -119,8 +78,6 @@ val InstagramTypography = Typography(
         lineHeight    = AppLineHeight.xs,
         letterSpacing = AppLetterSpacing.sm
     ),
-
-    // 标签 / 角标
     labelMedium = TextStyle(
         fontFamily    = AppFontFamily.Default,
         fontWeight    = AppFontWeight.Medium,
@@ -129,7 +86,6 @@ val InstagramTypography = Typography(
         letterSpacing = AppLetterSpacing.none
     ),
 )
-
 
 data class NavColors(
     val background     : Color,
