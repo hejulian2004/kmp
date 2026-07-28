@@ -10,6 +10,7 @@ package org.example.project.presentation.state.feedline
 import org.example.project.domain.model.feedline.FeedLineNotification
 import org.example.project.domain.model.feedline.FeedLinePost
 import org.example.project.domain.model.feedline.FeedLineUser
+import org.example.project.presentation.state.UiState
 
 enum class Screen {
     Feed, Notification, Publish
@@ -18,13 +19,7 @@ enum class Screen {
 data class FeedUiState(
     val currentUser: FeedLineUser,
     val currentScreen: Screen = Screen.Feed,
-    val isLoading: Boolean = false,
-    val isRefreshing: Boolean = false,
-    val posts: List<FeedLinePost> = emptyList(),
-    val notifications: List<FeedLineNotification> = emptyList(),
-    val unreadNotificationCount: Int = 0,
-    val errorMessage: String? = null
+    val feedState: UiState<List<FeedLinePost>> = UiState.Idle,
+    val notificationsState: UiState<List<FeedLineNotification>> = UiState.Idle,
+    val unreadNotificationCount: Int = 0
 )
-
-
-

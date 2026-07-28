@@ -44,6 +44,8 @@ import org.example.project.domain.usecase.feedline.UnlikePostUseCase
 import org.example.project.domain.usecase.feedline.UpdatePostUseCase
 import org.example.project.presentation.effect.feedline.FeedLineEffect
 import org.example.project.presentation.intent.feedline.FeedIntent
+import org.example.project.presentation.state.RefreshState
+import org.example.project.presentation.state.UiState
 import org.example.project.presentation.state.feedline.FeedUiState
 import org.example.project.presentation.state.feedline.Screen
 /**
@@ -76,8 +78,8 @@ class FeedLineViewModel(
 
     private val _uiState = MutableStateFlow(
         FeedUiState(
-            isLoading = true,
-            currentUser = currentUser
+            currentUser = currentUser,
+            feedState = UiState.Loading
         )
     )
     val uiState: StateFlow<FeedUiState> = _uiState.asStateFlow()
@@ -232,14 +234,13 @@ class FeedLineViewModel(
         viewModelScope.launch {
             getFeedPostsUseCase()
                 .catch { e ->
-                    _uiState.update { it.copy(isLoading = false) }
+                    _uiState.update { it.copy(feedState = UiState.Error(e.message ?: "未知错误")) }
                     _effect.send(FeedLineEffect.ShowMessage("加载动态失败: ${e.message ?: "未知错误"}"))
                 }
                 .collect { newPosts ->
                     _uiState.update {
                         it.copy(
-                            posts = newPosts,
-                            isLoading = false
+                            feedState = UiState.Success(newPosts)
                         )
                     }
                 }
@@ -248,15 +249,17 @@ class FeedLineViewModel(
 
     private fun observeNotifications() {
         viewModelScope.launch {
+            _uiState.update { it.copy(notificationsState = UiState.Loading) }
             getNotificationsUseCase()
                 .catch { e ->
+                    _uiState.update { it.copy(notificationsState = UiState.Error(e.message ?: "未知错误")) }
                     _effect.send(FeedLineEffect.ShowMessage("加载通知失败: ${e.message ?: "未知错误"}"))
                 }
                 .collect { notifications ->
                     val unreadCount = notifications.count { !it.isRead && !it.isDelete }
                     _uiState.update {
                         it.copy(
-                            notifications = notifications,
+                            notificationsState = UiState.Success(notifications),
                             unreadNotificationCount = unreadCount
                         )
                     }
@@ -266,19 +269,28 @@ class FeedLineViewModel(
 
     private fun refreshFeed(showSuccessMessage: Boolean) {
         viewModelScope.launch {
-            _uiState.update {
-                it.copy(isLoading = true)
+            val currentState = _uiState.value.feedState
+            if (currentState is UiState.Success) {
+                _uiState.update {
+                    it.copy(feedState = currentState.copy(refreshState = RefreshState.Refreshing))
+                }
+            } else {
+                _uiState.update { it.copy(feedState = UiState.Loading) }
             }
+
             try {
                 refreshFeedUseCase()
-                _uiState.update {
-                    it.copy(isLoading = false)
-                }
                 if (showSuccessMessage) {
                     _effect.send(FeedLineEffect.ShowMessage("刷新成功"))
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false) }
+                if (currentState is UiState.Success) {
+                    _uiState.update {
+                        it.copy(feedState = currentState.copy(refreshState = RefreshState.Idle))
+                    }
+                } else {
+                    _uiState.update { it.copy(feedState = UiState.Error(e.message ?: "刷新失败")) }
+                }
                 _effect.send(FeedLineEffect.ShowMessage("刷新失败"))
             }
         }

@@ -29,6 +29,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.FileKitMode
@@ -38,6 +39,7 @@ import io.github.vinceglb.filekit.name
 import kotlinx.coroutines.delay
 import org.example.project.presentation.intent.instagram.InstagramPostEditIntent
 import org.example.project.presentation.viewmodel.instagram.InstagramPostEditViewModel
+import org.example.project.ui.theme.instagram.InstagramTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -171,6 +173,14 @@ fun InstagramImagePickerScreen(
                 previewImage = null
             }
         )
+    }
+}
+
+@Preview
+@Composable
+fun InstagramImagePickerScreenPreview() {
+    InstagramTheme {
+        InstagramImagePickerScreen(rememberNavController())
     }
 }
 

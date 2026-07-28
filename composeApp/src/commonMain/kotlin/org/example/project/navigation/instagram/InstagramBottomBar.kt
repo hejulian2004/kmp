@@ -26,8 +26,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import org.example.project.ui.theme.instagram.InstagramTheme
 import org.example.project.ui.theme.instagram.NavAnim
 import org.example.project.ui.theme.instagram.NavColors
 import org.example.project.ui.theme.instagram.NavSize
@@ -153,6 +156,17 @@ private fun NavItem(
             modifier = Modifier
                 .size(NavSize.IconSize)
                 .scale(iconScale)
+        )
+    }
+}
+
+@Preview
+@Composable
+fun InstagramBottomBarPreview() {
+    InstagramTheme {
+        InstagramBottomBar(
+            navController = rememberNavController(),
+            screens = instagramBottomNavScreens
         )
     }
 }

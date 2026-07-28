@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -51,6 +52,7 @@ import org.example.project.domain.model.feedline.FeedLineMedia
 import org.example.project.domain.model.feedline.FeedLineNotification
 import org.example.project.domain.model.feedline.FeedLineUser
 import org.example.project.presentation.intent.feedline.FeedIntent
+import org.example.project.presentation.state.UiState
 import org.example.project.presentation.state.feedline.Screen
 import org.example.project.presentation.viewmodel.feedline.FeedLineViewModel
 import org.example.project.ui.components.feedline.Avatar
@@ -75,8 +77,9 @@ fun NotificationScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val notificationsState = uiState.notificationsState
     // 获取所有未删除的已读和未读通知
-    val notifications = uiState.notifications.filter { !it.isDelete }
+    val notifications = (notificationsState as? UiState.Success)?.data?.filter { !it.isDelete } ?: emptyList()
 
     Scaffold(
         topBar = {
@@ -156,28 +159,42 @@ fun NotificationScreen(
                 .background(Color.White)
                 .padding(innerPadding)
         ) {
-            if (notifications.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stringResource(Res.string.feedline_no_notifications),
-                        color = Color.Gray,
-                        fontSize = 16.sp
-                    )
+            when (notificationsState) {
+                is UiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(modifier = Modifier.size(40.dp))
+                    }
                 }
-            } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(
-                        items = notifications,
-                        key = { it.id }
-                    ) { notification ->
-                        NotificationItem(notification = notification)
-                        HorizontalDivider(
-                            thickness = 0.5.dp,
-                            color = Color.LightGray.copy(alpha = 0.6f)
-                        )
+                is UiState.Error -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(text = notificationsState.message, color = Color.Red)
+                    }
+                }
+                is UiState.Success, is UiState.Idle -> {
+                    if (notifications.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.feedline_no_notifications),
+                                color = Color.Gray,
+                                fontSize = 16.sp
+                            )
+                        }
+                    } else {
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            items(
+                                items = notifications,
+                                key = { it.id }
+                            ) { notification ->
+                                NotificationItem(notification = notification)
+                                HorizontalDivider(
+                                    thickness = 0.5.dp,
+                                    color = Color.LightGray.copy(alpha = 0.6f)
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -206,7 +223,7 @@ private fun NotificationItem(
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        // 中间：用户名、动作和时间
+        // 中间：用户名、动作 and 时间
         Column(
             modifier = Modifier.weight(1f)
         ) {

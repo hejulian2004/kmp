@@ -13,10 +13,12 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ModalBottomSheet
@@ -64,6 +66,8 @@ import org.example.project.domain.repository.feedline.FeedLineRepository
 import org.example.project.platform.currentTimeMillis
 import org.example.project.presentation.effect.feedline.FeedLineEffect
 import org.example.project.presentation.intent.feedline.FeedIntent
+import org.example.project.presentation.state.RefreshState
+import org.example.project.presentation.state.UiState
 import org.example.project.presentation.state.feedline.Screen
 import org.example.project.presentation.viewmodel.feedline.FeedLineViewModel
 import org.example.project.ui.components.feedline.BottomSheet
@@ -249,8 +253,11 @@ fun FeedScreen(
             },
             modifier = Modifier.background(Color.White)
         ) { innerPadding ->
+            val feedState = uiState.feedState
+            val isRefreshing = (feedState as? UiState.Success)?.refreshState == RefreshState.Refreshing
+
             PullToRefreshBox(
-                isRefreshing = uiState.isLoading,
+                isRefreshing = isRefreshing,
                 onRefresh = {
                     viewModel.handleIntent(FeedIntent.Refresh)
                 },
@@ -259,94 +266,111 @@ fun FeedScreen(
                     .padding(innerPadding)
                     .fillMaxSize()
             ) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    state = lazyListState
-                ) {
-                    if (uiState.unreadNotificationCount > 0) {
-                        item {
-                            val latestNotification = uiState.notifications.firstOrNull { !it.isRead && !it.isDelete }
-                            FeedNotificationBar(
-                                unreadCount = uiState.unreadNotificationCount,
-                                latestNotificationUserAvatar = latestNotification?.user?.avatarUrl,
-                                onClick = {
-                                    viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Notification))
-                                }
-                            )
+                when (feedState) {
+                    is UiState.Loading -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(modifier = Modifier.size(40.dp))
                         }
                     }
+                    is UiState.Error -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(text = feedState.message, color = Color.Red)
+                        }
+                    }
+                    is UiState.Success, is UiState.Idle -> {
+                        val posts = (feedState as? UiState.Success)?.data ?: emptyList()
+                        
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            state = lazyListState
+                        ) {
+                            if (uiState.unreadNotificationCount > 0) {
+                                item {
+                                    val notifications = (uiState.notificationsState as? UiState.Success)?.data ?: emptyList()
+                                    val latestNotification = notifications.firstOrNull { !it.isRead && !it.isDelete }
+                                    FeedNotificationBar(
+                                        unreadCount = uiState.unreadNotificationCount,
+                                        latestNotificationUserAvatar = latestNotification?.user?.avatarUrl,
+                                        onClick = {
+                                            viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Notification))
+                                        }
+                                    )
+                                }
+                            }
 
-                    if (!uiState.isLoading && uiState.posts.isEmpty()) {
-                        item {
-                            Box(
-                                modifier = Modifier.fillParentMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("暂无动态")
+                            if (posts.isEmpty()) {
+                                item {
+                                    Box(
+                                        modifier = Modifier.fillParentMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text("暂无动态")
+                                    }
+                                }
+                            }
+
+                            items(
+                                items = posts,
+                                key = { post -> post.id },
+                            ) { post ->
+                                FeedPostItem(
+                                    post = post,
+                                    currentUser = uiState.currentUser,
+                                    onClick = { post ->
+                                        viewModel.handleIntent(FeedIntent.ShowMessage("postId:${post.id}"))
+                                    },
+                                    onNameClick = { viewModel.handleIntent(FeedIntent.ShowMessage(post.postUser.name)) },
+                                    onLikeClick = {
+                                        if (!post.isLiked) {
+                                            viewModel.handleIntent(
+                                                FeedIntent.LikePost(
+                                                    post.id,
+                                                    uiState.currentUser
+                                                )
+                                            )
+                                        } else {
+                                            viewModel.handleIntent(
+                                                FeedIntent.UnlikePost(
+                                                    post.id,
+                                                    uiState.currentUser
+                                                )
+                                            )
+                                        }
+                                    },
+                                    onAddCommentClick = {
+                                        commentPostId = post.id
+                                        commentContent = ""
+                                    },
+                                    onDeleteCommentClick = { comment ->
+                                        pendingDeleteComment = if (comment.commentUser.id == uiState.currentUser.id) {
+                                            comment
+                                        } else {
+                                            null
+                                        }
+                                    },
+                                    onDeletePostClick = { post ->
+                                        pendingDeletePostId = post.id
+                                    },
+                                    onPostAvatarClick = {
+                                        viewModel.handleIntent(FeedIntent.ShowMessage(post.postUser.toString()))
+                                    },
+                                    onLikedAvatarClick = { user ->
+                                        viewModel.handleIntent(FeedIntent.ShowMessage(user.toString()))
+                                    },
+                                    currentTime = currentTime,
+                                    onCommentClick = { comment ->
+                                        viewModel.handleIntent(FeedIntent.ShowMessage(comment.toString()))
+                                    },
+                                    onCommentUserClick = { user ->
+                                        viewModel.handleIntent(FeedIntent.ShowMessage(user.toString()))
+                                    },
+                                )
+                                HorizontalDivider(
+                                    thickness = 0.5.dp,
+                                    color = Color.LightGray
+                                )
                             }
                         }
-                    }
-
-                    items(
-                        items = uiState.posts,
-                        key = { post -> post.id },
-                    ) { post ->
-                        FeedPostItem(
-                            post = post,
-                            currentUser = uiState.currentUser,
-                            onClick = { post ->
-                                viewModel.handleIntent(FeedIntent.ShowMessage("postId:${post.id}"))
-                            },
-                            onNameClick = { viewModel.handleIntent(FeedIntent.ShowMessage(post.postUser.name)) },
-                            onLikeClick = {
-                                if (!post.isLiked) {
-                                    viewModel.handleIntent(
-                                        FeedIntent.LikePost(
-                                            post.id,
-                                            uiState.currentUser
-                                        )
-                                    )
-                                } else {
-                                    viewModel.handleIntent(
-                                        FeedIntent.UnlikePost(
-                                            post.id,
-                                            uiState.currentUser
-                                        )
-                                    )
-                                }
-                            },
-                            onAddCommentClick = {
-                                commentPostId = post.id
-                                commentContent = ""
-                            },
-                            onDeleteCommentClick = { comment ->
-                                pendingDeleteComment = if (comment.commentUser.id == uiState.currentUser.id) {
-                                    comment
-                                } else {
-                                    null
-                                }
-                            },
-                            onDeletePostClick = { post ->
-                                pendingDeletePostId = post.id
-                            },
-                            onPostAvatarClick = {
-                                viewModel.handleIntent(FeedIntent.ShowMessage(post.postUser.toString()))
-                            },
-                            onLikedAvatarClick = { user ->
-                                viewModel.handleIntent(FeedIntent.ShowMessage(user.toString()))
-                            },
-                            currentTime = currentTime,
-                            onCommentClick = { comment ->
-                                viewModel.handleIntent(FeedIntent.ShowMessage(comment.toString()))
-                            },
-                            onCommentUserClick = { user ->
-                                viewModel.handleIntent(FeedIntent.ShowMessage(user.toString()))
-                            },
-                        )
-                        HorizontalDivider(
-                            thickness = 0.5.dp,
-                            color = Color.LightGray
-                        )
                     }
                 }
             }

@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import kotlinproject.composeapp.generated.resources.Res
 import kotlinproject.composeapp.generated.resources.setting_content
 import kotlinproject.composeapp.generated.resources.setting_title
+import org.example.project.ui.theme.instagram.InstagramTheme
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,5 +53,7 @@ fun SettingScreen(navController: NavController) = InstagramSettingScreen(navCont
 @Composable
 @Preview(showBackground = true)
 fun InstagramSettingScreenPreview() {
-    InstagramSettingScreen(rememberNavController())
+    InstagramTheme {
+        InstagramSettingScreen(rememberNavController())
+    }
 }
