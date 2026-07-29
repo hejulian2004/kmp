@@ -1,12 +1,13 @@
 /**
  * @File: InstagramPostHeader.kt
  * @Package: org.example.project.ui.components.instagram.home
- * @Description: Instagram Post动态帖子头部作者信息与更多选项下拉菜单组件
+ * @Description: InstagramPost动态帖子头部作者信息、关注按钮与更多选项下拉菜单组件
  * @Author: 何聚敛
  * @Date: 2026-07-29
  */
 package org.example.project.ui.components.instagram.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MusicNote
@@ -46,14 +48,20 @@ import coil3.compose.AsyncImage
 import org.example.project.data.repository.instagram.createFakeInstagramPosts
 import org.example.project.domain.model.instagram.InstagramPost
 import org.example.project.domain.model.instagram.ProfileUser
+import org.example.project.ui.theme.instagram.InstagramLightGray
 import org.example.project.ui.theme.instagram.InstagramRed
 import org.example.project.ui.theme.instagram.InstagramTheme
 import kotlinproject.composeapp.generated.resources.Res
+import kotlinproject.composeapp.generated.resources.ins_about_this_account
 import kotlinproject.composeapp.generated.resources.ins_delete
+import kotlinproject.composeapp.generated.resources.ins_follow
+import kotlinproject.composeapp.generated.resources.ins_following
+import kotlinproject.composeapp.generated.resources.ins_report_post
+import kotlinproject.composeapp.generated.resources.ins_suggested_for_you
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 帖子顶部用户信息及更多下拉菜单栏组件
+ * 帖子顶部用户信息、关注按键及更多下拉菜单栏组件
  *
  * @param post 帖子实体
  * @param currentUser 当前登录用户
@@ -61,6 +69,7 @@ import org.jetbrains.compose.resources.stringResource
  * @param onNameClick 点击用户名回调
  * @param onLocationClick 点击地理位置回调
  * @param onAudioClick 点击音乐名称回调
+ * @param onFollowClick 点击关注按钮回调(传递最新关注状态)
  * @param onDeletePostClick 删除帖子回调
  * @param modifier 外部修饰符
  */
@@ -72,6 +81,7 @@ fun InstagramPostHeader(
     onNameClick: () -> Unit = {},
     onLocationClick: () -> Unit = {},
     onAudioClick: () -> Unit = {},
+    onFollowClick: (Boolean) -> Unit = {},
     onDeletePostClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -80,7 +90,7 @@ fun InstagramPostHeader(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 作者头像
@@ -132,7 +142,43 @@ fun InstagramPostHeader(
                         }
                     )
                 }
+            } else {
+                Text(
+                    text = stringResource(Res.string.ins_suggested_for_you),
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f)
+                )
             }
+        }
+
+        // 关注按钮（非本人帖子展示关注/已关注按键）
+        if (post.postUser.userId != currentUser.userId) {
+            var isFollowing by remember(post.postUser.userId, post.postUser.isFollowing) {
+                mutableStateOf(post.postUser.isFollowing)
+            }
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(
+                        if (isFollowing) InstagramLightGray.copy(alpha = 0.6f)
+                        else InstagramLightGray
+                    )
+                    .clickable {
+                        isFollowing = !isFollowing
+                        onFollowClick(isFollowing)
+                    }
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = if (isFollowing) stringResource(Res.string.ins_following) else stringResource(Res.string.ins_follow),
+                    fontSize = 12.5.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+
+            Spacer(modifier = Modifier.width(4.dp))
         }
 
         // 更多选项下拉菜单图标
@@ -159,11 +205,11 @@ fun InstagramPostHeader(
                     )
                 } else {
                     DropdownMenuItem(
-                        text = { Text("About This Account") },
+                        text = { Text(stringResource(Res.string.ins_about_this_account)) },
                         onClick = { showMenuDropdown = false }
                     )
                     DropdownMenuItem(
-                        text = { Text("Report Post", color = InstagramRed) },
+                        text = { Text(stringResource(Res.string.ins_report_post), color = InstagramRed) },
                         onClick = { showMenuDropdown = false }
                     )
                 }
@@ -172,10 +218,7 @@ fun InstagramPostHeader(
     }
 }
 
-/**
- * Instagram Post头部用户信息组件Composable预览函数
- */
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun InstagramPostHeaderPreview() {
     InstagramTheme {
