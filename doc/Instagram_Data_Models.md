@@ -4,8 +4,8 @@
 
 ## 核心模型
 
-### 1. InstagramPost (帖子聚合模型)
-这是 Instagram 信息流的核心模型，包含了帖子、作者、媒体、评论及社交统计。
+### 1. InstagramPost (帖子/动态聚合模型)
+这是 Instagram 信息流的核心模型，全量用于 **Feed 动态帖子** 与 **顶部 Story 快拍栏**。包含了帖子、作者、媒体、评论及社交统计。
 
 | 字段 | 类型 | 说明 |
 | :--- | :--- | :--- |
@@ -17,7 +17,7 @@
 | `likedUsers` | `List<ProfileUser>` | 点赞用户列表 |
 | `isLiked` | `Boolean` | 当前用户是否已点赞 |
 | `createTime` | `Long` | 发布时间戳 |
-| `unreadNotificationCount` | `Int` | 未读通知数 |
+| `unreadNotificationCount` | `Int` | 未读通知数（在 Story 中用于标识未读圈/已读圈） |
 | **`location`** | `String?` | **[Ins特有]** 地理位置名称 |
 | **`taggedUsers`** | `List<ProfileUser>` | **[Ins特有]** 标记的用户列表 (Tag People) |
 | **`hashtags`** | `List<String>` | **[Ins特有]** 话题标签列表 (#hashtags) |
@@ -52,6 +52,14 @@
 | `content` | `String` | 评论内容 |
 | `createTime` | `Long` | 评论时间戳 |
 
+## 数据流与 MVI 架构
+
+`InstagramHomeScreen` 采用与 `FeedLineScreen` 100% 一致的 MVI 模式：
+- **`InstagramHomeRepository`**: 接口层定义 `getHomePosts()` 与 `getStories()`，统一返回 `Flow<List<InstagramPost>>`。
+- **`InstagramHomeRepositoryImpl`**: 纯内存 `StateFlow` 缓存存储与假数据产生器（不涉及 Room 等磁盘本地存储）。
+- **`InstagramHomeViewModel`**: 持有 `InstagramHomeUiState`，响应 `InstagramHomeIntent` 并通过 `Channel` 分发 `InstagramHomeEffect`。
+
 ## 设计原则
 - **UI 驱动**: 模型设计为“聚合”结构，ViewModel 获取后可直接用于 UI 渲染，无需二次查询作者或媒体详情。
+- **单一模型源**: 统一使用 `InstagramPost` 作为核心实体，避免冗余实体引入。
 - **对标通用**: 基础字段名与 `FeedLine` 保持 100% 一致，便于未来沉淀通用的社交组件。

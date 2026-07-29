@@ -1,27 +1,43 @@
 /**
  * @File: InstagramColor.kt
  * @Package: org.example.project.ui.theme.instagram
- * @Description: 定义 Instagram 品牌色及应用内使用的各类颜色常量
- * @Date: 2026-04-20
+ * @Description: Instagram设计系统颜色常量集合
+ * @Author: 何聚敛
+ * @Date: 2026-07-28
  */
 package org.example.project.ui.theme.instagram
 
 import androidx.compose.ui.graphics.Color
 
-/** 主品牌色：Instagram 经典蓝色 */
-val InstagramBlue = Color(0xFF0095f6)
-/** 文本及主要图标颜色：深黑色 */
-val InstagramBlack = Color(0xFF262626)
-/** 辅助文字颜色：深灰色 */
-val InstagramDarkGray = Color(0xFF8e8e8e)
-/** 边框及背景辅助色：浅灰色 */
-val InstagramLightGray = Color(0xFFdbdbdb)
-/** 背景主色：纯白色 */
-val InstagramWhite = Color(0xFFffffff)
+/** Instagram品牌标准红 */
+val InstagramRed = Color(0xFFED4956)
 
-/** 快拍状态色：粉红色 */
-val InstagramStoryPink = Color(0xFFe1306c)
-/** 快拍状态色：紫色 */
-val InstagramStoryPurple = Color(0xFF833ab4)
-/** 快拍状态色：橙黄色 */
-val InstagramStoryYellow = Color(0xFFf56040)
+/** Instagram品牌标准蓝 */
+val InstagramBlue = Color(0xFF0095F6)
+
+/** Instagram纯黑 */
+val InstagramBlack = Color(0xFF121212)
+
+/** Instagram暗灰 */
+val InstagramDarkGray = Color(0xFF262626)
+
+/** Instagram浅灰 */
+val InstagramLightGray = Color(0xFFEFEFEF)
+
+/** Instagram Story渐变色——紫色段 */
+val InstagramStoryPurple = Color(0xFF833AB4)
+
+/** Instagram Story渐变色——粉红色段 */
+val InstagramStoryPink = Color(0xFFE1306C)
+
+/** Instagram Story渐变色——黄色段 */
+val InstagramStoryYellow = Color(0xFFF77737)
+
+/** Instagram LIVE直播标签渐变起始红 */
+val InstagramLiveGradientStart = Color(0xFFC13584)
+
+/** Instagram LIVE直播标签渐变结束紫 */
+val InstagramLiveGradientEnd = Color(0xFF833AB4)
+
+/** Instagram遮罩层暗色 */
+val InstagramOverlayDark = Color(0x99000000)

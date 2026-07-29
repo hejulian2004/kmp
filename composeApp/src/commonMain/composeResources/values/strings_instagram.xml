@@ -34,4 +34,25 @@
     <string name="stat_posts">Posts</string>
     <string name="stat_followers">Followers</string>
     <string name="stat_following">Following</string>
+    <string name="ins_your_story">Your story</string>
+    <string name="ins_live">LIVE</string>
+    <string name="ins_more">more</string>
+    <string name="ins_delete">Delete</string>
+    <string name="ins_delete_post_title">Delete Post?</string>
+    <string name="ins_delete_post_msg">Are you sure you want to delete this post? This action cannot be undone.</string>
+    <string name="ins_delete_comment_title">Delete Comment?</string>
+    <string name="ins_delete_comment_msg">Are you sure you want to delete this comment?</string>
+    <string name="ins_add_comment_placeholder">Add a comment...</string>
+    <string name="ins_post_comment">Post</string>
+    <string name="ins_no_posts">No posts available</string>
+    <string name="ins_view_all_comments">View all %1$d comments</string>
+    <string name="ins_likes_count">%1$s likes</string>
+    <string name="ins_repost">Repost</string>
+    <string name="ins_follow">Follow</string>
+    <string name="ins_following">Following</string>
+    <string name="ins_suggested_for_you">Suggested for you</string>
+    <string name="ins_about_this_account">About This Account</string>
+    <string name="ins_report_post">Report Post</string>
+    <string name="ins_unit_wan">%1$dW</string>
+    <string name="ins_unit_wan_decimal">%1$d.%2$dW</string>
 </resources>

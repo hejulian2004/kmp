@@ -34,4 +34,25 @@
     <string name="stat_posts">帖子</string>
     <string name="stat_followers">粉丝</string>
     <string name="stat_following">关注</string>
+    <string name="ins_your_story">你的快拍</string>
+    <string name="ins_live">直播</string>
+    <string name="ins_more">展开</string>
+    <string name="ins_delete">删除</string>
+    <string name="ins_delete_post_title">确定删除帖子？</string>
+    <string name="ins_delete_post_msg">确定要删除这条帖子吗？删除后不可恢复。</string>
+    <string name="ins_delete_comment_title">确定删除评论？</string>
+    <string name="ins_delete_comment_msg">确定要删除这条评论吗？</string>
+    <string name="ins_add_comment_placeholder">添加评论...</string>
+    <string name="ins_post_comment">发布</string>
+    <string name="ins_no_posts">暂无动态</string>
+    <string name="ins_view_all_comments">查看全部 %1$d 条评论</string>
+    <string name="ins_likes_count">%1$s次赞</string>
+    <string name="ins_repost">转发</string>
+    <string name="ins_follow">关注</string>
+    <string name="ins_following">已关注</string>
+    <string name="ins_suggested_for_you">为你推荐</string>
+    <string name="ins_about_this_account">关于此账号</string>
+    <string name="ins_report_post">举报帖子</string>
+    <string name="ins_unit_wan">%1$d万</string>
+    <string name="ins_unit_wan_decimal">%1$d.%2$d万</string>
 </resources>

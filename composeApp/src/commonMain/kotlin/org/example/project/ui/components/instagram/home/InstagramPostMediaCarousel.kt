@@ -198,11 +198,8 @@ private fun DoubleTapHeartOverlay(
     }
 }
 
-/**
- * Instagram Post媒体轮播组件Composable预览函数
- */
 @OptIn(ExperimentalFoundationApi::class)
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun InstagramPostMediaCarouselPreview() {
     InstagramTheme {
