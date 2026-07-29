@@ -14,6 +14,7 @@ data class InstagramProfileUser(
     val postCount: String,
     val followerCount: String,
     val followingCount: String,
+    val isFollowing: Boolean = false
 )
 
 typealias ProfileUser = InstagramProfileUser

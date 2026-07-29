@@ -1,7 +1,7 @@
 /**
  * @File: InstagramHomeRepositoryImpl.kt
  * @Package: org.example.project.data.repository.instagram
- * @Description: Instagram 首页纯内存数据库缓存与仓库实现（全量统一使用 InstagramPost 实体）
+ * @Description: Instagram首页纯内存数据库缓存与仓库实现（全量统一使用InstagramPost实体）
  * @Author: 何聚敛
  * @Date: 2026-07-28
  */
@@ -21,7 +21,7 @@ import org.example.project.platform.currentTimeMillis
 import kotlin.random.Random
 
 /**
- * Instagram 首页数据仓库实现类（基于内存 MutableStateFlow 进行状态存储与假数据分发）
+ * Instagram首页数据仓库实现类（基于内存MutableStateFlow进行状态存储与假数据分发）
  */
 class InstagramHomeRepositoryImpl : InstagramHomeRepository {
 
@@ -142,9 +142,9 @@ class InstagramHomeRepositoryImpl : InstagramHomeRepository {
 private fun generateUuid(): String = "id_" + Random.nextLong(100000, 999999)
 
 /**
- * 生成预置 Story 假数据列表
+ * 生成预置Story假数据列表
  *
- * @return 基于 InstagramPost 实体的快拍假数据列表
+ * @return 基于InstagramPost实体的快拍假数据列表
  */
 fun createFakeInstagramStories(): List<InstagramPost> {
     val users = listOf(
@@ -212,9 +212,9 @@ fun createFakeInstagramStories(): List<InstagramPost> {
 }
 
 /**
- * 生成预置 Feed 动态假数据列表
+ * 生成预置Feed动态假数据列表
  *
- * @return 包含多图 Carousel、定位、原声等属性的 Feed 动态假数据列表
+ * @return 包含多图Carousel、定位、原声等属性的Feed动态假数据列表
  */
 fun createFakeInstagramPosts(): List<InstagramPost> {
     val uAlexa = ProfileUser("u1", "alexa_art", "https://picsum.photos/seed/u1/200/200", "Digital Artist", "120", "15.4k", "420")
@@ -244,6 +244,8 @@ fun createFakeInstagramPosts(): List<InstagramPost> {
             ),
             isLiked = true,
             isSaved = true,
+            repostCount = 8702L,
+            shareCount = 21000L,
             createTime = now - 2 * 3600 * 1000L
         ),
         InstagramPost(
@@ -262,6 +264,8 @@ fun createFakeInstagramPosts(): List<InstagramPost> {
             ),
             isLiked = false,
             isSaved = false,
+            repostCount = 41000L,
+            shareCount = 33000L,
             createTime = now - 5 * 3600 * 1000L
         ),
         InstagramPost(

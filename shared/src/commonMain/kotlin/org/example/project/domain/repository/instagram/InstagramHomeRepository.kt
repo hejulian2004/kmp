@@ -1,7 +1,7 @@
 /**
  * @File: InstagramHomeRepository.kt
  * @Package: org.example.project.domain.repository.instagram
- * @Description: Instagram 首页数据仓库接口（全量使用 InstagramPost 实体）
+ * @Description: Instagram首页数据仓库接口（全量使用InstagramPost实体）
  * @Author: 何聚敛
  * @Date: 2026-07-28
  */
@@ -13,13 +13,13 @@ import org.example.project.domain.model.instagram.InstagramPost
 import org.example.project.domain.model.instagram.ProfileUser
 
 /**
- * Instagram 首页数据仓库接口
+ * Instagram首页数据仓库接口
  */
 interface InstagramHomeRepository {
-    /** 获取 Feed 动态列表 */
+    /** 获取Feed动态列表 */
     fun getHomePosts(): Flow<List<InstagramPost>>
 
-    /** 获取 Story 快拍列表 */
+    /** 获取Story快拍列表 */
     fun getStories(): Flow<List<InstagramPost>>
 
     /** 刷新首页 */

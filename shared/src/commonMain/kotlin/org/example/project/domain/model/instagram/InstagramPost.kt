@@ -26,6 +26,7 @@ data class InstagramPost(
     val collaborators: List<ProfileUser> = emptyList(),
     val isSaved: Boolean = false,
     val savedCount: Long? = null,
+    val repostCount: Long? = null,
     val shareCount: Long? = null,
     val viewCount: Long? = null,
 
