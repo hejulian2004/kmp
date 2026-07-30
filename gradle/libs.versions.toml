@@ -32,6 +32,7 @@ material3 = "1.11.1"
 materialIconsExtendedVersion = "1.7.3"
 navigationComposeVersion = "2.9.2"
 robolectric = "4.16.1"
+androidxSecurityCrypto = "1.1.0-alpha06"
 runner = "1.7.0"
 startupRuntime = "1.2.0"
 uiautomator = "2.4.0-alpha05"
@@ -48,6 +49,7 @@ androidx-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-t
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-runner = { module = "androidx.test:runner", version.ref = "runner" }
+androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "androidxSecurityCrypto" }
 androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version.ref = "startupRuntime" }
 androidx-testExt-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-testExt" }
 androidx-ui-test = { module = "androidx.compose.ui:ui-test", version.ref = "compose" }
