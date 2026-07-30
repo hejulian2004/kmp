@@ -7,13 +7,18 @@
  */
 package org.example.project.domain.model.feedline
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 sealed interface FeedLineMedia {
+    @Serializable
     data class Image(
         val url: String,
         val width: Int? = null,
         val height: Int? = null
     ) : FeedLineMedia
 
+    @Serializable
     data class Video(
         val coverUrl: String? = null,
         val videoUrl: String,

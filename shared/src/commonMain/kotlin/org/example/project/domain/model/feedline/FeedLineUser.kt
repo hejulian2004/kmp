@@ -7,6 +7,9 @@
  */
 package org.example.project.domain.model.feedline
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class FeedLineUser(
     val id: String,
     val name: String,

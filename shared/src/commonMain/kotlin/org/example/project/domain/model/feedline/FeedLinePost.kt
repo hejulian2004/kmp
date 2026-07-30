@@ -7,8 +7,10 @@
  */
 package org.example.project.domain.model.feedline
 
+import kotlinx.serialization.Serializable
 import org.example.project.platform.currentTimeMillis
 
+@Serializable
 data class FeedLinePost (
     val id: String,
     val postUser: FeedLineUser,

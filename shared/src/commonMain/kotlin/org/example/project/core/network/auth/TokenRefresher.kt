@@ -16,6 +16,7 @@ import io.ktor.http.contentType
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
+import org.example.project.core.network.config.ApiEndpoints
 
 /**
  * 刷新Token的Request Body
@@ -40,11 +41,11 @@ private data class RefreshTokenResponse(
  * 包含单飞(Single-Flight)机制，并发401请求合并为一次网络调用。
  * 
  * @param tokenStore 本地Token凭据存储
- * @param refreshEndpoint 刷新接口的完整URL地址（默认"/api/v1/auth/refresh"）
+ * @param refreshEndpoint 刷新接口的完整URL地址（默认ApiEndpoints.Auth.REFRESH）
  */
 class TokenRefresher(
     private val tokenStore: TokenStore,
-    private val refreshEndpoint: String = "/api/v1/auth/refresh"
+    private val refreshEndpoint: String = ApiEndpoints.Auth.REFRESH
 ) {
     private val mutex = Mutex()
 

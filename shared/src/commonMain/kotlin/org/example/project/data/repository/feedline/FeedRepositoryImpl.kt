@@ -7,17 +7,23 @@
  */
 package org.example.project.data.repository.feedline
 
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
+import org.example.project.core.network.client.NetworkContainer
+import org.example.project.core.network.config.ApiEndpoints
+import org.example.project.core.network.config.createFakeFeedPosts
+import org.example.project.domain.error.toAppError
 import org.example.project.domain.model.feedline.FeedLineComment
 import org.example.project.domain.model.feedline.FeedLineMedia
 import org.example.project.domain.model.feedline.FeedLineNotification
 import org.example.project.domain.model.feedline.FeedLinePost
 import org.example.project.domain.model.feedline.FeedLineUser
 import org.example.project.domain.repository.feedline.FeedLineRepository
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlin.math.abs
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
@@ -29,13 +35,15 @@ fun generateUUID(): String {
     return Uuid.random().toString()
 }
 
-class FeedRepositoryImpl : FeedLineRepository {
-    // In-memory data structures
+class FeedRepositoryImpl(
+    private val networkContainer: NetworkContainer? = null
+) : FeedLineRepository {
+    // 内存流状态结构
     private val _feedPosts = MutableStateFlow<List<FeedLinePost>>(emptyList())
     private val _feedNotifications = MutableStateFlow<List<FeedLineNotification>>(emptyList())
 
     init {
-        _feedPosts.value = createFakeData()
+        _feedPosts.value = createFakeFeedPosts()
     }
 
     override fun getFeedPosts(): Flow<List<FeedLinePost>> {
@@ -51,12 +59,27 @@ class FeedRepositoryImpl : FeedLineRepository {
     }
 
     override suspend fun refreshFeed() {
-        delay(1000.milliseconds)
-        // TODO: Replace with Ktor call
-        // val networkPosts = KtorClient.service.getFeedPosts()
-        
-        // Mock network delay and return fake data for now
-        _feedPosts.value = createFakeData().sortedByDescending { it.createTime }
+        val container = networkContainer
+        if (container != null) {
+            runCatching {
+                val remotePosts = container.authorizedClient
+                    .get(ApiEndpoints.FeedLine.GET_POSTS)
+                    .body<List<FeedLinePost>>()
+                if (remotePosts.isNotEmpty()) {
+                    _feedPosts.value = remotePosts.sortedByDescending { it.createTime }
+                } else {
+                    // 开发阶段接口无数据时，默认填充 Mock 假数据
+                    _feedPosts.value = createFakeFeedPosts().sortedByDescending { it.createTime }
+                }
+            }.onFailure {
+                // 开发阶段无真实后端服务时，默认正常返回假数据
+                delay(500.milliseconds)
+                _feedPosts.value = createFakeFeedPosts().sortedByDescending { it.createTime }
+            }
+        } else {
+            delay(500.milliseconds)
+            _feedPosts.value = createFakeFeedPosts().sortedByDescending { it.createTime }
+        }
     }
 
     override suspend fun likePost(
@@ -113,7 +136,8 @@ class FeedRepositoryImpl : FeedLineRepository {
         commentUser: FeedLineUser,
         content: String
     ): String {
-        val newComment = createComment(
+        val newComment = FeedLineComment(
+            id = generateUUID(),
             postId = postId,
             commentUser = commentUser,
             content = content
@@ -224,68 +248,6 @@ class FeedRepositoryImpl : FeedLineRepository {
             notifications.map { it.copy(isRead = true) }
         }
     }
-}
-
-fun createFakeData(): List<FeedLinePost> {
-    val user = FeedLineUser(id = "1", name = "何聚敛1", avatarUrl = "https://i.pravatar.cc/300?t=" + abs(Random.nextLong() % 1000))
-    return listOf(
-        createFakePost(user),
-        createFakePost(user.copy(id = "2", name = "何聚敛2", avatarUrl = "https://i.pravatar.cc/300?t=" + abs(Random.nextLong() % 1000))),
-        createFakePost(user.copy(id = "3", name = "何聚敛3", avatarUrl = "https://i.pravatar.cc/300?t=" + abs(Random.nextLong() % 1000))),
-        createFakePost(user.copy(id = "4", name = "何聚敛4", avatarUrl = "https://i.pravatar.cc/300?t=" + abs(Random.nextLong() % 1000))),
-        createFakePost(user.copy(id = "5", name = "何聚敛5", avatarUrl = "https://i.pravatar.cc/300?t=" + abs(Random.nextLong() % 1000))),
-        createFakePost(user.copy(id = "6", name = "何聚敛6", avatarUrl = "https://i.pravatar.cc/300?t=" + abs(Random.nextLong() % 1000))),
-    )
-}
-
-private fun createComment(postId: String, commentUser: FeedLineUser, content: String): FeedLineComment {
-    return FeedLineComment(
-        id = generateUUID(),
-        postId = postId,
-        commentUser = commentUser,
-        content = content
-    )
-}
-
-fun createFakePost(user: FeedLineUser): FeedLinePost {
-    val fakeLikedUser: List<FeedLineUser> = listOf(
-        FeedLineUser(id = "11", name = "张三", avatarUrl = "https://i.pravatar.cc/300?img=1"),
-        FeedLineUser(id = "22", name = "李四", avatarUrl = "https://i.pravatar.cc/300?img=2"),
-        FeedLineUser(id = "33", name = "王五", avatarUrl = "https://i.pravatar.cc/300?img=3"),
-        FeedLineUser(id = "44", name = "张三2", avatarUrl = "https://i.pravatar.cc/300?img=4"),
-        FeedLineUser(id = "55", name = "李四2", avatarUrl = "https://i.pravatar.cc/300?img=5"),
-        FeedLineUser(id = "66", name = "王五2", avatarUrl = "https://i.pravatar.cc/300?img=6"),
-        FeedLineUser(id = "77", name = "张三3", avatarUrl = "https://i.pravatar.cc/300?img=7"),
-        FeedLineUser(id = "88", name = "李四4", avatarUrl = "https://i.pravatar.cc/300?img=8"),
-        FeedLineUser(id = "99", name = "王五5", avatarUrl = "https://i.pravatar.cc/300?img=9")
-    )
-    val postId = generateUUID()
-    return FeedLinePost(
-        id = postId,
-        postUser = user,
-        content = "这是一个测试内容,这是一个测试内容,这是一个测试内容,这是一个测试内容,这是一个测试内容-----------------------------------------------\n---\n---\n---\n" + abs(Random.nextLong() % 1000),
-        likedUsers = fakeLikedUser,
-        commentsList = listOf(
-            FeedLineComment(
-                id = generateUUID(),
-                postId = postId,
-                commentUser = FeedLineUser(id = "11", name = "张三", avatarUrl = "https://i.pravatar.cc/300?img=1"),
-                content = "这个朋友圈写得不错"
-            ),
-            FeedLineComment(
-                id = generateUUID(),
-                postId = postId,
-                commentUser = FeedLineUser(id = "22", name = "李四", avatarUrl = "https://i.pravatar.cc/300?img=2"),
-                content = "这个朋友圈写得不错，这个朋友圈写得不错"
-            ),
-            FeedLineComment(
-                id = generateUUID(),
-                postId = postId,
-                commentUser = FeedLineUser(id = "3", name = "王五", avatarUrl = "https://i.pravatar.cc/300?img=3"),
-                content = "这个朋友圈写得不错，这个朋友圈写得不错，这个朋友圈写得不错"
-            )
-        )
-    )
 }
 
 
