@@ -79,3 +79,9 @@ private fun createSingleFakePost(user: FeedLineUser): FeedLinePost {
         )
     )
 }
+
+fun createFakeData(): List<FeedLinePost> = createFakeFeedPosts()
+
+fun createFakePost(user: FeedLineUser = FeedLineUser(id = "1", name = "何聚敛1", avatarUrl = "https://i.pravatar.cc/300")): FeedLinePost {
+    return createSingleFakePost(user)
+}

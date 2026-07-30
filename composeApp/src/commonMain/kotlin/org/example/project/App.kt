@@ -23,6 +23,7 @@ import coil3.compose.setSingletonImageLoaderFactory
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
+import org.example.project.core.network.client.AppNetworkInitializer
 import org.example.project.data.repository.feedline.FeedRepositoryImpl
 import org.example.project.data.repository.feedline.generateUUID
 import org.example.project.domain.model.feedline.FeedLineUser
@@ -75,7 +76,9 @@ fun App() {
                         name = "何聚敛",
                         avatarUrl = "https://i.pravatar.cc/300"
                     )
-                    val feedRepository = FeedRepositoryImpl()
+                    val feedRepository = FeedRepositoryImpl(
+                        networkContainer = AppNetworkInitializer.container
+                    )
                     FeedLineViewModel(
                         feedRepository = feedRepository,
                         currentUser = currentUser

@@ -45,6 +45,7 @@ extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
 
 dependencies {
     implementation(project(":composeApp"))
+    implementation(project(":shared"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.compose.ui)
     implementation(libs.compose.uiToolingPreview)

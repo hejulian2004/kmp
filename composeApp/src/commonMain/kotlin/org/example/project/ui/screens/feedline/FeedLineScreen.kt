@@ -57,7 +57,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import org.example.project.data.repository.feedline.FeedRepositoryImpl
-import org.example.project.data.repository.feedline.createFakeData
+import org.example.project.core.network.config.createFakeData
 import org.example.project.data.repository.feedline.generateUUID
 import org.example.project.domain.model.feedline.FeedLineComment
 import org.example.project.domain.model.feedline.FeedLineMedia

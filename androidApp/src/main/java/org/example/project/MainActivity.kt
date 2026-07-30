@@ -12,11 +12,14 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import io.github.vinceglb.filekit.dialogs.init
 
+import org.example.project.core.network.client.AppNetworkInitializer
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         FileKit.init(this)
+        AppNetworkInitializer.init(applicationContext)
         SingletonImageLoader.setSafe { context ->
             ImageLoader.Builder(context)
             .components {
@@ -26,7 +29,6 @@ class MainActivity : ComponentActivity() {
             .crossfade(true)
             .build()
         }
-        enableEdgeToEdge()
         setContent {
             App()
         }
