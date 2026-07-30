@@ -7,6 +7,7 @@
  */
 package org.example.project.core.network
 
+import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.get
@@ -16,9 +17,12 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.example.project.core.network.auth.AuthTokens
 import org.example.project.core.network.auth.InMemorySecureStorage
+import org.example.project.core.network.auth.SessionManager
 import org.example.project.core.network.auth.TokenRefresher
 import org.example.project.core.network.auth.TokenStore
 import org.example.project.core.network.client.DefaultNetworkContainer
@@ -178,5 +182,32 @@ class NetworkClientTest {
 
         tokenStore.clearTokens()
         assertEquals(null, tokenStore.loadTokens())
+    }
+
+    @Test
+    fun testSessionExpiredEventOnRefreshFailure() = runTest {
+        val storage = InMemorySecureStorage()
+        val tokenStore = TokenStore(storage)
+        val oldTokens = AuthTokens("expired_access", "invalid_refresh")
+        tokenStore.saveTokens(oldTokens)
+
+        val tokenRefresher = TokenRefresher(tokenStore, refreshEndpoint = "https://example.com/api/v1/auth/refresh")
+        val mockEngine = MockEngine {
+            respond(
+                content = """{"error": "invalid_grant"}""",
+                status = HttpStatusCode.Unauthorized,
+                headers = headersOf("Content-Type", "application/json")
+            )
+        }
+        val publicClient = HttpClient(mockEngine)
+
+        val result = tokenRefresher.refreshToken(publicClient, oldTokens)
+        assertEquals(null, result)
+        assertEquals(null, tokenStore.loadTokens(), "刷新失败后 TokenStore 必须清除旧凭据")
+
+        val expiredEvent = SessionManager.sessionExpiredEvents.first()
+        assertEquals(Unit, expiredEvent, "刷新失败后必须广播 Session 登出失效事件")
+
+        publicClient.close()
     }
 }

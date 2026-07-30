@@ -68,7 +68,7 @@ class FeedRepositoryImpl(
                 if (remotePosts.isNotEmpty()) {
                     _feedPosts.value = remotePosts.sortedByDescending { it.createTime }
                 } else {
-                    // 开发阶段接口无数据时，默认填充 Mock 假数据
+                    // 开发阶段接口无数据时，默认填充Mock假数据
                     _feedPosts.value = createFakeFeedPosts().sortedByDescending { it.createTime }
                 }
             }.onFailure {

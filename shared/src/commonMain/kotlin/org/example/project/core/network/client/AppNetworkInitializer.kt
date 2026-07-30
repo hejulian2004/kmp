@@ -14,7 +14,7 @@ import org.example.project.core.network.auth.createPlatformSecureStorage
 /**
  * [AppNetworkInitializer]
  * 全局网络层单例初始化器。
- * 负责在各平台启动时组装原生 SecureStorage、TokenStore、TokenRefresher 及 NetworkContainer。
+ * 负责在各平台启动时组装原生SecureStorage、TokenStore、TokenRefresher及NetworkContainer。
  */
 object AppNetworkInitializer {
     private var _container: NetworkContainer? = null
@@ -36,7 +36,7 @@ object AppNetworkInitializer {
     /**
      * 显式初始化网络架构单例。
      * 
-     * @param context 平台相关 Context (Android 需传入 ApplicationContext，iOS 传入 null)
+     * @param context 平台相关Context(Android需传入ApplicationContext，iOS传入null)
      */
     fun init(context: Any? = null) {
         if (_container == null) {
