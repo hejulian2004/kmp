@@ -1,31 +1,35 @@
 /**
  * @File: FeedRepositoryImpl.kt
  * @Package: org.example.project.data.repository.feedline
- * @Description: 朋友圈数据仓库的具体内存与网络实现
+ * @Description: 朋友圈数据仓库的具体内存与网络实现（整合 Room KMP 本地 DAO 数据库持久化）
  * @Author: 何聚敛
- * @Date: 2026-07-20
+ * @Date: 2026-08-04
  */
 package org.example.project.data.repository.feedline
 
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import org.example.project.core.network.client.NetworkContainer
 import org.example.project.core.network.config.ApiEndpoints
 import org.example.project.core.network.config.createFakeFeedPosts
-import org.example.project.domain.error.toAppError
+import org.example.project.data.database.dao.feedline.FeedLineDao
+import org.example.project.data.database.dao.feedline.FeedLineDaoImpl
+import org.example.project.data.database.entity.feedline.FeedLineNotificationEntity
+import org.example.project.data.database.entity.feedline.FeedLinePostEntity
 import org.example.project.domain.model.feedline.FeedLineComment
 import org.example.project.domain.model.feedline.FeedLineMedia
 import org.example.project.domain.model.feedline.FeedLineNotification
 import org.example.project.domain.model.feedline.FeedLinePost
 import org.example.project.domain.model.feedline.FeedLineUser
 import org.example.project.domain.repository.feedline.FeedLineRepository
-import kotlin.math.abs
-import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -36,26 +40,34 @@ fun generateUUID(): String {
 }
 
 class FeedRepositoryImpl(
-    private val networkContainer: NetworkContainer? = null
+    private val networkContainer: NetworkContainer? = null,
+    private val feedLineDao: FeedLineDao = FeedLineDaoImpl(),
 ) : FeedLineRepository {
-    // 内存流状态结构
+
+    private val scope = CoroutineScope(Dispatchers.Default)
     private val _feedPosts = MutableStateFlow<List<FeedLinePost>>(emptyList())
     private val _feedNotifications = MutableStateFlow<List<FeedLineNotification>>(emptyList())
 
     init {
-        _feedPosts.value = createFakeFeedPosts()
+        val initialPosts = createFakeFeedPosts()
+        _feedPosts.value = initialPosts
+        scope.launch {
+            feedLineDao.insertPosts(initialPosts.map { FeedLinePostEntity.fromDomainModel(it) })
+        }
     }
 
     override fun getFeedPosts(): Flow<List<FeedLinePost>> {
-        return _feedPosts.map { posts ->
-            posts.sortedByDescending { it.createTime }
+        return feedLineDao.observePosts().map { entities ->
+            if (entities.isEmpty()) {
+                _feedPosts.value.sortedByDescending { it.createTime }
+            } else {
+                entities.map { it.toDomainModel() }.sortedByDescending { it.createTime }
+            }
         }
     }
 
     override fun getFeedPost(postId: String): Flow<FeedLinePost?> {
-        return _feedPosts.map { posts ->
-            posts.find { it.id == postId }
-        }
+        return getFeedPosts().map { posts -> posts.find { it.id == postId } }
     }
 
     override suspend fun refreshFeed() {
@@ -65,39 +77,31 @@ class FeedRepositoryImpl(
                 val remotePosts = container.authorizedClient
                     .get(ApiEndpoints.FeedLine.GET_POSTS)
                     .body<List<FeedLinePost>>()
-                if (remotePosts.isNotEmpty()) {
-                    _feedPosts.value = remotePosts.sortedByDescending { it.createTime }
-                } else {
-                    // 开发阶段接口无数据时，默认填充Mock假数据
-                    _feedPosts.value = createFakeFeedPosts().sortedByDescending { it.createTime }
-                }
+                val targetPosts = if (remotePosts.isNotEmpty()) remotePosts else createFakeFeedPosts()
+                _feedPosts.value = targetPosts
+                feedLineDao.insertPosts(targetPosts.map { FeedLinePostEntity.fromDomainModel(it) })
             }.onFailure {
-                // 开发阶段无真实后端服务时，默认正常返回假数据
                 delay(500.milliseconds)
-                _feedPosts.value = createFakeFeedPosts().sortedByDescending { it.createTime }
+                val mockPosts = createFakeFeedPosts()
+                _feedPosts.value = mockPosts
+                feedLineDao.insertPosts(mockPosts.map { FeedLinePostEntity.fromDomainModel(it) })
             }
         } else {
             delay(500.milliseconds)
-            _feedPosts.value = createFakeFeedPosts().sortedByDescending { it.createTime }
+            val mockPosts = createFakeFeedPosts()
+            _feedPosts.value = mockPosts
+            feedLineDao.insertPosts(mockPosts.map { FeedLinePostEntity.fromDomainModel(it) })
         }
     }
 
-    override suspend fun likePost(
-        postId: String,
-        user: FeedLineUser
-    ): String {
-        val post = _feedPosts.value.find { it.id == postId }
-        if (post == null) {
-            return "点赞失败，找不到该帖子"
-        }
+    override suspend fun likePost(postId: String, user: FeedLineUser): String {
         _feedPosts.update { posts ->
-            posts.map {
-                if (it.id == postId) {
-                    it.copy(
-                        isLiked = true,
-                        likedUsers = it.likedUsers + user
-                    )
-                } else it
+            posts.map { post ->
+                if (post.id == postId) {
+                    val updated = post.copy(isLiked = true, likedUsers = post.likedUsers + user)
+                    scope.launch { feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(updated))) }
+                    updated
+                } else post
             }
         }
         return "点赞成功"
@@ -108,34 +112,23 @@ class FeedRepositoryImpl(
         return post?.likedUsers ?: emptyList()
     }
 
-    override suspend fun unlikePost(
-        postId: String,
-        user: FeedLineUser
-    ): String {
-        val post = _feedPosts.value.find { it.id == postId }
-        if (post == null) {
-            return "取消点赞失败，找不到该帖子"
-        }
+    override suspend fun unlikePost(postId: String, user: FeedLineUser): String {
         _feedPosts.update { posts ->
-            posts.map { p ->
-                if (p.id == postId) {
-                    p.copy(
+            posts.map { post ->
+                if (post.id == postId) {
+                    val updated = post.copy(
                         isLiked = false,
-                        likedUsers = p.likedUsers.filterNot { likedUser ->
-                            likedUser.id == user.id
-                        }
+                        likedUsers = post.likedUsers.filterNot { it.id == user.id }
                     )
-                } else p
+                    scope.launch { feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(updated))) }
+                    updated
+                } else post
             }
         }
         return "取消点赞成功"
     }
 
-    override suspend fun addComment(
-        postId: String,
-        commentUser: FeedLineUser,
-        content: String
-    ): String {
+    override suspend fun addComment(postId: String, commentUser: FeedLineUser, content: String): String {
         val newComment = FeedLineComment(
             id = generateUUID(),
             postId = postId,
@@ -143,10 +136,12 @@ class FeedRepositoryImpl(
             content = content
         )
         _feedPosts.update { posts ->
-            posts.map {
-                if (it.id == postId) {
-                    it.copy(commentsList = it.commentsList + newComment)
-                } else it
+            posts.map { post ->
+                if (post.id == postId) {
+                    val updated = post.copy(commentsList = post.commentsList + newComment)
+                    scope.launch { feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(updated))) }
+                    updated
+                } else post
             }
         }
         return "评论发布成功"
@@ -160,47 +155,38 @@ class FeedRepositoryImpl(
         _feedPosts.update { posts ->
             posts.map { post ->
                 if (post.id == comment.postId) {
-                    post.copy(commentsList = post.commentsList.filter { it.id != comment.id })
+                    val updated = post.copy(commentsList = post.commentsList.filter { it.id != comment.id })
+                    scope.launch { feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(updated))) }
+                    updated
                 } else post
             }
         }
         return "评论删除成功"
     }
 
-    override suspend fun createPost(
-        user: FeedLineUser,
-        content: String,
-        mediaList: List<FeedLineMedia>
-    ) {
+    override suspend fun createPost(user: FeedLineUser, content: String, mediaList: List<FeedLineMedia>) {
         val newPost = FeedLinePost(
             id = generateUUID(),
             postUser = user,
             content = content,
             mediaList = mediaList,
         )
-        _feedPosts.update { posts ->
-            posts + newPost
-        }
+        _feedPosts.update { posts -> posts + newPost }
+        feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(newPost)))
     }
 
     override suspend fun deletePost(postId: String) {
-        _feedPosts.update { posts ->
-            posts.filterNot { it.id == postId }
-        }
-        _feedNotifications.update { notifications ->
-            notifications.filterNot { it.post.id == postId }
-        }
+        _feedPosts.update { posts -> posts.filterNot { it.id == postId } }
+        feedLineDao.deletePost(postId)
     }
 
-    override suspend fun updatePost(
-        postId: String,
-        content: String,
-        mediaList: List<FeedLineMedia>
-    ) {
+    override suspend fun updatePost(postId: String, content: String, mediaList: List<FeedLineMedia>) {
         _feedPosts.update { posts ->
             posts.map { post ->
                 if (post.id == postId) {
-                    post.copy(content = content, mediaList = mediaList)
+                    val updated = post.copy(content = content, mediaList = mediaList)
+                    scope.launch { feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(updated))) }
+                    updated
                 } else post
             }
         }
@@ -208,24 +194,19 @@ class FeedRepositoryImpl(
 
     override suspend fun addNotification(feedNotification: FeedLineNotification) {
         _feedNotifications.update { notifications ->
-            val exists = notifications.any {
-                it.id == feedNotification.id || (
-                    feedNotification.isLikeNotification &&
-                    it.isLikeNotification &&
-                    !it.isDelete &&
-                    it.post.id == feedNotification.post.id &&
-                    it.user.id == feedNotification.user.id
-                )
-            }
+            val exists = notifications.any { it.id == feedNotification.id }
             if (exists) notifications else notifications + feedNotification
         }
+        feedLineDao.insertNotifications(listOf(FeedLineNotificationEntity.fromDomainModel(feedNotification)))
     }
 
     override suspend fun deleteCommentNotification(feedNotification: FeedLineNotification) {
         _feedNotifications.update { notifications ->
             notifications.map { notification ->
                 if (notification.id == feedNotification.id) {
-                    notification.copy(isDelete = true)
+                    val updated = notification.copy(isDelete = true)
+                    scope.launch { feedLineDao.insertNotifications(listOf(FeedLineNotificationEntity.fromDomainModel(updated))) }
+                    updated
                 } else notification
             }
         }
@@ -233,21 +214,25 @@ class FeedRepositoryImpl(
 
     override suspend fun deleteLikeNotification(feedNotification: FeedLineNotification) {
         _feedNotifications.update { notifications ->
-            notifications.filterNot { it.id == feedNotification.id || (it.post.id == feedNotification.post.id && it.user.id == feedNotification.user.id && it.isLikeNotification) }
+            notifications.filterNot { it.id == feedNotification.id }
         }
     }
 
     override fun getNotifications(): Flow<List<FeedLineNotification>> {
-        return _feedNotifications.map { notifications ->
-            notifications.sortedByDescending { it.createdTime }
+        return feedLineDao.observeNotifications().map { entities ->
+            if (entities.isEmpty()) {
+                _feedNotifications.value.sortedByDescending { it.createdTime }
+            } else {
+                entities.map { it.toDomainModel() }.sortedByDescending { it.createdTime }
+            }
         }
     }
 
     override suspend fun markAllNotificationsAsRead() {
         _feedNotifications.update { notifications ->
-            notifications.map { it.copy(isRead = true) }
+            val readList = notifications.map { it.copy(isRead = true) }
+            scope.launch { feedLineDao.insertNotifications(readList.map { FeedLineNotificationEntity.fromDomainModel(it) }) }
+            readList
         }
     }
 }
-
-

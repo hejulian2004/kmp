@@ -1,17 +1,23 @@
 /**
  * @File: InstagramHomeRepositoryImpl.kt
  * @Package: org.example.project.data.repository.instagram
- * @Description: Instagram首页纯内存数据库缓存与仓库实现（全量统一使用InstagramPost实体）
+ * @Description: Instagram 首页数据仓库实现（结合 Room KMP 本地数据库持久化）
  * @Author: 何聚敛
- * @Date: 2026-07-28
+ * @Date: 2026-08-04
  */
 package org.example.project.data.repository.instagram
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import org.example.project.data.database.dao.instagram.InstagramDao
+import org.example.project.data.database.dao.instagram.InstagramDaoImpl
+import org.example.project.data.database.entity.instagram.InstagramPostEntity
 import org.example.project.domain.model.instagram.InstagramComment
 import org.example.project.domain.model.instagram.InstagramMedia
 import org.example.project.domain.model.instagram.InstagramPost
@@ -20,31 +26,52 @@ import org.example.project.domain.repository.instagram.InstagramHomeRepository
 import org.example.project.platform.currentTimeMillis
 import kotlin.random.Random
 
-/**
- * Instagram首页数据仓库实现类（基于内存MutableStateFlow进行状态存储与假数据分发）
- */
-class InstagramHomeRepositoryImpl : InstagramHomeRepository {
+class InstagramHomeRepositoryImpl(
+    private val instagramDao: InstagramDao = InstagramDaoImpl()
+) : InstagramHomeRepository {
 
+    private val scope = CoroutineScope(Dispatchers.Default)
     private val postsFlow = MutableStateFlow<List<InstagramPost>>(emptyList())
     private val storiesFlow = MutableStateFlow<List<InstagramPost>>(emptyList())
 
     init {
-        postsFlow.value = createFakeInstagramPosts()
-        storiesFlow.value = createFakeInstagramStories()
+        val initialPosts = createFakeInstagramPosts()
+        val initialStories = createFakeInstagramStories()
+        postsFlow.value = initialPosts
+        storiesFlow.value = initialStories
+
+        scope.launch {
+            instagramDao.insertPosts(
+                initialPosts.map { InstagramPostEntity.fromDomainModel(it, isStory = false) } +
+                initialStories.map { InstagramPostEntity.fromDomainModel(it, isStory = true) }
+            )
+        }
     }
 
-    override fun getHomePosts(): Flow<List<InstagramPost>> = postsFlow.asStateFlow()
+    override fun getHomePosts(): Flow<List<InstagramPost>> {
+        return instagramDao.observePosts().map { entities ->
+            if (entities.isEmpty()) postsFlow.value else entities.map { it.toDomainModel() }
+        }
+    }
 
-    override fun getStories(): Flow<List<InstagramPost>> = storiesFlow.asStateFlow()
+    override fun getStories(): Flow<List<InstagramPost>> {
+        return instagramDao.observeStories().map { entities ->
+            if (entities.isEmpty()) storiesFlow.value else entities.map { it.toDomainModel() }
+        }
+    }
 
     override suspend fun refreshHome() {
         delay(600)
         postsFlow.update { current ->
-            current.map { post ->
+            val updated = current.map { post ->
                 if (Random.nextBoolean()) {
                     post.copy(unreadNotificationCount = (0..3).random())
                 } else post
             }
+            scope.launch {
+                instagramDao.insertPosts(updated.map { InstagramPostEntity.fromDomainModel(it, isStory = false) })
+            }
+            updated
         }
     }
 
@@ -55,7 +82,11 @@ class InstagramHomeRepositoryImpl : InstagramHomeRepository {
                     val newLikedUsers = if (post.likedUsers.none { it.userId == currentUser.userId }) {
                         post.likedUsers + currentUser
                     } else post.likedUsers
-                    post.copy(isLiked = true, likedUsers = newLikedUsers)
+                    val updated = post.copy(isLiked = true, likedUsers = newLikedUsers)
+                    scope.launch {
+                        instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(updated, isStory = false)))
+                    }
+                    updated
                 } else post
             }
         }
@@ -66,7 +97,11 @@ class InstagramHomeRepositoryImpl : InstagramHomeRepository {
             current.map { post ->
                 if (post.id == postId) {
                     val newLikedUsers = post.likedUsers.filterNot { it.userId == currentUser.userId }
-                    post.copy(isLiked = false, likedUsers = newLikedUsers)
+                    val updated = post.copy(isLiked = false, likedUsers = newLikedUsers)
+                    scope.launch {
+                        instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(updated, isStory = false)))
+                    }
+                    updated
                 } else post
             }
         }
@@ -75,7 +110,13 @@ class InstagramHomeRepositoryImpl : InstagramHomeRepository {
     override suspend fun savePost(postId: String) {
         postsFlow.update { current ->
             current.map { post ->
-                if (post.id == postId) post.copy(isSaved = true) else post
+                if (post.id == postId) {
+                    val updated = post.copy(isSaved = true)
+                    scope.launch {
+                        instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(updated, isStory = false)))
+                    }
+                    updated
+                } else post
             }
         }
     }
@@ -83,7 +124,13 @@ class InstagramHomeRepositoryImpl : InstagramHomeRepository {
     override suspend fun unsavePost(postId: String) {
         postsFlow.update { current ->
             current.map { post ->
-                if (post.id == postId) post.copy(isSaved = false) else post
+                if (post.id == postId) {
+                    val updated = post.copy(isSaved = false)
+                    scope.launch {
+                        instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(updated, isStory = false)))
+                    }
+                    updated
+                } else post
             }
         }
     }
@@ -99,7 +146,11 @@ class InstagramHomeRepositoryImpl : InstagramHomeRepository {
         postsFlow.update { current ->
             current.map { post ->
                 if (post.id == postId) {
-                    post.copy(commentsList = post.commentsList + newComment)
+                    val updated = post.copy(commentsList = post.commentsList + newComment)
+                    scope.launch {
+                        instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(updated, isStory = false)))
+                    }
+                    updated
                 } else post
             }
         }
@@ -109,16 +160,19 @@ class InstagramHomeRepositoryImpl : InstagramHomeRepository {
         postsFlow.update { current ->
             current.map { post ->
                 if (post.id == postId) {
-                    post.copy(commentsList = post.commentsList.filterNot { it.id == commentId })
+                    val updated = post.copy(commentsList = post.commentsList.filterNot { it.id == commentId })
+                    scope.launch {
+                        instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(updated, isStory = false)))
+                    }
+                    updated
                 } else post
             }
         }
     }
 
     override suspend fun deletePost(postId: String) {
-        postsFlow.update { current ->
-            current.filterNot { it.id == postId }
-        }
+        postsFlow.update { current -> current.filterNot { it.id == postId } }
+        instagramDao.deletePost(postId)
     }
 
     override suspend fun createPost(
@@ -136,16 +190,12 @@ class InstagramHomeRepositoryImpl : InstagramHomeRepository {
             createTime = currentTimeMillis()
         )
         postsFlow.update { listOf(newPost) + it }
+        instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(newPost, isStory = false)))
     }
 }
 
 private fun generateUuid(): String = "id_" + Random.nextLong(100000, 999999)
 
-/**
- * 生成预置Story假数据列表
- *
- * @return 基于InstagramPost实体的快拍假数据列表
- */
 fun createFakeInstagramStories(): List<InstagramPost> {
     val users = listOf(
         ProfileUser("u_me", "Your story", "https://picsum.photos/seed/me/200/200", "Creative Designer", "42", "1.2k", "340"),
@@ -211,11 +261,6 @@ fun createFakeInstagramStories(): List<InstagramPost> {
     )
 }
 
-/**
- * 生成预置Feed动态假数据列表
- *
- * @return 包含多图Carousel、定位、原声等属性的Feed动态假数据列表
- */
 fun createFakeInstagramPosts(): List<InstagramPost> {
     val uAlexa = ProfileUser("u1", "alexa_art", "https://picsum.photos/seed/u1/200/200", "Digital Artist", "120", "15.4k", "420")
     val uTravel = ProfileUser("u2", "travel_bug", "https://picsum.photos/seed/u2/200/200", "Exploring Earth 🌍", "350", "89.1k", "120")
