@@ -40,4 +40,12 @@ object ApiEndpoints {
     object Sdui {
         const val GET_LAYOUT = "/api/v1/sdui/layout"
     }
+
+    /** Airbnb 模块接口路径 */
+    object Airbnb {
+        const val GET_HOSTS = "/api/v1/airbnb/hosts"
+        const val GET_PROPERTIES = "/api/v1/airbnb/properties"
+        const val GET_REVIEWS = "/api/v1/airbnb/reviews"
+        const val GET_GUIDES = "/api/v1/airbnb/guides"
+    }
 }

@@ -2,10 +2,14 @@
  * @File: InstagramProfileUser.kt
  * @Package: org.example.project.domain.model.instagram
  * @Description: Instagram 用户主页个人信息数据模型
- * @Date: 2026-07-22
+ * @Author: 何聚敛
+ * @Date: 2026-08-04
  */
 package org.example.project.domain.model.instagram
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class InstagramProfileUser(
     val userId: String,
     val username: String,
@@ -19,6 +23,7 @@ data class InstagramProfileUser(
 
 typealias ProfileUser = InstagramProfileUser
 
+@Serializable
 data class InstagramDiscoverUser(
     val userId: String,
     val username: String,

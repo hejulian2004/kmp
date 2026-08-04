@@ -1,17 +1,21 @@
 /**
  * @File: HostProfileRepositoryImpl.kt
  * @Package: org.example.project.data.repository.airbnb
- * @Description: Airbnb房东与房源数据仓库实现类（结合 Room 本地 DAO 与 networkBoundResource 离线优先 SWR 机制）
+ * @Description: Airbnb房东与房源数据仓库实现类（遵循网络架构规范，结合 NetworkContainer、Room DAO 与 SWR 离线同步管道）
  * @Author: 何聚敛
  * @Date: 2026-08-04
  */
 package org.example.project.data.repository.airbnb
 
+import io.ktor.client.call.body
+import io.ktor.client.request.get
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import org.example.project.core.data.ResourceState
 import org.example.project.core.data.networkBoundResource
+import org.example.project.core.network.client.NetworkContainer
+import org.example.project.core.network.config.ApiEndpoints
 import org.example.project.data.database.dao.airbnb.HostProfileDao
 import org.example.project.data.database.entity.airbnb.HostEntity
 import org.example.project.data.database.entity.airbnb.HostReviewEntity
@@ -25,9 +29,10 @@ import org.example.project.domain.repository.airbnb.HostProfileRepository
 
 class HostProfileRepositoryImpl(
     private val dao: HostProfileDao,
+    private val networkContainer: NetworkContainer? = null,
 ) : HostProfileRepository {
 
-    // 假数据预置（保证在没有远程 Server 连接时也可在 Room 本地填充丰富数据）
+    // 假数据预置（开发测试阶段当后端 API 未就绪或无网络时平滑降级兜底）
     private val initialHosts = listOf(
         Host(
             id = "art-room-hk",
@@ -39,7 +44,7 @@ class HostProfileRepositoryImpl(
             languages = "中文和英语",
             identityVerified = true,
             superHost = true,
-            about = "ArtRoom",
+            about = "ArtRoom 是一个极具艺术气息的空间。",
             occupation = "艺术家 / 策展人",
             livesIn = "香港",
             hobbies = listOf("艺术展览", "城市散步", "咖啡烘焙", "室内设计"),
@@ -161,7 +166,17 @@ class HostProfileRepositoryImpl(
                 dao.observeHosts().map { list -> list.map { it.toDomainModel() } }
             },
             fetchRemote = {
-                initialHosts
+                val container = networkContainer
+                if (container != null) {
+                    runCatching {
+                        val remote = container.authorizedClient
+                            .get(ApiEndpoints.Airbnb.GET_HOSTS)
+                            .body<List<Host>>()
+                        if (remote.isNotEmpty()) remote else initialHosts
+                    }.getOrDefault(initialHosts)
+                } else {
+                    initialHosts
+                }
             },
             saveRemoteResult = { _, hosts ->
                 dao.insertHosts(hosts.map { HostEntity.fromDomainModel(it) })
@@ -176,7 +191,17 @@ class HostProfileRepositoryImpl(
                 dao.observeProperties().map { list -> list.map { it.toDomainModel() } }
             },
             fetchRemote = {
-                initialProperties
+                val container = networkContainer
+                if (container != null) {
+                    runCatching {
+                        val remote = container.authorizedClient
+                            .get(ApiEndpoints.Airbnb.GET_PROPERTIES)
+                            .body<List<PropertyListing>>()
+                        if (remote.isNotEmpty()) remote else initialProperties
+                    }.getOrDefault(initialProperties)
+                } else {
+                    initialProperties
+                }
             },
             saveRemoteResult = { _, properties ->
                 dao.insertProperties(properties.map { PropertyListingEntity.fromDomainModel(it) })
@@ -191,7 +216,17 @@ class HostProfileRepositoryImpl(
                 dao.observeReviews().map { list -> list.map { it.toDomainModel() } }
             },
             fetchRemote = {
-                initialReviews
+                val container = networkContainer
+                if (container != null) {
+                    runCatching {
+                        val remote = container.authorizedClient
+                            .get(ApiEndpoints.Airbnb.GET_REVIEWS)
+                            .body<List<HostReview>>()
+                        if (remote.isNotEmpty()) remote else initialReviews
+                    }.getOrDefault(initialReviews)
+                } else {
+                    initialReviews
+                }
             },
             saveRemoteResult = { _, reviews ->
                 dao.insertReviews(reviews.map { HostReviewEntity.fromDomainModel(it) })
@@ -206,7 +241,17 @@ class HostProfileRepositoryImpl(
                 dao.observeGuides().map { list -> list.map { it.toDomainModel() } }
             },
             fetchRemote = {
-                initialGuides
+                val container = networkContainer
+                if (container != null) {
+                    runCatching {
+                        val remote = container.authorizedClient
+                            .get(ApiEndpoints.Airbnb.GET_GUIDES)
+                            .body<List<TravelGuide>>()
+                        if (remote.isNotEmpty()) remote else initialGuides
+                    }.getOrDefault(initialGuides)
+                } else {
+                    initialGuides
+                }
             },
             saveRemoteResult = { _, guides ->
                 dao.insertGuides(guides.map { TravelGuideEntity.fromDomainModel(it) })
