@@ -108,6 +108,10 @@ fun InstagramHomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        org.example.project.ui.core.sdui.registry.registerInstagramSduiComponents()
+    }
+
     val snackbarHostState = remember { SnackbarHostState() }
     var snackbarJob by remember { mutableStateOf<Job?>(null) }
 

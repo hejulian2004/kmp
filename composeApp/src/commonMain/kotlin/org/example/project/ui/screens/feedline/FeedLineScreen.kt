@@ -96,6 +96,10 @@ fun FeedScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        org.example.project.ui.core.sdui.registry.registerFeedLineSduiComponents()
+    }
+
     val snackbarHostState = remember {
         SnackbarHostState()
     }
