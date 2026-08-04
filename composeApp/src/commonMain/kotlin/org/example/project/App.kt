@@ -80,8 +80,10 @@ fun App() {
                         name = "何聚敛",
                         avatarUrl = "https://i.pravatar.cc/300"
                     )
+                    val database = org.example.project.core.database.getRoomDatabase()
                     val feedRepository = FeedRepositoryImpl(
-                        networkContainer = AppNetworkInitializer.container
+                        networkContainer = AppNetworkInitializer.container,
+                        feedLineDao = database.feedLineDao()
                     )
                     FeedLineViewModel(
                         feedRepository = feedRepository,
