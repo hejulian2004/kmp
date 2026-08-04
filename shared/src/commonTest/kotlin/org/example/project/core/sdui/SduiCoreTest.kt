@@ -7,6 +7,7 @@
  */
 package org.example.project.core.sdui
 
+import kotlinx.coroutines.test.runTest
 import org.example.project.core.sdui.builder.sduiLayout
 import org.example.project.core.sdui.builder.toJson
 import org.example.project.core.sdui.repository.SduiLayoutRepositoryImpl
@@ -43,29 +44,60 @@ class SduiCoreTest {
         val bundledJson = """
             {
                 "componentType": "Column",
-                "properties": { "title": "内置兜底标题" },
+                "properties": { "title": "原生打包默认标题" },
                 "children": [
-                    { "componentType": "Text", "properties": { "text": "兜底文案" } }
+                    { "componentType": "Text", "properties": { "text": "原生打包默认文案" } }
                 ]
             }
         """.trimIndent()
 
-        // 1. 无内存缓存无磁盘缓存，走内置兜底 JSON
-        val fallbackNode = repository.getLayout("feedline", bundledJson)
-        assertEquals("Column", fallbackNode.componentType)
-        assertEquals("内置兜底标题", fallbackNode.properties["title"])
+        // 1. 无本地缓存时，默认使用原生打包内置 UI 模板
+        val nativeNode = repository.getLayout("feedline", bundledJson)
+        assertEquals("Column", nativeNode.componentType)
+        assertEquals("原生打包默认标题", nativeNode.properties["title"])
 
-        // 2. 更新磁盘/动态缓存，验证优先读取最新更新
-        val newJson = """
+        // 2. 模拟从服务端成功下载并保存热更 JSON 至本地磁盘
+        val hotUpdateServerJson = """
             {
                 "componentType": "Card",
-                "properties": { "title": "热更最新标题" }
+                "properties": { "title": "服务端热更下发标题" }
             }
         """.trimIndent()
-        repository.saveDiskCache("feedline", newJson)
+        repository.saveDiskCache("feedline", hotUpdateServerJson)
 
-        val updatedNode = repository.getLayout("feedline", bundledJson)
-        assertEquals("Card", updatedNode.componentType)
-        assertEquals("热更最新标题", updatedNode.properties["title"])
+        // 3. 验证后续默认使用本地已保存的热更 JSON
+        val cachedNode = repository.getLayout("feedline", bundledJson)
+        assertEquals("Card", cachedNode.componentType)
+        assertEquals("服务端热更下发标题", cachedNode.properties["title"])
+    }
+
+    @Test
+    fun testSduiLayoutRepositoryNetworkFailureFallback() = runTest {
+        val repository = SduiLayoutRepositoryImpl()
+        val bundledJson = """
+            {
+                "componentType": "Column",
+                "properties": { "title": "原生打包默认标题" }
+            }
+        """.trimIndent()
+
+        // 1. 首次检查网络（默认网络失败且无本地缓存） -> 自动使用原生打包默认 UI 模板
+        val nodeFirstTime = repository.fetchLayoutFromNetwork("feedline", bundledJson)
+        assertEquals("Column", nodeFirstTime.componentType)
+        assertEquals("原生打包默认标题", nodeFirstTime.properties["title"])
+
+        // 2. 保存服务端热更 JSON 到本地
+        val serverHotUpdateJson = """
+            {
+                "componentType": "Banner",
+                "properties": { "title": "已保存的本地热更标题" }
+            }
+        """.trimIndent()
+        repository.saveDiskCache("feedline", serverHotUpdateJson)
+
+        // 3. 再次请求网络失败 -> 自动降级并优先使用上一步已保存的本地热更 JSON
+        val nodeSecondTime = repository.fetchLayoutFromNetwork("feedline", bundledJson)
+        assertEquals("Banner", nodeSecondTime.componentType)
+        assertEquals("已保存的本地热更标题", nodeSecondTime.properties["title"])
     }
 }

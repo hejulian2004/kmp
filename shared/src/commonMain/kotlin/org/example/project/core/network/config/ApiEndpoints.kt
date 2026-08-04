@@ -35,4 +35,9 @@ object ApiEndpoints {
         const val HOME_FEED = "/api/v1/instagram/feed"
         const val STORIES = "/api/v1/instagram/stories"
     }
+
+    /** SDUI动态组件热更模块接口路径 */
+    object Sdui {
+        const val GET_LAYOUT = "/api/v1/sdui/layout"
+    }
 }
