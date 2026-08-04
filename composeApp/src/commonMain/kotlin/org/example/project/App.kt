@@ -66,6 +66,10 @@ fun App() {
                         Button(onClick = { rootNavController.navigate("instagram") }) {
                             Text("Instagram")
                         }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { rootNavController.navigate("airbnb") }) {
+                            Text("Airbnb")
+                        }
                     }
                 }
             }
@@ -90,6 +94,9 @@ fun App() {
                 InstagramTheme {
                     InstagramMainScreen()
                 }
+            }
+            composable("airbnb") {
+                org.example.project.ui.screens.airbnb.AirbnbMainScreen()
             }
         }
     }

@@ -9,6 +9,8 @@ plugins {
     alias(libs.plugins.kotlinAndroid) apply false
     alias(libs.plugins.androidKotlinMultiplatformLibrary) apply false
     alias(libs.plugins.androidLint) apply false
-    id("com.github.ben-manes.versions") version "0.54.0"
-    id("nl.littlerobots.version-catalog-update") version "1.1.0"
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.room) apply false
+    id("com.github.ben-manes.versions") version "0.59.0"
+    id("nl.littlerobots.version-catalog-update") version "1.1.1"
 }
