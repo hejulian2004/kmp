@@ -37,7 +37,10 @@ fun AirbnbMainScreen(
     }
 
     val repository = remember {
-        HostProfileRepositoryImpl(database.hostProfileDao())
+        HostProfileRepositoryImpl(
+            dao = database.hostProfileDao(),
+            networkContainer = org.example.project.core.network.client.AppNetworkInitializer.container
+        )
     }
 
     val profileViewModel = viewModel { HostProfileViewModel(repository) }
