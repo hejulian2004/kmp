@@ -75,6 +75,9 @@ kotlin {
                 implementation(libs.ktor.client.auth)
                 implementation(libs.ktor.client.logging)
                 implementation(libs.ktor.client.websockets)
+
+                implementation(libs.androidx.room.runtime)
+                implementation(libs.androidx.sqlite.bundled)
             }
         }
 
@@ -109,6 +112,8 @@ kotlin {
         }
     }
 }
+
+
 
 // ==============================================================================
 // SDUI 自动导出任务配置 (组件名_版本号_导出时间.json)
