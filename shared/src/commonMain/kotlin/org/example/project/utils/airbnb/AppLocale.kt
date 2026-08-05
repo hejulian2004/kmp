@@ -3,7 +3,7 @@
  * @Package: org.example.project.utils.airbnb
  * @Description: Airbnb 模块语言选择与底层切换工具入口（包含 expect 定义）
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.utils.airbnb
 

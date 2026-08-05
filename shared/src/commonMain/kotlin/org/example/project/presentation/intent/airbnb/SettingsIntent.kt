@@ -3,7 +3,7 @@
  * @Package: org.example.project.presentation.intent.airbnb
  * @Description: Airbnb 设置页面 MVI 意图集合
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.presentation.intent.airbnb
 

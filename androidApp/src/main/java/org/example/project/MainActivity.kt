@@ -3,7 +3,7 @@
  * @Package: org.example.project
  * @Description: Android 应用主 Activity 入口（配置高刷新率 120Hz 申请与降级策略）
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project
 

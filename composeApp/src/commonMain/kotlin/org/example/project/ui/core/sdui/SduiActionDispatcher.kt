@@ -3,7 +3,7 @@
  * @Package: org.example.project.ui.core.sdui
  * @Description: SDUI结构化Action事件透传分发器
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.ui.core.sdui
 

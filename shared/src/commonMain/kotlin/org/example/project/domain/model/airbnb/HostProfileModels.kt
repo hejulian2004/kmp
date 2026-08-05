@@ -3,7 +3,7 @@
  * @Package: org.example.project.domain.model.airbnb
  * @Description: Airbnb房东与房源领域数据模型（从原仓库合并，保留原字段与核心接口结构）
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.domain.model.airbnb
 

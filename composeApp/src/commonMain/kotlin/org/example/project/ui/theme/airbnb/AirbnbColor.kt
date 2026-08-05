@@ -3,7 +3,7 @@
  * @Package: org.example.project.ui.theme.airbnb
  * @Description: Airbnb 模块动态主题颜色定义（保留原 AppColors 逻辑与完整变体）
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.ui.theme.airbnb
 

@@ -3,7 +3,7 @@
  * @Package: org.example.project.ui.components.airbnb
  * @Description: Airbnb 模块顶部导航栏组件
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.ui.components.airbnb
 

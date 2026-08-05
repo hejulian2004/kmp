@@ -3,7 +3,7 @@
  * @Package: org.example.project.presentation.viewmodel.airbnb
  * @Description: Airbnb 房东主页 MVI 架构 ViewModel（融合 Room + SWR 数据流与单向 Intent 统一分发）
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.presentation.viewmodel.airbnb
 

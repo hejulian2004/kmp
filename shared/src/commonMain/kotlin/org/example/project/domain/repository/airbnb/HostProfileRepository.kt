@@ -3,7 +3,7 @@
  * @Package: org.example.project.domain.repository.airbnb
  * @Description: Airbnb房东与房源数据仓库抽象接口（支持 SWR 响应式状态流与直接数据拉取）
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.domain.repository.airbnb
 

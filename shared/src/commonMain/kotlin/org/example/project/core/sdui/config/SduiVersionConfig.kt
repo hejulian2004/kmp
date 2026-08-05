@@ -3,7 +3,7 @@
  * @Package: org.example.project.core.sdui.config
  * @Description: SDUI 大组件与小组件版本号集中统一配置文件
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.core.sdui.config
 

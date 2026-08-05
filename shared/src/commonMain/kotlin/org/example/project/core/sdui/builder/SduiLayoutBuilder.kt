@@ -3,7 +3,7 @@
  * @Package: org.example.project.core.sdui.builder
  * @Description: 提供强类型的 Kotlin DSL Builder 声明语法并转换输出 JSON 字符串
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.core.sdui.builder
 

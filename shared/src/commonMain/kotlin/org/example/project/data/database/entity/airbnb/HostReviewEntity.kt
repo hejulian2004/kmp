@@ -3,7 +3,7 @@
  * @Package: org.example.project.data.database.entity.airbnb
  * @Description: Airbnb房东评价信息的Room本地数据库实体
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.data.database.entity.airbnb
 

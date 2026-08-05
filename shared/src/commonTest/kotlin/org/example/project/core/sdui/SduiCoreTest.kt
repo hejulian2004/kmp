@@ -3,7 +3,7 @@
  * @Package: org.example.project.core.sdui
  * @Description: SDUI 核心数据模型、Kotlin DSL Builder 与三级降级仓库单元测试
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.core.sdui
 

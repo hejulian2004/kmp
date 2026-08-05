@@ -3,7 +3,7 @@
  * @Package: org.example.project.ui.utils.airbnb
  * @Description: Airbnb 模块数字与格式化工具函数
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.ui.utils.airbnb
 

@@ -3,7 +3,7 @@
  * @Package: org.example.project.ui.core.sdui
  * @Description: SDUI 动态组件控制反转注册表（隔绝渲染引擎与具体业务组件，支持注册组件全量自动导出 JSON）
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.ui.core.sdui
 

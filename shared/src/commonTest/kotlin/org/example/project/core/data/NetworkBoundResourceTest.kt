@@ -3,7 +3,7 @@
  * @Package: org.example.project.core.data
  * @Description: 全局通用数据同步管道 NetworkBoundResource 单元测试
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.core.data
 

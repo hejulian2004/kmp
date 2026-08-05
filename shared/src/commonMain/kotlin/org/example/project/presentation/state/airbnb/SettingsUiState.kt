@@ -3,7 +3,7 @@
  * @Package: org.example.project.presentation.state.airbnb
  * @Description: Airbnb 设置页面 MVI 状态与配置枚举
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.presentation.state.airbnb
 

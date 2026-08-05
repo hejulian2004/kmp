@@ -3,7 +3,7 @@
  * @Package: org.example.project.data.database.entity.instagram
  * @Description: Instagram 动态与 Story 快拍的 Room 本地数据库实体
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.data.database.entity.instagram
 

@@ -3,7 +3,7 @@
  * @Package: org.example.project.ui.components.airbnb
  * @Description: Airbnb 设置页面通用 Scaffold 骨架屏组件
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.ui.components.airbnb
 

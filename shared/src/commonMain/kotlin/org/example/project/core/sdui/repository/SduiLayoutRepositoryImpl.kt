@@ -3,7 +3,7 @@
  * @Package: org.example.project.core.sdui.repository
  * @Description: SDUI动态布局配置契约与本地缓存/服务端热更新仓库实现
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.core.sdui.repository
 

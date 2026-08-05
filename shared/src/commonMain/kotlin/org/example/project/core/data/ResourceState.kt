@@ -3,7 +3,7 @@
  * @Package: org.example.project.core.data
  * @Description: 项目全局通用响应式资源状态模型
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.core.data
 

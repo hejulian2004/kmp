@@ -3,7 +3,7 @@
  * @Package: org.example.project.ui.components.airbnb
  * @Description: Airbnb 去过的地点与纪念邮戳展示 UI 组件
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.ui.components.airbnb
 

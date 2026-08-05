@@ -3,7 +3,7 @@
  * @Package: org.example.project.domain.model.instagram
  * @Description: Instagram 用户主页个人信息数据模型
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-05
  */
 package org.example.project.domain.model.instagram
 
