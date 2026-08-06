@@ -1,0 +1,79 @@
+/**
+ * @File: FeedRepositoryImplTest.kt
+ * @Package: org.example.project.data.repository.feedline
+ * @Description: FeedRepositoryImpl发布动态与数据库持久化保存逻辑单元测试
+ * @Author: 何聚敛
+ * @Date: 2026-08-04
+ */
+package org.example.project.data.repository.feedline
+
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runTest
+import org.example.project.data.database.dao.feedline.FeedLineDaoImpl
+import org.example.project.domain.model.feedline.FeedLineMedia
+import org.example.project.domain.model.feedline.FeedLineUser
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+
+class FeedRepositoryImplTest {
+
+    @Test
+    fun testCreatePostSavesToDatabaseSuccessfully() = runTest {
+        val mockDao = FeedLineDaoImpl()
+        val repository = FeedRepositoryImpl(feedLineDao = mockDao)
+
+        val testUser = FeedLineUser(
+            id = "user_test_101",
+            name = "测试用户",
+            avatarUrl = "https://example.com/avatar.jpg"
+        )
+        val testContent = "测试朋友圈发布动态内容"
+        val testMedia = listOf(
+            FeedLineMedia.Image(url = "https://example.com/image1.jpg")
+        )
+
+        repository.createPost(
+            user = testUser,
+            content = testContent,
+            mediaList = testMedia
+        )
+
+        val posts = repository.getFeedPosts().first()
+        val createdPost = posts.find { it.content == testContent }
+
+        assertNotNull(createdPost)
+        assertEquals("user_test_101", createdPost.postUser.id)
+        assertEquals("测试用户", createdPost.postUser.name)
+        assertEquals(1, createdPost.mediaList.size)
+        assertTrue(createdPost.mediaList.first() is FeedLineMedia.Image)
+        assertEquals("https://example.com/image1.jpg", (createdPost.mediaList.first() as FeedLineMedia.Image).url)
+
+        val savedEntities = mockDao.observePosts().first()
+        val savedEntity = savedEntities.find { it.id == createdPost.id }
+        assertNotNull(savedEntity)
+        assertEquals(testContent, savedEntity.content)
+    }
+
+    @Test
+    fun testPostsPersistAcrossAppRestarts() = runTest {
+        val daoInstance1 = FeedLineDaoImpl()
+        val repository1 = FeedRepositoryImpl(feedLineDao = daoInstance1)
+
+        val testUser = FeedLineUser(id = "u_restart", name = "重启测试用户", avatarUrl = "")
+        val testContent = "重启持久化验证内容"
+
+        repository1.createPost(user = testUser, content = testContent, mediaList = emptyList())
+
+        // 模拟应用重新启动（创建全新的 DAO 和 Repository 实例）
+        val daoInstance2 = FeedLineDaoImpl()
+        val repository2 = FeedRepositoryImpl(feedLineDao = daoInstance2)
+
+        val postsAfterRestart = repository2.getFeedPosts().first()
+        val restoredPost = postsAfterRestart.find { it.content == testContent }
+
+        assertNotNull(restoredPost)
+        assertEquals("u_restart", restoredPost.postUser.id)
+    }
+}
