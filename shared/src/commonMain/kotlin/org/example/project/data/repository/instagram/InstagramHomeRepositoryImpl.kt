@@ -57,13 +57,13 @@ class InstagramHomeRepositoryImpl(
 
     override fun getHomePosts(): Flow<List<InstagramPost>> {
         return instagramDao.observePosts().map { entities ->
-            if (entities.isEmpty()) postsFlow.value else entities.map { it.toDomainModel() }
+            entities.map { it.toDomainModel() }
         }
     }
 
     override fun getStories(): Flow<List<InstagramPost>> {
         return instagramDao.observeStories().map { entities ->
-            if (entities.isEmpty()) storiesFlow.value else entities.map { it.toDomainModel() }
+            entities.map { it.toDomainModel() }
         }
     }
 
