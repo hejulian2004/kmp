@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -35,16 +36,22 @@ class InstagramHomeRepositoryImpl(
     private val storiesFlow = MutableStateFlow<List<InstagramPost>>(emptyList())
 
     init {
-        val initialPosts = createFakeInstagramPosts()
-        val initialStories = createFakeInstagramStories()
-        postsFlow.value = initialPosts
-        storiesFlow.value = initialStories
-
         scope.launch {
-            instagramDao.insertPosts(
-                initialPosts.map { InstagramPostEntity.fromDomainModel(it, isStory = false) } +
-                initialStories.map { InstagramPostEntity.fromDomainModel(it, isStory = true) }
-            )
+            val existingPosts = instagramDao.observePosts().first()
+            val existingStories = instagramDao.observeStories().first()
+            if (existingPosts.isEmpty() && existingStories.isEmpty()) {
+                val initialPosts = createFakeInstagramPosts()
+                val initialStories = createFakeInstagramStories()
+                postsFlow.value = initialPosts
+                storiesFlow.value = initialStories
+                instagramDao.insertPosts(
+                    initialPosts.map { InstagramPostEntity.fromDomainModel(it, isStory = false) } +
+                    initialStories.map { InstagramPostEntity.fromDomainModel(it, isStory = true) }
+                )
+            } else {
+                postsFlow.value = existingPosts.map { it.toDomainModel() }
+                storiesFlow.value = existingStories.map { it.toDomainModel() }
+            }
         }
     }
 

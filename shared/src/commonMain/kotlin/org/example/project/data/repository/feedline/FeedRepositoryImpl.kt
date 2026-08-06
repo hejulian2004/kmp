@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -49,10 +50,15 @@ class FeedRepositoryImpl(
     private val _feedNotifications = MutableStateFlow<List<FeedLineNotification>>(emptyList())
 
     init {
-        val initialPosts = createFakeFeedPosts()
-        _feedPosts.value = initialPosts
         scope.launch {
-            feedLineDao.insertPosts(initialPosts.map { FeedLinePostEntity.fromDomainModel(it) })
+            val dbEntities = feedLineDao.observePosts().first()
+            if (dbEntities.isEmpty()) {
+                val initialPosts = createFakeFeedPosts()
+                _feedPosts.value = initialPosts
+                feedLineDao.insertPosts(initialPosts.map { FeedLinePostEntity.fromDomainModel(it) })
+            } else {
+                _feedPosts.value = dbEntities.map { it.toDomainModel() }
+            }
         }
     }
 
@@ -78,19 +84,31 @@ class FeedRepositoryImpl(
                     .get(ApiEndpoints.FeedLine.GET_POSTS)
                     .body<List<FeedLinePost>>()
                 val targetPosts = if (remotePosts.isNotEmpty()) remotePosts else createFakeFeedPosts()
-                _feedPosts.value = targetPosts
-                feedLineDao.insertPosts(targetPosts.map { FeedLinePostEntity.fromDomainModel(it) })
+                val userCreatedPosts = _feedPosts.value.filterNot { post ->
+                    targetPosts.any { it.id == post.id } || post.id.startsWith("feed_post_")
+                }
+                val mergedPosts = userCreatedPosts + targetPosts
+                _feedPosts.value = mergedPosts
+                feedLineDao.insertPosts(mergedPosts.map { FeedLinePostEntity.fromDomainModel(it) })
             }.onFailure {
                 delay(500.milliseconds)
                 val mockPosts = createFakeFeedPosts()
-                _feedPosts.value = mockPosts
-                feedLineDao.insertPosts(mockPosts.map { FeedLinePostEntity.fromDomainModel(it) })
+                val userCreatedPosts = _feedPosts.value.filterNot { post ->
+                    mockPosts.any { it.id == post.id } || post.id.startsWith("feed_post_")
+                }
+                val mergedPosts = userCreatedPosts + mockPosts
+                _feedPosts.value = mergedPosts
+                feedLineDao.insertPosts(mergedPosts.map { FeedLinePostEntity.fromDomainModel(it) })
             }
         } else {
             delay(500.milliseconds)
             val mockPosts = createFakeFeedPosts()
-            _feedPosts.value = mockPosts
-            feedLineDao.insertPosts(mockPosts.map { FeedLinePostEntity.fromDomainModel(it) })
+            val userCreatedPosts = _feedPosts.value.filterNot { post ->
+                mockPosts.any { it.id == post.id } || post.id.startsWith("feed_post_")
+            }
+            val mergedPosts = userCreatedPosts + mockPosts
+            _feedPosts.value = mergedPosts
+            feedLineDao.insertPosts(mergedPosts.map { FeedLinePostEntity.fromDomainModel(it) })
         }
     }
 

@@ -14,3 +14,25 @@ actual fun getPlatformName(): String = "Android ${Build.VERSION.SDK_INT}"
 actual fun currentTimeMillis(): Long {
     return System.currentTimeMillis()
 }
+
+actual fun readStorageFile(fileName: String): String? {
+    return try {
+        val dir = java.io.File(System.getProperty("java.io.tmpdir") ?: ".", "social_kmp_db")
+        if (!dir.exists()) dir.mkdirs()
+        val file = java.io.File(dir, fileName)
+        if (file.exists()) file.readText() else null
+    } catch (e: Exception) {
+        null
+    }
+}
+
+actual fun writeStorageFile(fileName: String, content: String) {
+    try {
+        val dir = java.io.File(System.getProperty("java.io.tmpdir") ?: ".", "social_kmp_db")
+        if (!dir.exists()) dir.mkdirs()
+        val file = java.io.File(dir, fileName)
+        file.writeText(content)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}

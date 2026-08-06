@@ -9,6 +9,7 @@ package org.example.project.data.database.entity.feedline
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.example.project.domain.model.feedline.FeedLineComment
@@ -16,6 +17,7 @@ import org.example.project.domain.model.feedline.FeedLineMedia
 import org.example.project.domain.model.feedline.FeedLinePost
 import org.example.project.domain.model.feedline.FeedLineUser
 
+@Serializable
 @Entity(tableName = "feedline_posts")
 data class FeedLinePostEntity(
     @PrimaryKey val id: String,

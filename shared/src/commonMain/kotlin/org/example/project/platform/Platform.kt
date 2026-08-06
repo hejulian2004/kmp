@@ -10,3 +10,13 @@ expect fun getPlatformName(): String
 
 //获取系统时间
 expect fun currentTimeMillis(): Long
+
+/**
+ * 读取本地磁盘持久化数据
+ */
+expect fun readStorageFile(fileName: String): String?
+
+/**
+ * 写入本地磁盘持久化数据
+ */
+expect fun writeStorageFile(fileName: String, content: String)

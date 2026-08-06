@@ -19,3 +19,45 @@ actual fun getPlatformName(): String {
 actual fun currentTimeMillis(): Long {
     return (NSDate().timeIntervalSince1970 * 1000).toLong()
 }
+
+actual fun readStorageFile(fileName: String): String? {
+    return try {
+        val paths = platform.Foundation.NSSearchPathForDirectoriesInDomains(
+            platform.Foundation.NSDocumentDirectory,
+            platform.Foundation.NSUserDomainMask,
+            true
+        )
+        val documentsDirectory = paths.first() as String
+        val filePath = "$documentsDirectory/$fileName"
+        val fileManager = platform.Foundation.NSFileManager.defaultManager
+        if (fileManager.fileExistsAtPath(filePath)) {
+            platform.Foundation.NSString.stringWithContentsOfFile(
+                filePath,
+                platform.Foundation.NSUTF8StringEncoding,
+                null
+            ) as String?
+        } else null
+    } catch (e: Exception) {
+        null
+    }
+}
+
+actual fun writeStorageFile(fileName: String, content: String) {
+    try {
+        val paths = platform.Foundation.NSSearchPathForDirectoriesInDomains(
+            platform.Foundation.NSDocumentDirectory,
+            platform.Foundation.NSUserDomainMask,
+            true
+        )
+        val documentsDirectory = paths.first() as String
+        val filePath = "$documentsDirectory/$fileName"
+        (content as platform.Foundation.NSString).writeToFile(
+            filePath,
+            true,
+            platform.Foundation.NSUTF8StringEncoding,
+            null
+        )
+    } catch (e: Exception) {
+        // ignore
+    }
+}

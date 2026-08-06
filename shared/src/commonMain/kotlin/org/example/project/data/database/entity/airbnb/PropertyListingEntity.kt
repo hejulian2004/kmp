@@ -9,8 +9,10 @@ package org.example.project.data.database.entity.airbnb
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
 import org.example.project.domain.model.airbnb.PropertyListing
 
+@Serializable
 @Entity(tableName = "property_listings")
 data class PropertyListingEntity(
     @PrimaryKey val id: String,

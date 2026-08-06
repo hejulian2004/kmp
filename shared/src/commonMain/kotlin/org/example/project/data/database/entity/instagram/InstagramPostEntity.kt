@@ -9,6 +9,7 @@ package org.example.project.data.database.entity.instagram
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.example.project.domain.model.instagram.InstagramComment
@@ -16,6 +17,7 @@ import org.example.project.domain.model.instagram.InstagramMedia
 import org.example.project.domain.model.instagram.InstagramPost
 import org.example.project.domain.model.instagram.ProfileUser
 
+@Serializable
 @Entity(tableName = "instagram_posts")
 data class InstagramPostEntity(
     @PrimaryKey val id: String,
