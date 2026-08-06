@@ -274,7 +274,7 @@ class ProfileScreenTest {
         assertTrue(intents.any { it is ProfileIntent.UserCardDismissed && it.userId == "user_001" })
     }
 
-    // Tab 切换
+    // Tab切换
 
     @Test
     fun Tab_默认选中posts() = runComposeUiTest {
@@ -371,7 +371,7 @@ class ProfileScreenTest {
         assertTrue(intents.contains(ProfileIntent.CreateReelClicked))
     }
 
-    // Loading 状态
+    // Loading状态
 
     @Test
     fun Loading_profileState为Loading_页面不崩溃且按钮行可见() = runComposeUiTest {

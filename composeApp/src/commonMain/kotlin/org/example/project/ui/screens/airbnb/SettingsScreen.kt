@@ -1,7 +1,7 @@
 /**
  * @File: SettingsScreen.kt
  * @Package: org.example.project.ui.screens.airbnb
- * @Description: Airbnb 设置容器主 Screen 组件（符合 MVI 架构与响应式状态处理）
+ * @Description: Airbnb设置容器主Screen组件（符合MVI架构与响应式状态处理）
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

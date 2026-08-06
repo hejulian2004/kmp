@@ -99,7 +99,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * - 底部浮动快速评论输入栏(InstagramCommentBar)
  * - 删除二次确认对话框(InstagramConfirmDialog)
  *
- * @param viewModel 首页MVI状态管理器
+ * @param viewModel首页MVI状态管理器
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

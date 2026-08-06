@@ -1,7 +1,7 @@
 /**
  * @File: HostProfileScreen.kt
  * @Package: org.example.project.ui.screens.airbnb
- * @Description: Airbnb 房东主页 Screen 容器视图组件（符合 MVI 架构，全量保留原 UI 样式与注释）
+ * @Description: Airbnb房东主页Screen容器视图组件（符合MVI架构，全量保留原UI样式与注释）
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

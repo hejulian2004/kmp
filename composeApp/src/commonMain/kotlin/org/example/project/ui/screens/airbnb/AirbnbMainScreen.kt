@@ -1,7 +1,7 @@
 /**
  * @File: AirbnbMainScreen.kt
  * @Package: org.example.project.ui.screens.airbnb
- * @Description: Airbnb 业务模块主 Screen 容器（整合 Room 本地 DB、HostProfile 聚合页面、编辑页与设置页导航状态）
+ * @Description: Airbnb业务模块主Screen容器（整合Room本地DB、HostProfile聚合页面、编辑页与设置页导航状态）
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

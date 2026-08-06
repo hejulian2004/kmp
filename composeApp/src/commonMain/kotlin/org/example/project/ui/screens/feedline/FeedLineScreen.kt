@@ -1,7 +1,7 @@
 /**
  * @File: FeedLineScreen.kt
  * @Package: org.example.project.ui.screens.feedline
- * @Description: 朋友圈动态主界面的 Compose 视图入口（基于 FileKit 跨平台适配）
+ * @Description: 朋友圈动态主界面的Compose视图入口（基于FileKit跨平台适配）
  * @Author: 何聚敛
  * @Date: 2026-07-22
  */
@@ -85,9 +85,9 @@ import kotlin.time.Duration.Companion.milliseconds
  * 包含：
  * - 顶部导航栏 (FeedTopBar)
  * - 下拉刷新列表 (PullToRefreshBox + LazyColumn)
- * - 底部弹出层 (BottomSheet 用于发布/评论)
+ * - 底部弹出层 (BottomSheet用于发布/评论)
  * 
- * @param viewModel 朋友圈状态管理器
+ * @param viewModel朋友圈状态管理器
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -380,7 +380,7 @@ fun FeedScreen(
             }
         }
 
-        // 展开发布 bottom sheet 栏
+        // 展开发布bottom sheet栏
         if (showBottomSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showBottomSheet = false },

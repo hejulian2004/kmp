@@ -1,7 +1,7 @@
 /**
  * @File: HostEditScreen.kt
  * @Package: org.example.project.ui.screens.airbnb
- * @Description: Airbnb 房东资料编辑容器 Screen 组件（符合 MVI 架构）
+ * @Description: Airbnb房东资料编辑容器Screen组件（符合MVI架构）
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

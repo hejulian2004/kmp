@@ -1,7 +1,7 @@
 /**
  * @File: FeedLineNotificationScreen.kt
  * @Package: org.example.project.ui.screens.feedline
- * @Description: 互动消息通知列表界面的 Compose 视图
+ * @Description: 互动消息通知列表界面的Compose视图
  * @Author: 何聚敛
  * @Date: 2026-07-22
  */
@@ -223,7 +223,7 @@ private fun NotificationItem(
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        // 中间：用户名、动作 and 时间
+        // 中间：用户名、动作and时间
         Column(
             modifier = Modifier.weight(1f)
         ) {
