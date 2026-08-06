@@ -1,7 +1,7 @@
 /**
  * @File: FeedRepositoryImplTest.kt
  * @Package: org.example.project.data.repository.feedline
- * @Description: FeedRepositoryImpl发布动态与数据库持久化保存逻辑单元测试
+ * @Description: FeedRepositoryImpl发布动态、通知与互动持久化逻辑单元测试
  * @Author: 何聚敛
  * @Date: 2026-08-04
  */
@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.example.project.data.database.dao.feedline.FeedLineDaoImpl
 import org.example.project.domain.model.feedline.FeedLineMedia
+import org.example.project.domain.model.feedline.FeedLineNotification
+import org.example.project.domain.model.feedline.FeedLinePost
 import org.example.project.domain.model.feedline.FeedLineUser
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -75,5 +77,38 @@ class FeedRepositoryImplTest {
 
         assertNotNull(restoredPost)
         assertEquals("u_restart", restoredPost.postUser.id)
+    }
+
+    @Test
+    fun testNotificationPersistenceAndReadStatus() = runTest {
+        val dao1 = FeedLineDaoImpl()
+        val repo1 = FeedRepositoryImpl(feedLineDao = dao1)
+
+        val user = FeedLineUser("u_notify", "通知用户", "")
+        val post = FeedLinePost(id = "post_notify_1", postUser = user, content = "通知测试帖子")
+        val notification = FeedLineNotification(
+            id = "notify_101",
+            user = user,
+            post = post,
+            isLikeNotification = true,
+            isRead = false
+        )
+
+        repo1.addNotification(notification)
+
+        val notifications1 = repo1.getNotifications().first()
+        assertTrue(notifications1.any { it.id == "notify_101" })
+
+        repo1.markAllNotificationsAsRead()
+
+        // 模拟重启恢复验证通知持久化与已读状态
+        val dao2 = FeedLineDaoImpl()
+        val repo2 = FeedRepositoryImpl(feedLineDao = dao2)
+
+        val notifications2 = repo2.getNotifications().first()
+        val restoredNotify = notifications2.find { it.id == "notify_101" }
+
+        assertNotNull(restoredNotify)
+        assertTrue(restoredNotify.isRead)
     }
 }
