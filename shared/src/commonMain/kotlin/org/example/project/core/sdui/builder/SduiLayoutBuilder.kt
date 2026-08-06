@@ -1,7 +1,7 @@
 /**
  * @File: SduiLayoutBuilder.kt
  * @Package: org.example.project.core.sdui.builder
- * @Description: 提供强类型的 Kotlin DSL Builder 声明语法并转换输出 JSON 字符串
+ * @Description: 提供强类型的Kotlin DSL Builder声明语法并转换输出JSON字符串
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */
@@ -14,7 +14,7 @@ import org.example.project.core.sdui.model.SduiNode
 import org.example.project.core.sdui.model.SduiStyle
 
 /**
- * SDUI DSL 构建节点类
+ * SDUI DSL构建节点类
  */
 class SduiNodeBuilder(private val componentType: String) {
     var properties: MutableMap<String, String> = mutableMapOf()
@@ -50,11 +50,11 @@ class SduiNodeBuilder(private val componentType: String) {
 }
 
 /**
- * 根 DSL 构建器函数
+ * 根DSL构建器函数
  *
- * @param rootType 根节点类型名（如 "LazyColumn"）
- * @param block 节点构建作用域
- * @return 构造完成的 SduiNode
+ * @param rootType根节点类型名（如 "LazyColumn"）
+ * @param block节点构建作用域
+ * @return构造完成的SduiNode
  */
 fun sduiLayout(rootType: String, block: SduiNodeBuilder.() -> Unit): SduiNode {
     val builder = SduiNodeBuilder(rootType)
@@ -63,7 +63,7 @@ fun sduiLayout(rootType: String, block: SduiNodeBuilder.() -> Unit): SduiNode {
 }
 
 /**
- * 将 SduiNode 序列化为格式化的 JSON 字符串
+ * 将SduiNode序列化为格式化的JSON字符串
  */
 fun SduiNode.toJson(prettyPrint: Boolean = true): String {
     val json = Json { this.prettyPrint = prettyPrint }

@@ -12,12 +12,12 @@ import kotlinx.serialization.Serializable
 /**
  * SDUI动态组件树节点
  *
- * @param componentType 关联的组件类型名称（如 "FeedLineTopBar", "Column", "Text"）
- * @param properties 传递给原生组件的属性键值对字典
- * @param style 节点排版与视效样式
- * @param dataBinding 数据绑定表达式或键名（如 "post"）
- * @param actions 组件绑定的事件动作映射表（如 "onLikeClick" -> SduiAction）
- * @param children 子节点列表
+ * @param componentType关联的组件类型名称（如 "FeedLineTopBar", "Column", "Text"）
+ * @param properties传递给原生组件的属性键值对字典
+ * @param style节点排版与视效样式
+ * @param dataBinding数据绑定表达式或键名（如 "post"）
+ * @param actions组件绑定的事件动作映射表（如 "onLikeClick" -> SduiAction）
+ * @param children子节点列表
  */
 @Serializable
 data class SduiNode(
@@ -32,12 +32,12 @@ data class SduiNode(
 /**
  * SDUI节点通用样式定义
  *
- * @param paddingDp 内边距(dp)
- * @param backgroundColorHex 十六进制背景颜色（如 "#FFFFFF"）
- * @param cornerRadiusDp 圆角半径(dp)
- * @param fontSizeSp 字体大小(sp)
- * @param fontWeight 字体粗细（如 "Bold", "Normal"）
- * @param isVisible 是否显示
+ * @param paddingDp内边距(dp)
+ * @param backgroundColorHex十六进制背景颜色（如 "#FFFFFF"）
+ * @param cornerRadiusDp圆角半径(dp)
+ * @param fontSizeSp字体大小(sp)
+ * @param fontWeight字体粗细（如 "Bold", "Normal"）
+ * @param isVisible是否显示
  */
 @Serializable
 data class SduiStyle(

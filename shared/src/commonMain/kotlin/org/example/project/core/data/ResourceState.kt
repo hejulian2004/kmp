@@ -15,20 +15,20 @@ import org.example.project.domain.error.AppError
 sealed interface ResourceState<out T> {
     /**
      * 加载中状态
-     * @param cachedData 本地旧缓存数据（可用于 UI 0ms 瞬间渲染）
+     * @param cachedData本地旧缓存数据（可用于UI 0ms瞬间渲染）
      */
     data class Loading<T>(val cachedData: T? = null) : ResourceState<T>
 
     /**
      * 权威数据同步成功状态
-     * @param data 最新权威数据
+     * @param data最新权威数据
      */
     data class Success<T>(val data: T) : ResourceState<T>
 
     /**
      * 数据同步或网络请求失败状态
-     * @param error 转换后的领域错误 AppError
-     * @param cachedData 本地旧缓存降级数据（保证 UI 离线可用不崩溃）
+     * @param error转换后的领域错误AppError
+     * @param cachedData本地旧缓存降级数据（保证UI离线可用不崩溃）
      */
     data class Error<T>(val error: AppError, val cachedData: T? = null) : ResourceState<T>
 }

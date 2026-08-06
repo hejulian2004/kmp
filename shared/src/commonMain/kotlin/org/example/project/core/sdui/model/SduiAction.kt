@@ -12,10 +12,10 @@ import kotlinx.serialization.Serializable
 /**
  * SDUI结构化交互动作描述
  *
- * 用于将动态组件的交互事件（如点击点赞、打开评论、路由跳转）投递给 MVI 架构中的 UiIntent 处理中心。
+ * 用于将动态组件的交互事件（如点击点赞、打开评论、路由跳转）投递给MVI架构中的UiIntent处理中心。
  *
- * @param type 动作类型枚举值或字符串标识（如 "NAVIGATE", "TOGGLE_LIKE", "OPEN_SHEET"）
- * @param params 交互携带的扩展参数字典（如 "postId" -> "1001", "url" -> "https://..."）
+ * @param type动作类型枚举值或字符串标识（如 "NAVIGATE", "TOGGLE_LIKE", "OPEN_SHEET"）
+ * @param params交互携带的扩展参数字典（如 "postId" -> "1001", "url" -> "https://..."）
  */
 @Serializable
 data class SduiAction(

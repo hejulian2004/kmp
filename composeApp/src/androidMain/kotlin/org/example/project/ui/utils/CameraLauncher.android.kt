@@ -1,7 +1,7 @@
 /**
  * @File: CameraLauncher.android.kt
  * @Package: org.example.project.ui.utils
- * @Description: Android 平台原生相机启动器 Actual 实现 (支持拍照与视频录制)
+ * @Description: Android平台原生相机启动器Actual实现 (支持拍照与视频录制)
  * @Author: 何聚敛
  * @Date: 2026-07-23
  */
@@ -22,7 +22,7 @@ import io.github.vinceglb.filekit.dialogs.compose.rememberCameraPickerLauncher a
 import java.io.File
 
 /**
- * Android 平台相机的组合式实现
+ * Android平台相机的组合式实现
  */
 @Composable
 actual fun rememberCameraPickerLauncher(

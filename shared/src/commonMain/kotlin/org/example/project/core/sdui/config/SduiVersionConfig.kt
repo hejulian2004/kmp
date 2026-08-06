@@ -1,14 +1,14 @@
 /**
  * @File: SduiVersionConfig.kt
  * @Package: org.example.project.core.sdui.config
- * @Description: SDUI 大组件与小组件版本号集中统一配置文件
+ * @Description: SDUI大组件与小组件版本号集中统一配置文件
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */
 package org.example.project.core.sdui.config
 
 /**
- * SDUI 组件统一版本控制中心
+ * SDUI组件统一版本控制中心
  */
 object SduiVersionConfig {
 
@@ -19,7 +19,7 @@ object SduiVersionConfig {
     const val MODULE_INSTAGRAM_VERSION = "v1.0.0"
 
     // ==========================================
-    // 2. FeedLine 模块下属子组件版本号 (FeedLine Sub-Components)
+    // 2. FeedLine模块下属子组件版本号 (FeedLine Sub-Components)
     // ==========================================
     const val FEEDLINE_TOPBAR_VERSION = "v1.0.0"
     const val FEEDLINE_NOTIFICATION_BAR_VERSION = "v1.0.0"
@@ -35,7 +35,7 @@ object SduiVersionConfig {
     const val FEEDLINE_PUBLISH_SCREEN_VERSION = "v1.0.0"
 
     // ==========================================
-    // 3. Instagram 模块下属子组件版本号 (Instagram Sub-Components)
+    // 3. Instagram模块下属子组件版本号 (Instagram Sub-Components)
     // ==========================================
     const val INSTAGRAM_TOPBAR_VERSION = "v1.0.0"
     const val INSTAGRAM_HOME_TOPBAR_VERSION = "v1.0.0"
