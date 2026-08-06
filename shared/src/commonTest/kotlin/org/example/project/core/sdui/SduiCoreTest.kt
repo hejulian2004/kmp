@@ -41,6 +41,7 @@ class SduiCoreTest {
     @Test
     fun testSduiLayoutRepositoryThreeLevelFallback() {
         val repository = SduiLayoutRepositoryImpl()
+        repository.clearDiskCache("feedline")
         val bundledJson = """
             {
                 "componentType": "Column",
@@ -74,6 +75,7 @@ class SduiCoreTest {
     @Test
     fun testSduiLayoutRepositoryNetworkFailureFallback() = runTest {
         val repository = SduiLayoutRepositoryImpl()
+        repository.clearDiskCache("feedline")
         val bundledJson = """
             {
                 "componentType": "Column",
