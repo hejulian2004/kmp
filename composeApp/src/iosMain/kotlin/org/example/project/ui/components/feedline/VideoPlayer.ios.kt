@@ -1,7 +1,7 @@
 /**
  * @File: VideoPlayer.ios.kt
  * @Package: org.example.project.ui.components.feedline
- * @Description: iOS平台视频播放组件实现（适配 Compose Multiplatform最新UIKitViewController与UIKitInteropProperties）
+ * @Description: iOS平台视频播放组件实现（适配Compose Multiplatform最新UIKitViewController与UIKitInteropProperties）
  * @Author: 何聚敛
  * @Date: 2026-07-22
  */

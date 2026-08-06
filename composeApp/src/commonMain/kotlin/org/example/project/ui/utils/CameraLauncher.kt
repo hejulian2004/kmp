@@ -1,7 +1,7 @@
 /**
  * @File: CameraLauncher.kt
  * @Package: org.example.project.ui.utils
- * @Description: 跨平台相机启动器通用 Expect 定义与平台工具
+ * @Description: 跨平台相机启动器通用Expect定义与平台工具
  * @Author: 何聚敛
  * @Date: 2026-07-23
  */
@@ -31,8 +31,8 @@ fun interface CameraLauncherWrapper {
 /**
  * 创建并记住跨平台相机启动器
  *
- * @param type 捕获的媒体类型（照片或视频）
- * @param onResult 拍照/录制完成后的回调，返回 [PlatformFile] 文件或 null
+ * @param type捕获的媒体类型（照片或视频）
+ * @param onResult拍照/录制完成后的回调，返回 [PlatformFile] 文件或null
  */
 @Composable
 expect fun rememberCameraPickerLauncher(

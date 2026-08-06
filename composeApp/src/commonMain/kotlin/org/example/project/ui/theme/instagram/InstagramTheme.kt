@@ -1,7 +1,7 @@
 /**
  * @File: InstagramTheme.kt
  * @Package: org.example.project.ui.theme.instagram
- * @Description: Instagram 模块专属主题配置
+ * @Description: Instagram模块专属主题配置
  * @Date: 2026-04-20
  */
 package org.example.project.ui.theme.instagram

@@ -12,8 +12,8 @@ import androidx.compose.runtime.Composable
 /**
  * 跨平台返回键拦截器
  *
- * @param enabled 是否开启拦截
- * @param onBack 拦截后的返回事件回调
+ * @param enabled是否开启拦截
+ * @param onBack拦截后的返回事件回调
  */
 @Composable
 expect fun BackHandler(enabled: Boolean = true, onBack: () -> Unit)

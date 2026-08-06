@@ -1,7 +1,7 @@
 /**
  * @File: InstagramType.kt
  * @Package: org.example.project.ui.theme.instagram
- * @Description: 定义 Instagram 模块的排版系统与导航控件样式定义
+ * @Description: 定义Instagram模块的排版系统与导航控件样式定义
  * @Date: 2026-04-20
  */
 package org.example.project.ui.theme.instagram

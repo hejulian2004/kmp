@@ -9,7 +9,7 @@ package org.example.project.ui.theme.feedline
 
 import androidx.compose.ui.graphics.Color
 
-// ==================== 1. 微信 8.0 官方品牌与标准特色色 ====================
+// ==================== 1. 微信8.0官方品牌与标准特色色 ====================
 
 /** 朋友圈用户姓名/链接颜色：微信8.0官方规范蓝 (#576B95) */
 val FeedLineLinkBlue = Color(0xFF576B95)
@@ -36,7 +36,7 @@ val FeedLineMediaPlaceholderGray = Color(0xFFF2F2F2)
 val FeedLineVideoThumbnailBackgroundGray = Color(0xFFE5E5E5)
 
 
-// ==================== 2. 朋友圈 UI 组件 100% WeUI 8.0 语义化 Color Tokens ====================
+// ==================== 2. 朋友圈UI组件100% WeUI 8.0语义化Color Tokens ====================
 
 /** 朋友圈组件/卡片/底栏背景白色：纯白 (#FFFFFF) */
 val FeedLineSurfaceWhite = Color(0xFFFFFFFF)

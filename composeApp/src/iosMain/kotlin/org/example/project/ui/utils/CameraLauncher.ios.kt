@@ -1,7 +1,7 @@
 /**
  * @File: CameraLauncher.ios.kt
  * @Package: org.example.project.ui.utils
- * @Description: iOS 平台原生相机启动器 Actual 实现 (支持拍照与视频录制)
+ * @Description: iOS平台原生相机启动器Actual实现 (支持拍照与视频录制)
  * @Author: 何聚敛
  * @Date: 2026-07-23
  */
@@ -23,7 +23,7 @@ import platform.UIKit.UIWindowScene
 import platform.darwin.NSObject
 
 /**
- * iOS 相机拾取代理，处理拍摄/录制完成后的 NSURL
+ * iOS相机拾取代理，处理拍摄/录制完成后的NSURL
  */
 private class VideoCameraControllerDelegate(
     private val onVideoPicked: (NSURL?) -> Unit
@@ -44,7 +44,7 @@ private class VideoCameraControllerDelegate(
 }
 
 /**
- * iOS 平台相机的组合式实现
+ * iOS平台相机的组合式实现
  */
 @Composable
 actual fun rememberCameraPickerLauncher(
