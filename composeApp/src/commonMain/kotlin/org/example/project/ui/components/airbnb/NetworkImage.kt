@@ -1,7 +1,7 @@
 /**
  * @File: NetworkImage.kt
  * @Package: org.example.project.ui.components.airbnb
- * @Description: Airbnb 模块网络图片加载封装组件
+ * @Description: Airbnb模块网络图片加载封装组件
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

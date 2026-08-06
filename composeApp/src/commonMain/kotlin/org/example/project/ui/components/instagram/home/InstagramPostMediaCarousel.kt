@@ -61,11 +61,11 @@ import org.example.project.ui.theme.instagram.InstagramTheme
 /**
  * Post媒体图片/视频多图轮播组件
  *
- * @param post 帖子实体
- * @param pagerState 外部传入或内部记忆的PagerState状态
- * @param onMediaClick 点击当前媒体回调
- * @param onDoubleTapLike 双击媒体触发点赞回调
- * @param modifier 外部修饰符
+ * @param post帖子实体
+ * @param pagerState外部传入或内部记忆的PagerState状态
+ * @param onMediaClick点击当前媒体回调
+ * @param onDoubleTapLike双击媒体触发点赞回调
+ * @param modifier外部修饰符
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

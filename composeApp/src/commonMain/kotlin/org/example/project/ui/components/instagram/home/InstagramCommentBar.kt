@@ -51,11 +51,11 @@ import org.jetbrains.compose.resources.stringResource
  * - 圆角TextField输入框
  * - 右侧"Post"发布按钮
  *
- * @param avatarUrl 当前用户头像地址
- * @param value 当前输入的评论文本
- * @param onValueChange 文本变动回调
- * @param onSendClick 点击发布回调
- * @param modifier 外部修饰符
+ * @param avatarUrl当前用户头像地址
+ * @param value当前输入的评论文本
+ * @param onValueChange文本变动回调
+ * @param onSendClick点击发布回调
+ * @param modifier外部修饰符
  */
 @Composable
 fun InstagramCommentBar(

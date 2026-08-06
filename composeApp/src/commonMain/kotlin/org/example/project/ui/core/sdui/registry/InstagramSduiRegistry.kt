@@ -1,7 +1,7 @@
 /**
  * @File: InstagramSduiRegistry.kt
  * @Package: org.example.project.ui.core.sdui.registry
- * @Description: Instagram 模块全量 SDUI 动态组件适配与集中注册入口
+ * @Description: Instagram模块全量SDUI动态组件适配与集中注册入口
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */
@@ -34,7 +34,7 @@ import org.example.project.ui.components.instagram.home.InstagramStoryTray
 import org.example.project.ui.core.sdui.SduiComponentRegistry
 
 /**
- * 集中注册 Instagram 模块下所有 16 个可热更组件
+ * 集中注册Instagram模块下所有16个可热更组件
  */
 fun registerInstagramSduiComponents() {
     val defaultUser = ProfileUser(userId = "default", username = "currentUser", avatarUrl = "", signature = "", postCount = "0", followerCount = "0", followingCount = "0")
@@ -68,7 +68,7 @@ fun registerInstagramSduiComponents() {
         )
     }
 
-    // 4. 动态 Feed 单项 (InstagramPostItem)
+    // 4. 动态Feed单项 (InstagramPostItem)
     SduiComponentRegistry.register("InstagramPostItem") { node, onAction ->
         InstagramPostItem(
             post = samplePost,

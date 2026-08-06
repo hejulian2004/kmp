@@ -1,7 +1,7 @@
 /**
  * @File: AvatarSection.kt
  * @Package: org.example.project.ui.components.airbnb
- * @Description: Airbnb 房东头像展示与选择 UI 组件
+ * @Description: Airbnb房东头像展示与选择UI组件
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

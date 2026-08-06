@@ -21,13 +21,13 @@ import org.example.project.ui.theme.instagram.InstagramTheme
 /**
  * Instagram风格二次确认操作对话框
  *
- * @param onDismissRequest 关闭对话框请求回调
- * @param title 对话框标题
- * @param text 对话框详细提示文案
- * @param confirmText 确认按钮文本
- * @param dismissText 取消按钮文本
- * @param onConfirmClick 点击确认按钮回调
- * @param onDismissClick 点击取消按钮回调
+ * @param onDismissRequest关闭对话框请求回调
+ * @param title对话框标题
+ * @param text对话框详细提示文案
+ * @param confirmText确认按钮文本
+ * @param dismissText取消按钮文本
+ * @param onConfirmClick点击确认按钮回调
+ * @param onDismissClick点击取消按钮回调
  */
 @Composable
 fun InstagramConfirmDialog(

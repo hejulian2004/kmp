@@ -46,13 +46,13 @@ import org.jetbrains.compose.resources.stringResource
  * 2. 评论区预览与热门评论（含删除入口）
  * 3. 相对发布时间戳
  *
- * @param post 帖子聚合实体
- * @param currentUser 当前登录用户
- * @param onAddCommentClick 点击评论入口/查看全部评论回调
- * @param onCommentClick 点击单条评论回调
- * @param onCommentUserClick 点击评论作者回调
- * @param onDeleteCommentClick 点击删除评论回调
- * @param modifier 外部修饰符
+ * @param post帖子聚合实体
+ * @param currentUser当前登录用户
+ * @param onAddCommentClick点击评论入口/查看全部评论回调
+ * @param onCommentClick点击单条评论回调
+ * @param onCommentUserClick点击评论作者回调
+ * @param onDeleteCommentClick点击删除评论回调
+ * @param modifier外部修饰符
  */
 @Composable
 fun InstagramPostItemContentPanel(
@@ -121,8 +121,8 @@ fun InstagramPostItemContentPanel(
 /**
  * 计算相对时间的辅助工具函数
  *
- * @param createTime 发布时间毫秒值
- * @return 格式化的相对时间字符串(如 2s ago, 5m ago, 2h ago, 1d ago)
+ * @param createTime发布时间毫秒值
+ * @return格式化的相对时间字符串(如2s ago, 5m ago, 2h ago, 1d ago)
  */
 private fun formatTimeAgo(createTime: Long): String {
     val diffSec = ((currentTimeMillis() - createTime) / 1000).coerceAtLeast(1)

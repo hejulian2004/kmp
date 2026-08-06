@@ -1,7 +1,7 @@
 /**
  * @File: CardShape.kt
  * @Package: org.example.project.ui.components.airbnb
- * @Description: Airbnb 模块卡片圆角形状定义
+ * @Description: Airbnb模块卡片圆角形状定义
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

@@ -1,7 +1,7 @@
 /**
  * @File: WindowSizeUtils.kt
  * @Package: org.example.project.ui.components.airbnb
- * @Description: Airbnb 模块窗口尺寸自适应类工具
+ * @Description: Airbnb模块窗口尺寸自适应类工具
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

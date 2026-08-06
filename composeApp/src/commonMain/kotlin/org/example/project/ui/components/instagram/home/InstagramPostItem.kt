@@ -31,26 +31,26 @@ import org.example.project.ui.theme.instagram.InstagramTheme
  *
  * 继承并模仿 [FeedPostItem] 的组件回调设计风格，将所有原子级的交互行为通过Lambda () -> Unit导出，允许上层自由响应与自定义扩展。
  *
- * @param post 帖子聚合实体数据
- * @param currentUser 当前登录用户
- * @param onClick 卡片整体被点击回调
- * @param onPostAvatarClick 帖子作者头像被点击回调
- * @param onNameClick 帖子作者用户名被点击回调
- * @param onLocationClick 地理位置被点击回调
- * @param onAudioClick 背景音乐音轨被点击回调
- * @param onMediaClick 媒体轮播图片被点击回调(传入当前媒体index)
- * @param onLikeClick 点赞/双击点赞按钮回调
- * @param onLikedUserClick 点赞列表中的用户名被点击回调
- * @param onAddCommentClick 点击评论图标/查看全部评论回调
- * @param onCommentClick 评论列表中的单条评论被点击回调
- * @param onCommentUserClick 评论发布者用户名被点击回调
- * @param onDeleteCommentClick 点击删除评论按钮回调
- * @param onDeletePostClick 点击删除帖子按钮回调
- * @param onSaveClick 点击收藏/取消收藏按钮回调
- * @param onRepostClick 点击转发按钮回调
- * @param onShareClick 点击分享按钮回调
- * @param currentTime 当前系统时间戳(用于计算相对发布时间)
- * @param modifier 外部修饰符
+ * @param post帖子聚合实体数据
+ * @param currentUser当前登录用户
+ * @param onClick卡片整体被点击回调
+ * @param onPostAvatarClick帖子作者头像被点击回调
+ * @param onNameClick帖子作者用户名被点击回调
+ * @param onLocationClick地理位置被点击回调
+ * @param onAudioClick背景音乐音轨被点击回调
+ * @param onMediaClick媒体轮播图片被点击回调(传入当前媒体index)
+ * @param onLikeClick点赞/双击点赞按钮回调
+ * @param onLikedUserClick点赞列表中的用户名被点击回调
+ * @param onAddCommentClick点击评论图标/查看全部评论回调
+ * @param onCommentClick评论列表中的单条评论被点击回调
+ * @param onCommentUserClick评论发布者用户名被点击回调
+ * @param onDeleteCommentClick点击删除评论按钮回调
+ * @param onDeletePostClick点击删除帖子按钮回调
+ * @param onSaveClick点击收藏/取消收藏按钮回调
+ * @param onRepostClick点击转发按钮回调
+ * @param onShareClick点击分享按钮回调
+ * @param currentTime当前系统时间戳(用于计算相对发布时间)
+ * @param modifier外部修饰符
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

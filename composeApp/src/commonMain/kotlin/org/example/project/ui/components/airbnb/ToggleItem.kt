@@ -1,7 +1,7 @@
 /**
  * @File: ToggleItem.kt
  * @Package: org.example.project.ui.components.airbnb
- * @Description: Airbnb 通用开关切换 UI 组件
+ * @Description: Airbnb通用开关切换UI组件
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

@@ -1,7 +1,7 @@
 /**
  * @File: SduiRenderer.kt
  * @Package: org.example.project.ui.core.sdui
- * @Description: SDUI 动态 Compose 递归渲染引擎入口
+ * @Description: SDUI动态Compose递归渲染引擎入口
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */
@@ -34,10 +34,10 @@ import org.example.project.core.sdui.model.SduiNode
 import org.example.project.core.sdui.model.SduiStyle
 
 /**
- * SDUI 核心递归渲染器
+ * SDUI核心递归渲染器
  *
- * @param node 要渲染的 SDUI 节点树
- * @param onAction 组件触发 Action 时的透传句柄
+ * @param node要渲染的SDUI节点树
+ * @param onAction组件触发Action时的透传句柄
  */
 @Composable
 fun SduiRenderer(
@@ -106,14 +106,14 @@ fun SduiRenderer(
             Spacer(modifier = Modifier.height(heightDp.dp))
         }
         else -> {
-            // 未在内置基本容器中的节点，委派给注册表 SduiComponentRegistry 处理
+            // 未在内置基本容器中的节点，委派给注册表SduiComponentRegistry处理
             SduiComponentRegistry.Render(node = node, onAction = onAction)
         }
     }
 }
 
 /**
- * 将 SduiStyle 转换为 Compose Modifier
+ * 将SduiStyle转换为Compose Modifier
  */
 private fun Modifier.applyStyle(style: SduiStyle): Modifier {
     var modifier = this

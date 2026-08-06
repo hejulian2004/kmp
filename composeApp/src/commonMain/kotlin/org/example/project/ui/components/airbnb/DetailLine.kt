@@ -1,7 +1,7 @@
 /**
  * @File: DetailLine.kt
  * @Package: org.example.project.ui.components.airbnb
- * @Description: Airbnb 详情行单项 UI 组件
+ * @Description: Airbnb详情行单项UI组件
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

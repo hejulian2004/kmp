@@ -1,7 +1,7 @@
 /**
  * @File: AboutMeSection.kt
  * @Package: org.example.project.ui.components.airbnb
- * @Description: Airbnb 个人简介编辑 UI 区域
+ * @Description: Airbnb个人简介编辑UI区域
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

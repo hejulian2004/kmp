@@ -1,7 +1,7 @@
 /**
  * @File: SectionTitle.kt
  * @Package: org.example.project.ui.components.airbnb
- * @Description: Airbnb 模块小标题 UI 组件
+ * @Description: Airbnb模块小标题UI组件
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

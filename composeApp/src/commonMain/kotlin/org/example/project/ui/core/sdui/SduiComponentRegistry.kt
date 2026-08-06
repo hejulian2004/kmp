@@ -1,7 +1,7 @@
 /**
  * @File: SduiComponentRegistry.kt
  * @Package: org.example.project.ui.core.sdui
- * @Description: SDUI 动态组件控制反转注册表（隔绝渲染引擎与具体业务组件，支持注册组件全量自动导出 JSON）
+ * @Description: SDUI动态组件控制反转注册表（隔绝渲染引擎与具体业务组件，支持注册组件全量自动导出JSON）
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */
@@ -20,24 +20,24 @@ import org.example.project.core.sdui.model.SduiAction
 import org.example.project.core.sdui.model.SduiNode
 
 /**
- * 业务组件渲染 Lambda 扩展签名
+ * 业务组件渲染Lambda扩展签名
  *
- * @param node 动态节点数据
- * @param onAction 节点交互事件分发透传句柄
+ * @param node动态节点数据
+ * @param onAction节点交互事件分发透传句柄
  */
 typealias SduiComponentRenderer = @Composable (node: SduiNode, onAction: (SduiAction) -> Unit) -> Unit
 
 /**
- * SDUI 组件全局依赖倒置注册表
+ * SDUI组件全局依赖倒置注册表
  */
 object SduiComponentRegistry {
     private val registry = mutableMapOf<String, SduiComponentRenderer>()
 
     /**
-     * 注册一个新的 SDUI 节点渲染器
+     * 注册一个新的SDUI节点渲染器
      *
-     * @param type 关联节点名称（如 "FeedLineTopBar"）
-     * @param renderer Compose 视图渲染回调
+     * @param type关联节点名称（如 "FeedLineTopBar"）
+     * @param renderer Compose视图渲染回调
      */
     fun register(type: String, renderer: SduiComponentRenderer) {
         registry[type] = renderer
@@ -49,7 +49,7 @@ object SduiComponentRegistry {
     fun getRegisteredTypes(): Set<String> = registry.keys.toSet()
 
     /**
-     * 渲染指定 Node 节点
+     * 渲染指定Node节点
      */
     @Composable
     fun Render(node: SduiNode, onAction: (SduiAction) -> Unit = {}) {
@@ -62,10 +62,10 @@ object SduiComponentRegistry {
     }
 
     /**
-     * 零手动配置：根据当前注册表中所有已注册的组件，一键全自动生成完整的 SDUI 节点树及 JSON DSL 字符串
+     * 零手动配置：根据当前注册表中所有已注册的组件，一键全自动生成完整的SDUI节点树及JSON DSL字符串
      *
-     * @param containerType 根容器类型（默认 "LazyColumn"）
-     * @return 自动拼装生成的 JSON 字符串
+     * @param containerType根容器类型（默认 "LazyColumn"）
+     * @return自动拼装生成的JSON字符串
      */
     fun exportRegisteredLayoutJson(containerType: String = "LazyColumn"): String {
         val rootNode = SduiNode(

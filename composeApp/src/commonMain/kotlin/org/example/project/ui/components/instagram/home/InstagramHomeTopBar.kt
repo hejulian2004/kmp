@@ -55,11 +55,11 @@ import org.example.project.ui.theme.instagram.InstagramTheme
  * - 中间：水平居中的"Instagram"艺术字体Logo
  * - 右侧：爱心通知图标（含未读数Badge红点提示）
  *
- * @param unreadNotificationCount 未读通知数量，>0时显示红点Badge
- * @param onCreatePostClick 点击左侧发帖"+"图标回调
- * @param onNotificationClick 点击右侧爱心通知图标回调
- * @param onLogoClick 点击中间Logo标题回调
- * @param modifier 外部修饰符
+ * @param unreadNotificationCount未读通知数量，>0时显示红点Badge
+ * @param onCreatePostClick点击左侧发帖"+"图标回调
+ * @param onNotificationClick点击右侧爱心通知图标回调
+ * @param onLogoClick点击中间Logo标题回调
+ * @param modifier外部修饰符
  */
 @Composable
 fun InstagramHomeTopBar(
@@ -143,9 +143,9 @@ fun InstagramHomeTopBar(
 /**
  * 顶部导航栏自缩放图标按钮
  *
- * @param icon 图标ImageVector
- * @param contentDescription 无障碍说明
- * @param onClick 点击事件回调
+ * @param icon图标ImageVector
+ * @param contentDescription无障碍说明
+ * @param onClick点击事件回调
  */
 @Composable
 private fun TopBarIconButton(

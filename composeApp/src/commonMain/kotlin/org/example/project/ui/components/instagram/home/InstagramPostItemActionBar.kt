@@ -56,20 +56,20 @@ import org.jetbrains.compose.resources.stringResource
  * 对应最新原生Instagram UI排布：
  * - 点赞图标 + 20.1万 | 评论图标 + 1,249 | 转发图标 + 8,702 | 分享图标 + 2.1万 | 右侧收藏图标
  *
- * @param isLiked 是否已点赞
- * @param isSaved 是否已收藏
- * @param isReposted 是否已转发
- * @param likesCount 点赞次数
- * @param commentsCount 评论次数
- * @param repostCount 转发次数
- * @param shareCount 分享次数
- * @param isLikeCountHidden 是否隐藏点赞数
- * @param onLikeClick 点赞按钮点击回调
- * @param onAddCommentClick 点击评论图标回调
- * @param onRepostClick 点击转发按钮回调
- * @param onShareClick 点击分享按钮回调
- * @param onSaveClick 点击收藏按钮回调
- * @param modifier 外部修饰符
+ * @param isLiked是否已点赞
+ * @param isSaved是否已收藏
+ * @param isReposted是否已转发
+ * @param likesCount点赞次数
+ * @param commentsCount评论次数
+ * @param repostCount转发次数
+ * @param shareCount分享次数
+ * @param isLikeCountHidden是否隐藏点赞数
+ * @param onLikeClick点赞按钮点击回调
+ * @param onAddCommentClick点击评论图标回调
+ * @param onRepostClick点击转发按钮回调
+ * @param onShareClick点击分享按钮回调
+ * @param onSaveClick点击收藏按钮回调
+ * @param modifier外部修饰符
  */
 @Composable
 fun InstagramPostItemActionBar(
@@ -244,7 +244,7 @@ fun InstagramPostItemActionBar(
 }
 
 /**
- * 格式化操作栏数字（如 20100 -> 20.1万, 1249 -> 1,249, 8702 -> 8,702）
+ * 格式化操作栏数字（如20100 -> 20.1万, 1249 -> 1,249, 8702 -> 8,702）
  */
 @Composable
 private fun formatActionCount(count: Long): String {

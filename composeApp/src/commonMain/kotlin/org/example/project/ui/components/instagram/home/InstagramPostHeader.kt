@@ -63,15 +63,15 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * 帖子顶部用户信息、关注按键及更多下拉菜单栏组件
  *
- * @param post 帖子实体
- * @param currentUser 当前登录用户
- * @param onAvatarClick 点击头像回调
- * @param onNameClick 点击用户名回调
- * @param onLocationClick 点击地理位置回调
- * @param onAudioClick 点击音乐名称回调
- * @param onFollowClick 点击关注按钮回调(传递最新关注状态)
- * @param onDeletePostClick 删除帖子回调
- * @param modifier 外部修饰符
+ * @param post帖子实体
+ * @param currentUser当前登录用户
+ * @param onAvatarClick点击头像回调
+ * @param onNameClick点击用户名回调
+ * @param onLocationClick点击地理位置回调
+ * @param onAudioClick点击音乐名称回调
+ * @param onFollowClick点击关注按钮回调(传递最新关注状态)
+ * @param onDeletePostClick删除帖子回调
+ * @param modifier外部修饰符
  */
 @Composable
 fun InstagramPostHeader(

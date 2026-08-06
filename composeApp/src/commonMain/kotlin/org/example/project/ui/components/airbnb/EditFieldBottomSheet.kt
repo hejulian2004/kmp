@@ -1,7 +1,7 @@
 /**
  * @File: EditFieldBottomSheet.kt
  * @Package: org.example.project.ui.components.airbnb
- * @Description: Airbnb 属性字段编辑底部弹窗组件
+ * @Description: Airbnb属性字段编辑底部弹窗组件
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

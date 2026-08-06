@@ -1,7 +1,7 @@
 /**
  * @File: FeedLineSduiRegistry.kt
  * @Package: org.example.project.ui.core.sdui.registry
- * @Description: FeedLine 朋友圈模块全量 SDUI 动态组件适配与集中注册入口
+ * @Description: FeedLine朋友圈模块全量SDUI动态组件适配与集中注册入口
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */
@@ -27,7 +27,7 @@ import org.example.project.ui.components.feedline.PublishScreen
 import org.example.project.ui.core.sdui.SduiComponentRegistry
 
 /**
- * 集中注册 FeedLine 朋友圈模块下所有可热更组件
+ * 集中注册FeedLine朋友圈模块下所有可热更组件
  */
 fun registerFeedLineSduiComponents() {
     val defaultUser = FeedLineUser(id = "default", name = "当前用户", avatarUrl = "")
@@ -169,7 +169,7 @@ fun registerFeedLineSduiComponents() {
         )
     }
 
-    // 12. 发布动态 Screen 层组件 (FeedLinePublishScreen)
+    // 12. 发布动态Screen层组件 (FeedLinePublishScreen)
     SduiComponentRegistry.register("FeedLinePublishScreen") { node, onAction ->
         PublishScreen(
             initialMediaList = emptyList(),

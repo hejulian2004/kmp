@@ -1,7 +1,7 @@
 /**
  * @File: SectionCard.kt
  * @Package: org.example.project.ui.components.airbnb
- * @Description: Airbnb 模块卡片容器组件
+ * @Description: Airbnb模块卡片容器组件
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

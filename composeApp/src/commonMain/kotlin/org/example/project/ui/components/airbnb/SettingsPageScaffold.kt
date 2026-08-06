@@ -1,7 +1,7 @@
 /**
  * @File: SettingsPageScaffold.kt
  * @Package: org.example.project.ui.components.airbnb
- * @Description: Airbnb 设置页面通用 Scaffold 骨架屏组件
+ * @Description: Airbnb设置页面通用Scaffold骨架屏组件
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

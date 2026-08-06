@@ -66,10 +66,10 @@ import org.jetbrains.compose.resources.stringResource
  * - 个人“Your story”快拍入口（含加号Badge）
  * - 好友快拍入口（根据未读状态展示彩虹渐变圈或灰色圈，支持LIVE直播标识）
  *
- * @param stories 快拍数据列表（使用统一InstagramPost实体）
- * @param onStoryClick 点击某个快拍回调
- * @param onAddStoryClick 点击发布个人快拍回调
- * @param modifier 外部Modifier修饰符
+ * @param stories快拍数据列表（使用统一InstagramPost实体）
+ * @param onStoryClick点击某个快拍回调
+ * @param onAddStoryClick点击发布个人快拍回调
+ * @param modifier外部Modifier修饰符
  */
 @Composable
 fun InstagramStoryTray(
@@ -107,8 +107,8 @@ fun InstagramStoryTray(
 /**
  * 个人发布Story快拍加号项组件
  *
- * @param story 当前用户的快拍信息
- * @param onAddStoryClick 点击加号事件回调
+ * @param story当前用户的快拍信息
+ * @param onAddStoryClick点击加号事件回调
  */
 @Composable
 private fun AddStoryItem(
@@ -171,8 +171,8 @@ private fun AddStoryItem(
 /**
  * 好友Story快拍圆环项组件
  *
- * @param story 帖子快拍实体
- * @param onStoryClick 点击事件回调
+ * @param story帖子快拍实体
+ * @param onStoryClick点击事件回调
  */
 @Composable
 private fun StoryItem(

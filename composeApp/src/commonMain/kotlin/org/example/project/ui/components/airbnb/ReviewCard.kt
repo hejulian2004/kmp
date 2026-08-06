@@ -1,7 +1,7 @@
 /**
  * @File: ReviewCard.kt
  * @Package: org.example.project.ui.components.airbnb
- * @Description: Airbnb 房东评价卡片 UI 组件
+ * @Description: Airbnb房东评价卡片UI组件
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */
