@@ -1,7 +1,7 @@
 /**
  * @File: InstagramComment.kt
  * @Package: org.example.project.domain.model.instagram
- * @Description: Instagram 评论数据模型（对标 FeedLineComment）
+ * @Description: Instagram评论数据模型（对标FeedLineComment）
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

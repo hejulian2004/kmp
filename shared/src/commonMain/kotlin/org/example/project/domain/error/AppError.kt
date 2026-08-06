@@ -51,8 +51,8 @@ sealed interface AppError {
 /**
  * 将底层 [NetworkError] 转为领域契约 [AppError]
  * 
- * @receiver 底层网络错误模型
- * @return 返回转换后的领域错误 AppError
+ * @receiver底层网络错误模型
+ * @return返回转换后的领域错误AppError
  */
 fun NetworkError.toAppError(): AppError {
     return when (this) {
@@ -71,12 +71,12 @@ fun NetworkError.toAppError(): AppError {
 }
 
 /**
- * 将任意 Throwable 转换为领域契约 [AppError]
- * 注意：保留 CancellationException 重新抛出约束！
+ * 将任意Throwable转换为领域契约 [AppError]
+ * 注意：保留CancellationException重新抛出约束！
  * 
- * @receiver 捕获到的异常对象
- * @return 返回转换后的 AppError
- * @throws CancellationException 协程取消异常原样重新抛出
+ * @receiver捕获到的异常对象
+ * @return返回转换后的AppError
+ * @throws CancellationException协程取消异常原样重新抛出
  */
 fun Throwable.toAppError(): AppError {
     if (this is CancellationException) {

@@ -1,7 +1,7 @@
 /**
  * @File: InstagramContentThumbnailData.kt
  * @Package: org.example.project.domain.model.instagram
- * @Description: Instagram 内容缩略图数据实体类
+ * @Description: Instagram内容缩略图数据实体类
  * @Date: 2026-07-22
  */
 package org.example.project.domain.model.instagram

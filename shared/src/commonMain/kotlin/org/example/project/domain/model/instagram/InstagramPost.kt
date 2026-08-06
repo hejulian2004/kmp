@@ -1,7 +1,7 @@
 /**
  * @File: InstagramPost.kt
  * @Package: org.example.project.domain.model.instagram
- * @Description: Instagram 帖子数据模型实体（对标 FeedLinePost）
+ * @Description: Instagram帖子数据模型实体（对标FeedLinePost）
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */
@@ -22,7 +22,7 @@ data class InstagramPost(
     val createTime: Long = currentTimeMillis(),
     val unreadNotificationCount: Int = 0,
     
-    // Instagram 特有字段
+    // Instagram特有字段
     val location: String? = null,
     val taggedUsers: List<ProfileUser> = emptyList(),
     val hashtags: List<String> = emptyList(),

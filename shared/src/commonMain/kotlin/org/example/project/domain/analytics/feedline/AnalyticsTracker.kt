@@ -10,8 +10,8 @@ package org.example.project.domain.analytics.feedline
 interface AnalyticsTracker {
     /**
      * 上报事件
-     * @param eventName 事件名称
-     * @param params 附加参数键值对
+     * @param eventName事件名称
+     * @param params附加参数键值对
      */
     fun trackEvent(eventName: String, params: Map<String, Any> = emptyMap())
 }

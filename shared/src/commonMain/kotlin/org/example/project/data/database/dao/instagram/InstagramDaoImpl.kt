@@ -1,7 +1,7 @@
 /**
  * @File: InstagramDaoImpl.kt
  * @Package: org.example.project.data.database.dao.instagram
- * @Description: Instagram DAO 响应式表状态实现类
+ * @Description: Instagram DAO响应式表状态实现类
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

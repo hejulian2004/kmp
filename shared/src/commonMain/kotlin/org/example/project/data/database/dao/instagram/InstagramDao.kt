@@ -1,7 +1,7 @@
 /**
  * @File: InstagramDao.kt
  * @Package: org.example.project.data.database.dao.instagram
- * @Description: Instagram 动态与 Story 快拍 Room DAO 契约接口
+ * @Description: Instagram动态与Story快拍Room DAO契约接口
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

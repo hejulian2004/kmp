@@ -1,7 +1,7 @@
 /**
  * @File: FeedLineNotificationEntity.kt
  * @Package: org.example.project.data.database.entity.feedline
- * @Description: 朋友圈通知消息的 Room 本地数据库实体类
+ * @Description: 朋友圈通知消息的Room本地数据库实体类
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

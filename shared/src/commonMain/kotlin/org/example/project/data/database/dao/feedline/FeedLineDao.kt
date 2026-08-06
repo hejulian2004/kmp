@@ -1,7 +1,7 @@
 /**
  * @File: FeedLineDao.kt
  * @Package: org.example.project.data.database.dao.feedline
- * @Description: 朋友圈动态与通知消息 Room DAO 契约接口
+ * @Description: 朋友圈动态与通知消息Room DAO契约接口
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

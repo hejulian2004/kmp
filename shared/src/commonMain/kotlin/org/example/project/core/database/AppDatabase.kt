@@ -1,7 +1,7 @@
 /**
  * @File: AppDatabase.kt
  * @Package: org.example.project.core.database
- * @Description: 项目全局 Room KMP 本地数据库定义（包含 Airbnb、FeedLine、Instagram 模块 DAO 契约）
+ * @Description: 项目全局Room KMP本地数据库定义（包含Airbnb、FeedLine、Instagram模块DAO契约）
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

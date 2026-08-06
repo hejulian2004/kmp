@@ -1,7 +1,7 @@
 /**
  * @File: HostProfileDaoImpl.kt
  * @Package: org.example.project.data.database.dao.airbnb
- * @Description: Airbnb 房东与房源本地数据库 DAO 实现类（响应式 Flow 表驱动持久化存储）
+ * @Description: Airbnb房东与房源本地数据库DAO实现类（响应式Flow表驱动持久化存储）
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

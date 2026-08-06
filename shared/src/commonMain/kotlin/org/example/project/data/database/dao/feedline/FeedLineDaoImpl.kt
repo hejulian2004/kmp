@@ -1,7 +1,7 @@
 /**
  * @File: FeedLineDaoImpl.kt
  * @Package: org.example.project.data.database.dao.feedline
- * @Description: 朋友圈 DAO 响应式表状态实现类
+ * @Description: 朋友圈DAO响应式表状态实现类
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */
