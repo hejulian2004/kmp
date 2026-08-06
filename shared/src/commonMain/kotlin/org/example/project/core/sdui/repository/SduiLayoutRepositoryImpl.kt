@@ -1,7 +1,7 @@
 /**
  * @File: SduiLayoutRepositoryImpl.kt
  * @Package: org.example.project.core.sdui.repository
- * @Description: SDUI动态布局配置契约与本地缓存/服务端热更新仓库实现
+ * @Description: SDUI动态布局配置契约与本地磁盘缓存/服务端热更新仓库实现
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */
@@ -14,6 +14,8 @@ import org.example.project.core.network.client.AppNetworkInitializer
 import org.example.project.core.network.client.NetworkContainer
 import org.example.project.core.network.config.ApiEndpoints
 import org.example.project.core.sdui.model.SduiNode
+import org.example.project.platform.readStorageFile
+import org.example.project.platform.writeStorageFile
 
 /**
  * SDUI布局配置数据仓库契约
@@ -47,6 +49,11 @@ interface SduiLayoutRepository {
      * @param jsonContent服务端热更JSON字符串
      */
     fun saveDiskCache(module: String, jsonContent: String)
+
+    /**
+     * 清空指定模块的本地磁盘缓存
+     */
+    fun clearDiskCache(module: String)
 }
 
 /**
@@ -67,7 +74,6 @@ class SduiLayoutRepositoryImpl(
     }
 
     private val memoryCache = mutableMapOf<String, SduiNode>()
-    private val diskCacheStore = mutableMapOf<String, String>() // 内存模拟磁盘 Key-Value 存储
 
     private val jsonFormatter = Json {
         ignoreUnknownKeys = true
@@ -77,12 +83,14 @@ class SduiLayoutRepositoryImpl(
     private val activeNetworkContainer: NetworkContainer
         get() = networkContainer ?: AppNetworkInitializer.container
 
+    private fun getDiskCacheFileName(module: String) = "sdui_layout_$module.json"
+
     override fun getLayout(module: String, bundledFallbackJson: String): SduiNode {
         // 1. 优先查找内存缓存（已解析过的本地热更或模板节点）
         memoryCache[module]?.let { return it }
 
-        // 2. 查找本地磁盘缓存（此前从服务端下载并保存的热更JSON）
-        val diskJson = diskCacheStore[module]
+        // 2. 查找本地磁盘持久化缓存（此前从服务端下载并保存的热更JSON）
+        val diskJson = readStorageFile(getDiskCacheFileName(module))
         if (!diskJson.isNullOrBlank()) {
             try {
                 val node = jsonFormatter.decodeFromString<SduiNode>(diskJson)
@@ -104,8 +112,7 @@ class SduiLayoutRepositoryImpl(
             val node = jsonFormatter.decodeFromString<SduiNode>(responseText)
             
             // 服务端有热更，下载成功后保存到本地磁盘与内存缓存，供后续默认读取使用
-            diskCacheStore[module] = responseText
-            memoryCache[module] = node
+            saveDiskCache(module, responseText)
             node
         } catch (_: Exception) {
             // 网络请求失败或无热更时，安全降级使用本地缓存（若有）或原生打包默认UI模板
@@ -116,11 +123,16 @@ class SduiLayoutRepositoryImpl(
     override fun saveDiskCache(module: String, jsonContent: String) {
         try {
             val node = jsonFormatter.decodeFromString<SduiNode>(jsonContent)
-            diskCacheStore[module] = jsonContent
+            writeStorageFile(getDiskCacheFileName(module), jsonContent)
             memoryCache[module] = node
         } catch (_: Exception) {
             // 写入非法JSON自动忽略
         }
+    }
+
+    override fun clearDiskCache(module: String) {
+        memoryCache.remove(module)
+        writeStorageFile(getDiskCacheFileName(module), "")
     }
 
     private fun parseFallbackNode(module: String, bundledFallbackJson: String): SduiNode {

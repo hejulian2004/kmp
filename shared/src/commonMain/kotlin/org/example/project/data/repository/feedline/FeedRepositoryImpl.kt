@@ -234,6 +234,8 @@ class FeedRepositoryImpl(
         _feedNotifications.update { notifications ->
             notifications.filterNot { it.id == feedNotification.id }
         }
+        val updated = feedNotification.copy(isDelete = true)
+        feedLineDao.insertNotifications(listOf(FeedLineNotificationEntity.fromDomainModel(updated)))
     }
 
     override fun getNotifications(): Flow<List<FeedLineNotification>> {
