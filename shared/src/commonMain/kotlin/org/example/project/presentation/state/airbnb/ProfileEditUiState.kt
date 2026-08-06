@@ -1,7 +1,7 @@
 /**
  * @File: ProfileEditUiState.kt
  * @Package: org.example.project.presentation.state.airbnb
- * @Description: Airbnb 房东资料编辑 MVI 页面状态
+ * @Description: Airbnb房东资料编辑MVI页面状态
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

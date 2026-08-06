@@ -22,8 +22,8 @@ data class InstagramProfileUiState(
     // Tab
     val selectedTabId: String = TAB_POSTS,
 
-    // 各 Tab 内容
-    // 三个 Tab 独立持有分页状态，切换 Tab 时互不干扰
+    // 各Tab内容
+    // 三个Tab独立持有分页状态，切换Tab时互不干扰
     val postsSection: UiState<PostsSection> = UiState.Idle,
     val reelsSection: UiState<PostsSection> = UiState.Idle,
     val taggedSection: UiState<PostsSection> = UiState.Idle,

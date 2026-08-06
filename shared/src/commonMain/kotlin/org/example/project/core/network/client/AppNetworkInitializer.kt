@@ -36,7 +36,7 @@ object AppNetworkInitializer {
     /**
      * 显式初始化网络架构单例。
      * 
-     * @param context 平台相关Context(Android需传入ApplicationContext，iOS传入null)
+     * @param context平台相关Context(Android需传入ApplicationContext，iOS传入null)
      */
     fun init(context: Any? = null) {
         if (_container == null) {

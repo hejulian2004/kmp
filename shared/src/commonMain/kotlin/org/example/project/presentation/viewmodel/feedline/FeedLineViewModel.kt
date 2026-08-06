@@ -1,7 +1,7 @@
 /**
  * @File: FeedLineViewModel.kt
  * @Package: org.example.project.presentation.viewmodel.feedline
- * @Description: 朋友圈/动态模块的 MVI 核心视图模型，负责状态管理与事件处理
+ * @Description: 朋友圈/动态模块的MVI核心视图模型，负责状态管理与事件处理
  * @Author: 何聚敛
  * @Date: 2026-07-20
  */
@@ -51,9 +51,9 @@ import org.example.project.presentation.state.feedline.Screen
 /**
  * 朋友圈状态管理器
  *
- * @param feedRepository 动态数据仓库接口
- * @param currentUser 当前登录用户
- * @param analyticsTracker 数据埋点追踪器
+ * @param feedRepository动态数据仓库接口
+ * @param currentUser当前登录用户
+ * @param analyticsTracker数据埋点追踪器
  */
 class FeedLineViewModel(
     private val feedRepository: FeedLineRepository,

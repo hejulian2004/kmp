@@ -42,8 +42,8 @@ private data class RefreshTokenResponse(
  * 负责Token过期时的刷新逻辑。
  * 包含单飞(Single-Flight)机制，并发401请求合并为一次网络调用。
  * 
- * @param tokenStore 本地Token凭据存储
- * @param refreshEndpoint 刷新接口的完整URL地址(默认ApiEndpoints.Auth.REFRESH)
+ * @param tokenStore本地Token凭据存储
+ * @param refreshEndpoint刷新接口的完整URL地址(默认ApiEndpoints.Auth.REFRESH)
  */
 class TokenRefresher(
     private val tokenStore: TokenStore,
@@ -54,9 +54,9 @@ class TokenRefresher(
     /**
      * 执行Token刷新(使用单独传入的publicClient避免401递归死锁)
      * 
-     * @param publicClient 未挂载Auth插件的公共HttpClient
-     * @param oldTokens 当前保存的凭据
-     * @return 返回刷新后的AuthTokens，如果刷新失败或刷新接口返回错误则返回null
+     * @param publicClient未挂载Auth插件的公共HttpClient
+     * @param oldTokens当前保存的凭据
+     * @return返回刷新后的AuthTokens，如果刷新失败或刷新接口返回错误则返回null
      */
     suspend fun refreshToken(publicClient: HttpClient, oldTokens: AuthTokens): AuthTokens? {
         return mutex.withLock {

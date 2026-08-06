@@ -10,8 +10,8 @@ package org.example.project.core.network.auth
 /**
  * 访问与刷新Token数据模型
  * 
- * @param accessToken 业务接口鉴权使用的Bearer Token
- * @param refreshToken 用于在AccessToken过期时换取新Token的凭据
+ * @param accessToken业务接口鉴权使用的Bearer Token
+ * @param refreshToken用于在AccessToken过期时换取新Token的凭据
  */
 data class AuthTokens(
     val accessToken: String,
@@ -22,7 +22,7 @@ data class AuthTokens(
  * [TokenStore]
  * 负责AccessToken与RefreshToken在本地SecureStorage中的存取操作。
  * 
- * @param secureStorage 跨平台安全存储组件
+ * @param secureStorage跨平台安全存储组件
  */
 class TokenStore(
     private val secureStorage: SecureStorage
@@ -36,7 +36,7 @@ class TokenStore(
      * 读取本地保存的凭据
      * 架构约束：只能读取本地安全存储，禁止发起网络请求。
      * 
-     * @return 若凭据存在则返回 AuthTokens，否则返回 null
+     * @return若凭据存在则返回AuthTokens，否则返回null
      */
     suspend fun loadTokens(): AuthTokens? {
         val accessToken = secureStorage.getString(KEY_ACCESS_TOKEN)
@@ -51,7 +51,7 @@ class TokenStore(
     /**
      * 保存新的凭据到安全存储
      * 
-     * @param tokens 新的凭据组合
+     * @param tokens新的凭据组合
      */
     suspend fun saveTokens(tokens: AuthTokens) {
         secureStorage.putString(KEY_ACCESS_TOKEN, tokens.accessToken)

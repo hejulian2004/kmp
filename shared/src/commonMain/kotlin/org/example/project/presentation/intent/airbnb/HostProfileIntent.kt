@@ -1,7 +1,7 @@
 /**
  * @File: HostProfileIntent.kt
  * @Package: org.example.project.presentation.intent.airbnb
- * @Description: Airbnb 房东主页 MVI 意图集合
+ * @Description: Airbnb房东主页MVI意图集合
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

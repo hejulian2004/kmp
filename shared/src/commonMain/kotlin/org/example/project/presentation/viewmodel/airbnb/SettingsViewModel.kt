@@ -1,7 +1,7 @@
 /**
  * @File: SettingsViewModel.kt
  * @Package: org.example.project.presentation.viewmodel.airbnb
- * @Description: Airbnb 设置页面 MVI ViewModel（保留原有多语言/语言映射、主题配置等全部逻辑）
+ * @Description: Airbnb设置页面MVI ViewModel（保留原有多语言/语言映射、主题配置等全部逻辑）
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */
@@ -39,7 +39,7 @@ private val LANGUAGE_TAG_TO_DISPLAY = mapOf(
     "hi" to "हिन्दी",
 )
 
-// 界面显示名称 → 语言标签（用于点击时传给 applyAppLanguage）
+// 界面显示名称 → 语言标签（用于点击时传给applyAppLanguage）
 internal val DISPLAY_TO_LANGUAGE_TAG = mapOf(
     "中文（简体）" to "zh",
     "中文（繁體）" to "zh-TW",

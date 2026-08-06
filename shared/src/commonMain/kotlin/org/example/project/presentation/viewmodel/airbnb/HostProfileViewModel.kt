@@ -1,7 +1,7 @@
 /**
  * @File: HostProfileViewModel.kt
  * @Package: org.example.project.presentation.viewmodel.airbnb
- * @Description: Airbnb 房东主页 MVI 架构 ViewModel（融合 Room + SWR 数据流与单向 Intent 统一分发）
+ * @Description: Airbnb房东主页MVI架构ViewModel（融合Room + SWR数据流与单向Intent统一分发）
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */
@@ -58,7 +58,7 @@ class HostProfileViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
-                // 结合 SWR 响应式状态流
+                // 结合SWR响应式状态流
                 repository.getHostsResource().collect { resource ->
                     when (resource) {
                         is ResourceState.Loading -> {

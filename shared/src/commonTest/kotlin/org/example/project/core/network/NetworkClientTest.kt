@@ -1,7 +1,7 @@
 /**
  * @File: NetworkClientTest.kt
  * @Package: org.example.project.core.network
- * @Description: KMP 核心网络层单元测试集合（使用 Ktor MockEngine）
+ * @Description: KMP核心网络层单元测试集合（使用Ktor MockEngine）
  * @Author: 何聚敛
  * @Date: 2026-07-30
  */
@@ -43,7 +43,7 @@ class NetworkClientTest {
         var callCount = 0
         val mockEngine = MockEngine { _ ->
             callCount++
-            // 模拟 500 持续失败
+            // 模拟500持续失败
             respond(
                 content = """{"error": "server error"}""",
                 status = HttpStatusCode.InternalServerError,
@@ -62,7 +62,7 @@ class NetworkClientTest {
         } catch (_: Exception) {
         }
 
-        // GET 幂等请求默认重试 2 次，首次 + 2次重试 = 总共 3 次请求
+        // GET幂等请求默认重试2次，首次 + 2次重试 = 总共3次请求
         assertEquals(3, callCount, "GET 幂等请求总尝试次数应为 3 次")
         container.close()
     }
@@ -90,7 +90,7 @@ class NetworkClientTest {
         } catch (_: Exception) {
         }
 
-        // POST 写请求禁止自动重试，应仅有 1 次请求
+        // POST写请求禁止自动重试，应仅有1次请求
         assertEquals(1, callCount, "POST 写请求尝试次数应为 1 次 (零自动重试)")
         container.close()
     }

@@ -36,8 +36,8 @@ import org.example.project.presentation.state.instagram.InstagramHomeUiState
  * - 维持 [InstagramHomeUiState] 页面状态StateFlow
  * - 发送 [InstagramHomeEffect] 一次性UI事件
  *
- * @param repository 首页数据仓库接口
- * @param currentUser 当前登录用户
+ * @param repository首页数据仓库接口
+ * @param currentUser当前登录用户
  */
 class InstagramHomeViewModel(
     private val repository: InstagramHomeRepository = InstagramHomeRepositoryImpl(),
@@ -72,7 +72,7 @@ class InstagramHomeViewModel(
     /**
      * MVI统一意图分发入口
      *
-     * @param intent 包含界面触发的所有用户操作意图
+     * @param intent包含界面触发的所有用户操作意图
      */
     fun handleIntent(intent: InstagramHomeIntent) {
         when (intent) {

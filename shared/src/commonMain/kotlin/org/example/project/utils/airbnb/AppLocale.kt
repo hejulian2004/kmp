@@ -1,7 +1,7 @@
 /**
  * @File: AppLocale.kt
  * @Package: org.example.project.utils.airbnb
- * @Description: Airbnb 模块语言选择与底层切换工具入口（包含 expect 定义）
+ * @Description: Airbnb模块语言选择与底层切换工具入口（包含expect定义）
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

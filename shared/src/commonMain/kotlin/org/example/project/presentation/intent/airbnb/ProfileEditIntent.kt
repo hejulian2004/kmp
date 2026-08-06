@@ -1,7 +1,7 @@
 /**
  * @File: ProfileEditIntent.kt
  * @Package: org.example.project.presentation.intent.airbnb
- * @Description: Airbnb 个人资料编辑 MVI 意图集合
+ * @Description: Airbnb个人资料编辑MVI意图集合
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

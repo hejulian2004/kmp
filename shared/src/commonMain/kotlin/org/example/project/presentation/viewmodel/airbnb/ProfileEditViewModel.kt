@@ -1,7 +1,7 @@
 /**
  * @File: ProfileEditViewModel.kt
  * @Package: org.example.project.presentation.viewmodel.airbnb
- * @Description: Airbnb 个人资料编辑 MVI ViewModel（保留原逻辑与单向 Intent 触发）
+ * @Description: Airbnb个人资料编辑MVI ViewModel（保留原逻辑与单向Intent触发）
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

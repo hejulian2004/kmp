@@ -1,7 +1,7 @@
 /**
  * @File: DevMockEngine.kt
  * @Package: org.example.project.core.network.config
- * @Description: 无后端接口开发阶段使用的全局 MockEngine 虚拟网络引擎
+ * @Description: 无后端接口开发阶段使用的全局MockEngine虚拟网络引擎
  * @Author: 何聚敛
  * @Date: 2026-07-30
  */
@@ -19,7 +19,7 @@ import org.example.project.core.network.config.createFakeFeedPosts
  * [createDevMockEngine]
  * 创建在无后端真实接口开发阶段默认返回200 OK假数据的MockEngine。
  * 
- * @return 返回配置好虚拟响应规则的 MockEngine 实例
+ * @return返回配置好虚拟响应规则的MockEngine实例
  */
 fun createDevMockEngine(): MockEngine {
     return MockEngine { request ->

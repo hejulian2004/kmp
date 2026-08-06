@@ -1,7 +1,7 @@
 /**
  * @File: SettingsIntent.kt
  * @Package: org.example.project.presentation.intent.airbnb
- * @Description: Airbnb 设置页面 MVI 意图集合
+ * @Description: Airbnb设置页面MVI意图集合
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

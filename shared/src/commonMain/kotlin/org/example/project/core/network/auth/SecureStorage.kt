@@ -17,23 +17,23 @@ interface SecureStorage {
     /**
      * 读取指定键的安全数据
      * 
-     * @param key 存储键
-     * @return 返回对应字符串，不存在时返回 null
+     * @param key存储键
+     * @return返回对应字符串，不存在时返回null
      */
     suspend fun getString(key: String): String?
 
     /**
      * 写入键值对至安全存储
      * 
-     * @param key 存储键
-     * @param value 字符串值
+     * @param key存储键
+     * @param value字符串值
      */
     suspend fun putString(key: String, value: String)
 
     /**
      * 移除指定键的安全数据
      * 
-     * @param key 存储键
+     * @param key存储键
      */
     suspend fun remove(key: String)
 

@@ -12,7 +12,7 @@ import android.content.Context
 /**
  * Android平台创建SecureStorage的actual实现
  * 
- * @param context 必须传入Android Context
+ * @param context必须传入Android Context
  */
 actual fun createPlatformSecureStorage(context: Any?): SecureStorage {
     require(context is Context) {

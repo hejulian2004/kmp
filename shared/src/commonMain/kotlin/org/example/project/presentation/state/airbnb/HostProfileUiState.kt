@@ -1,7 +1,7 @@
 /**
  * @File: HostProfileUiState.kt
  * @Package: org.example.project.presentation.state.airbnb
- * @Description: Airbnb 房东主页 MVI 页面全局状态
+ * @Description: Airbnb房东主页MVI页面全局状态
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

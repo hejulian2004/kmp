@@ -1,7 +1,7 @@
 /**
  * @File: NetworkClientFactory.kt
  * @Package: org.example.project.core.network.client
- * @Description: HttpClient 客户端工厂接口契约
+ * @Description: HttpClient客户端工厂接口契约
  * @Author: 何聚敛
  * @Date: 2026-07-30
  */
@@ -11,7 +11,7 @@ import io.ktor.client.HttpClient
 
 /**
  * [NetworkClientFactory]
- * 负责定义生产四种职责分离 HttpClient 的工厂契约接口。
+ * 负责定义生产四种职责分离HttpClient的工厂契约接口。
  */
 interface NetworkClientFactory {
     /** 创建无需鉴权的公共客户端 (PublicClient) */

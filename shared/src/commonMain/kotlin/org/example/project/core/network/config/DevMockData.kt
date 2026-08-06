@@ -23,9 +23,9 @@ private fun generateDevRandomId(): String {
 
 /**
  * [createFakeFeedPosts]
- * 生成网络层无后端接口时返回的 Mock朋友圈动态假数据列表。
+ * 生成网络层无后端接口时返回的Mock朋友圈动态假数据列表。
  * 
- * @return 返回模拟的朋友圈动态列表
+ * @return返回模拟的朋友圈动态列表
  */
 fun createFakeFeedPosts(): List<FeedLinePost> {
     val user = FeedLineUser(id = "1", name = "何聚敛1", avatarUrl = "https://i.pravatar.cc/300?t=" + abs(Random.nextLong() % 1000))

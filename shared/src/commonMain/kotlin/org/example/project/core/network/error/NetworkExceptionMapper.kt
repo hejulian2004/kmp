@@ -1,7 +1,7 @@
 /**
  * @File: NetworkExceptionMapper.kt
  * @Package: org.example.project.core.network.error
- * @Description: 网络层统一异常映射器，安全处理 Ktor/平台异常并转换成 NetworkError
+ * @Description: 网络层统一异常映射器，安全处理Ktor/平台异常并转换成NetworkError
  * @Author: 何聚敛
  * @Date: 2026-07-30
  */
@@ -19,19 +19,19 @@ import kotlinx.serialization.SerializationException
 
 /**
  * [NetworkExceptionMapper]
- * 负责将底层捕获的 Throwable 或 HttpResponse 状态码转换为规范统一的 [NetworkError]。
+ * 负责将底层捕获的Throwable或HttpResponse状态码转换为规范统一的 [NetworkError]。
  */
 object NetworkExceptionMapper {
 
     /**
-     * 将 Exception 映射为 [NetworkError]
+     * 将Exception映射为 [NetworkError]
      * 
-     * @param throwable 捕获到的异常
-     * @return 返回映射后的 NetworkError
-     * @throws CancellationException 如果是协程取消异常，必须原样重新抛出！
+     * @param throwable捕获到的异常
+     * @return返回映射后的NetworkError
+     * @throws CancellationException如果是协程取消异常，必须原样重新抛出！
      */
     fun mapException(throwable: Throwable): NetworkError {
-        // 关键约束：CancellationException 必须原样重新抛出
+        // 关键约束：CancellationException必须原样重新抛出
         if (throwable is CancellationException) {
             throw throwable
         }
@@ -63,10 +63,10 @@ object NetworkExceptionMapper {
     }
 
     /**
-     * 将 HTTP Response 状态码映射为 [NetworkError]
+     * 将HTTP Response状态码映射为 [NetworkError]
      * 
-     * @param response HTTP 响应对象
-     * @return 返回对应的 NetworkError
+     * @param response HTTP响应对象
+     * @return返回对应的NetworkError
      */
     fun mapHttpResponse(response: HttpResponse): NetworkError {
         val status = response.status

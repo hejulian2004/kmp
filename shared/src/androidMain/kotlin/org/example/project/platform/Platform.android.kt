@@ -4,7 +4,7 @@ import android.os.Build
 
 /**
  * @File: Platform.android.kt
- * @Description: Android 平台特定实现
+ * @Description: Android平台特定实现
  * @Date: 2026-04-20
  */
 

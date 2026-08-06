@@ -1,7 +1,7 @@
 /**
  * @File: AppLocale.ios.kt
  * @Package: org.example.project.utils.airbnb
- * @Description: iOS 平台 AppLocale actual 实现
+ * @Description: iOS平台AppLocale actual实现
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */
@@ -12,7 +12,7 @@ import platform.Foundation.currentLocale
 import platform.Foundation.languageCode
 
 actual fun applyAppLanguage(languageTag: String) {
-    // iOS 不支持运行时直接切换 App 语言，留在系统设置处理
+    // iOS不支持运行时直接切换App语言，留在系统设置处理
 }
 
 actual fun getInitialLanguageTag(): String {

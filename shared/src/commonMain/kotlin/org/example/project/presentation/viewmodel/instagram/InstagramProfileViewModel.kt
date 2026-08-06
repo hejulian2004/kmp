@@ -21,11 +21,11 @@ import org.example.project.presentation.state.instagram.PostsSection
 
 class InstagramProfileViewModel : ViewModel() {
 
-    // StateFlow 持有当前页面状态
+    // StateFlow持有当前页面状态
     private val _uiState = MutableStateFlow(InstagramProfileUiState())
     val uiState: StateFlow<InstagramProfileUiState> = _uiState.asStateFlow()
 
-    // SingleEvent 用于一次性事件
+    // SingleEvent用于一次性事件
     private val _singleEvent = MutableSharedFlow<InstagramProfileSingleEvent>()
     val singleEvent: SharedFlow<InstagramProfileSingleEvent> = _singleEvent.asSharedFlow()
 
@@ -245,7 +245,7 @@ sealed interface InstagramProfileIntent {
     data class UserCardDismissed(val userId: String) : InstagramProfileIntent
 
     // ==================================================
-    // Tab 切换
+    // Tab切换
     // ==================================================
 
     /** 用户切换 Tab（帖子 / Reels / 标记） */
@@ -275,11 +275,11 @@ sealed interface InstagramProfileIntent {
     data object CreateReelClicked : InstagramProfileIntent
 
     // ==================================================
-    // 页面级滚动行为（LazyColumn 驱动 TopBar 显隐）
+    // 页面级滚动行为（LazyColumn驱动TopBar显隐）
     // ==================================================
 
     /**
-     * 滚动偏移变化时由 UI 上报，ViewModel 根据阈值决定是否更新
+     * 滚动偏移变化时由UI上报，ViewModel根据阈值决定是否更新
      */
     data class ScrollOffsetChanged(val scrollOffset: Int) : InstagramProfileIntent
 }

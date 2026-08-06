@@ -54,7 +54,7 @@ object NetworkConstants {
 object CommonNetworkConfig {
 
     /**
-     * 配置公共 Json 序列化选项
+     * 配置公共Json序列化选项
      */
     val defaultJson = Json {
         prettyPrint = false
@@ -64,19 +64,19 @@ object CommonNetworkConfig {
     }
 
     /**
-     * 应用通用 Ktor 客户端插件配置
+     * 应用通用Ktor客户端插件配置
      * 
-     * @param currentAppBuild 当前应用 Build 号，用于检测 ForceUpdate
+     * @param currentAppBuild当前应用Build号，用于检测ForceUpdate
      */
     fun HttpClientConfig<*>.applyCommonDefaults(
         currentAppBuild: Long = 100L
     ) {
-        // 1. JSON 序列化插件
+        // 1. JSON序列化插件
         install(ContentNegotiation) {
             json(defaultJson)
         }
 
-        // 2. 日志与 Header 脱敏配置
+        // 2. 日志与Header脱敏配置
         install(Logging) {
             logger = object : Logger {
                 override fun log(message: String) {
@@ -95,7 +95,7 @@ object CommonNetworkConfig {
             level = LogLevel.HEADERS
         }
 
-        // 3. HttpRequestRetry 插件 (架构约束：必须安装在 HttpTimeout 之前)
+        // 3. HttpRequestRetry插件 (架构约束：必须安装在HttpTimeout之前)
         install(HttpRequestRetry) {
             maxRetries = NetworkConstants.MAX_RETRIES
             // 规则：仅幂等方法重试 (GET, HEAD, OPTIONS) 且匹配可重试状态码: 408, 429, 500, 502, 503, 504
@@ -110,14 +110,14 @@ object CommonNetworkConfig {
             exponentialDelay(base = 2.0, maxDelayMs = 4000L)
         }
 
-        // 4. HttpTimeout 插件 (架构约束：必须安装在 HttpRequestRetry 之后)
+        // 4. HttpTimeout插件 (架构约束：必须安装在HttpRequestRetry之后)
         install(HttpTimeout) {
             requestTimeoutMillis = NetworkConstants.DEFAULT_REQUEST_TIMEOUT_MS
             socketTimeoutMillis = NetworkConstants.DEFAULT_SOCKET_TIMEOUT_MS
             connectTimeoutMillis = NetworkConstants.DEFAULT_CONNECT_TIMEOUT_MS
         }
 
-        // 5. 检查 X-Min-App-Build-Required 响应头
+        // 5. 检查X-Min-App-Build-Required响应头
         install(ResponseObserver) {
             onResponse { response ->
                 val minBuildHeader = response.headers[NetworkConstants.HEADER_MIN_APP_BUILD_REQUIRED]

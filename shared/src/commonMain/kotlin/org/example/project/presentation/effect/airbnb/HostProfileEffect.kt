@@ -1,7 +1,7 @@
 /**
  * @File: HostProfileEffect.kt
  * @Package: org.example.project.presentation.effect.airbnb
- * @Description: Airbnb 模块 MVI 单次事件 Effect
+ * @Description: Airbnb模块MVI单次事件Effect
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

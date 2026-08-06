@@ -1,7 +1,7 @@
 /**
  * @File: FeedRepositoryImpl.kt
  * @Package: org.example.project.data.repository.feedline
- * @Description: 朋友圈数据仓库的具体内存与网络实现（整合 Room KMP 本地 DAO 数据库持久化）
+ * @Description: 朋友圈数据仓库的具体内存与网络实现（整合Room KMP本地DAO数据库持久化）
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */

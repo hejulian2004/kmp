@@ -7,7 +7,7 @@ import platform.UIKit.UIDevice
 
 /**
  * @File: Platform.ios.kt
- * @Description: iOS 平台特定实现
+ * @Description: iOS平台特定实现
  * @Date: 2026-04-20
  */
 

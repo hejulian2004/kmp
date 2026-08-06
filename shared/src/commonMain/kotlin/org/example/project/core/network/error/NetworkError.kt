@@ -32,7 +32,7 @@ sealed interface NetworkError {
     data class RateLimited(val retryAfterSeconds: Long? = null) : NetworkError
 
     /** 
-     * 409 Conflict 或 412 Precondition Failed 状态码。
+     * 409 Conflict或412 Precondition Failed状态码。
      * 用于标识乐观锁版本冲突或条件前置失败。
      */
     data class Conflict(val statusCode: Int, val serverVersion: String? = null) : NetworkError
@@ -59,7 +59,7 @@ class NetworkException(
 ) : Exception("Network error: $error", cause)
 
 /**
- * 强制升级异常，专用于触发 ForceUpdate 流程
+ * 强制升级异常，专用于触发ForceUpdate流程
  */
 class ForceUpdateException(
     val requiredBuild: Long

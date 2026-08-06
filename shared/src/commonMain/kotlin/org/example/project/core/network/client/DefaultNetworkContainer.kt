@@ -1,7 +1,7 @@
 /**
  * @File: DefaultNetworkContainer.kt
  * @Package: org.example.project.core.network.client
- * @Description: NetworkContainer 依赖容器的具体实现
+ * @Description: NetworkContainer依赖容器的具体实现
  * @Author: 何聚敛
  * @Date: 2026-07-30
  */
@@ -11,9 +11,9 @@ import io.ktor.client.HttpClient
 
 /**
  * [DefaultNetworkContainer]
- * 网络依赖容器实现，懒加载或提前构建各个 HttpClient 并管理销毁。
+ * 网络依赖容器实现，懒加载或提前构建各个HttpClient并管理销毁。
  * 
- * @param factory 网络客户端工厂
+ * @param factory网络客户端工厂
  */
 class DefaultNetworkContainer(
     private val factory: NetworkClientFactory

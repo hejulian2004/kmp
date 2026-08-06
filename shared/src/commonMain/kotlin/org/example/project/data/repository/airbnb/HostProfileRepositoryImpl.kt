@@ -1,7 +1,7 @@
 /**
  * @File: HostProfileRepositoryImpl.kt
  * @Package: org.example.project.data.repository.airbnb
- * @Description: Airbnb房东与房源数据仓库实现类（遵循网络架构规范，结合 NetworkContainer、Room DAO 与 SWR 离线同步管道）
+ * @Description: Airbnb房东与房源数据仓库实现类（遵循网络架构规范，结合NetworkContainer、Room DAO与SWR离线同步管道）
  * @Author: 何聚敛
  * @Date: 2026-08-05
  */
@@ -32,7 +32,7 @@ class HostProfileRepositoryImpl(
     private val networkContainer: NetworkContainer? = null,
 ) : HostProfileRepository {
 
-    // 假数据预置（开发测试阶段当后端 API 未就绪或无网络时平滑降级兜底）
+    // 假数据预置（开发测试阶段当后端API未就绪或无网络时平滑降级兜底）
     private val initialHosts = listOf(
         Host(
             id = "art-room-hk",

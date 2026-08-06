@@ -1,7 +1,7 @@
 /**
  * @File: NetworkClientFactoryImpl.kt
  * @Package: org.example.project.core.network.client
- * @Description: NetworkClientFactory 工厂具体实现类
+ * @Description: NetworkClientFactory工厂具体实现类
  * @Author: 何聚敛
  * @Date: 2026-07-30
  */
@@ -23,12 +23,12 @@ import org.example.project.core.network.config.RequestIdPlugin
 
 /**
  * [NetworkClientFactoryImpl]
- * 工厂的具体实现，根据规范要求创建隔离的 HttpClient 实例。
+ * 工厂的具体实现，根据规范要求创建隔离的HttpClient实例。
  * 
- * @param tokenStore 本地凭据存储
- * @param tokenRefresher Token 单飞刷新器
- * @param customEngine 可选传入的引擎（用于 MockEngine 单元测试），为 null 时自动匹配平台默认引擎
- * @param currentAppBuild 当前应用的逻辑构建号，用于客户端版本检测
+ * @param tokenStore本地凭据存储
+ * @param tokenRefresher Token单飞刷新器
+ * @param customEngine可选传入的引擎（用于MockEngine单元测试），为null时自动匹配平台默认引擎
+ * @param currentAppBuild当前应用的逻辑构建号，用于客户端版本检测
  */
 class NetworkClientFactoryImpl(
     private val tokenStore: TokenStore,
@@ -53,14 +53,14 @@ class NetworkClientFactoryImpl(
     }
 
     override fun createAuthorizedClient(): HttpClient {
-        // 创建用于 Token 刷新的 PublicClient，避免 401 递归死锁
+        // 创建用于Token刷新的PublicClient，避免401递归死锁
         val publicClient = createPublicClient()
 
         return createClient {
             applyCommonDefaults(currentAppBuild)
             install(RequestIdPlugin)
 
-            // 配置 Ktor Auth 插件
+            // 配置Ktor Auth插件
             install(Auth) {
                 bearer {
                     loadTokens {
@@ -87,7 +87,7 @@ class NetworkClientFactoryImpl(
                         }
                     }
 
-                    // 仅允许给官方与安全域名发送 Bearer Token
+                    // 仅允许给官方与安全域名发送Bearer Token
                     sendWithoutRequest { request ->
                         request.url.host.endsWith("example.com") || request.url.host == "localhost" || request.url.host == "127.0.0.1"
                     }
@@ -106,7 +106,7 @@ class NetworkClientFactoryImpl(
                 maxRetries = 0
             }
 
-            // 独立上传超时策略 (请求上限 120 秒)
+            // 独立上传超时策略 (请求上限120秒)
             install(HttpTimeout) {
                 requestTimeoutMillis = 120_000L
                 socketTimeoutMillis = 30_000L

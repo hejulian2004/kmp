@@ -24,12 +24,12 @@ enum class InstagramHomeScreenType {
 /**
  * Instagram首页UI状态模型
  *
- * @param currentUser 当前登录用户
+ * @param currentUser当前登录用户
  * @param postsState Feed动态帖子列表加载状态(Loading, Success, Error)
- * @param storiesState 顶部Story快拍列表加载状态(Loading, Success, Error)
- * @param unreadMessageCount 未读私信数量
- * @param unreadNotificationCount 未读通知数量
- * @param currentScreen 当前所在的二级子页面
+ * @param storiesState顶部Story快拍列表加载状态(Loading, Success, Error)
+ * @param unreadMessageCount未读私信数量
+ * @param unreadNotificationCount未读通知数量
+ * @param currentScreen当前所在的二级子页面
  */
 data class InstagramHomeUiState(
     val currentUser: ProfileUser = ProfileUser(

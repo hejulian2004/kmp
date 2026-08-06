@@ -11,7 +11,7 @@ import io.ktor.client.HttpClient
 
 /**
  * [NetworkContainer]
- * 管理全局 HttpClient 实例生命周期的依赖容器契约。
+ * 管理全局HttpClient实例生命周期的依赖容器契约。
  */
 interface NetworkContainer {
     /** 未鉴权公共客户端 */
