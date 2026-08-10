@@ -3,7 +3,7 @@
  * @Package: org.example.project.presentation.viewmodel.feedline
  * @Description: 朋友圈/动态模块的MVI核心视图模型，负责状态管理与事件处理
  * @Author: 何聚敛
- * @Date: 2026-07-20
+ * @Date: 2026-08-10
  */
 package org.example.project.presentation.viewmodel.feedline
 
@@ -18,10 +18,10 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.example.project.data.analytics.feedline.LogAnalyticsTracker
-import org.example.project.domain.analytics.feedline.AnalyticsEvents
-import org.example.project.domain.analytics.feedline.AnalyticsParams
-import org.example.project.domain.analytics.feedline.AnalyticsTracker
+import org.example.project.core.analytics.AnalyticsEvents
+import org.example.project.core.analytics.AnalyticsParams
+import org.example.project.core.analytics.AnalyticsTracker
+import org.example.project.core.analytics.AppAnalyticsManager
 import org.example.project.domain.model.feedline.FeedLineComment
 import org.example.project.domain.model.feedline.FeedLineMedia
 import org.example.project.domain.model.feedline.FeedLineNotification
@@ -53,12 +53,12 @@ import org.example.project.presentation.state.feedline.Screen
  *
  * @param feedRepository动态数据仓库接口
  * @param currentUser当前登录用户
- * @param analyticsTracker数据埋点追踪器
+ * @param analyticsTracker数据埋点追踪器（默认使用 AppAnalyticsManager 全局单例）
  */
 class FeedLineViewModel(
     private val feedRepository: FeedLineRepository,
     currentUser: FeedLineUser,
-    private val analyticsTracker: AnalyticsTracker = LogAnalyticsTracker()
+    private val analyticsTracker: AnalyticsTracker = AppAnalyticsManager
 ) : ViewModel() {
     private val getFeedPostsUseCase = GetFeedPostsUseCase(feedRepository)
     private val refreshFeedUseCase = RefreshFeedUseCase(feedRepository)
