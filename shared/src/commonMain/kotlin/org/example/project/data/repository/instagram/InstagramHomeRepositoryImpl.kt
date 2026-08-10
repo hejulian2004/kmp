@@ -3,10 +3,12 @@
  * @Package: org.example.project.data.repository.instagram
  * @Description: Instagram首页数据仓库实现（结合Room KMP本地数据库持久化）
  * @Author: 何聚敛
- * @Date: 2026-08-05
+ * @Date: 2026-08-10
  */
 package org.example.project.data.repository.instagram
 
+import io.ktor.client.call.body
+import io.ktor.client.request.get
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -16,6 +18,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.example.project.core.network.client.NetworkContainer
+import org.example.project.core.network.config.ApiEndpoints
 import org.example.project.data.database.dao.instagram.InstagramDao
 import org.example.project.data.database.dao.instagram.InstagramDaoImpl
 import org.example.project.data.database.entity.instagram.InstagramPostEntity
@@ -28,7 +32,8 @@ import org.example.project.platform.currentTimeMillis
 import kotlin.random.Random
 
 class InstagramHomeRepositoryImpl(
-    private val instagramDao: InstagramDao = InstagramDaoImpl()
+    private val instagramDao: InstagramDao = InstagramDaoImpl(),
+    private val networkContainer: NetworkContainer? = null
 ) : InstagramHomeRepository {
 
     private val scope = CoroutineScope(Dispatchers.Default)
@@ -68,17 +73,43 @@ class InstagramHomeRepositoryImpl(
     }
 
     override suspend fun refreshHome() {
-        delay(600)
-        postsFlow.update { current ->
-            val updated = current.map { post ->
-                if (Random.nextBoolean()) {
-                    post.copy(unreadNotificationCount = (0..3).random())
-                } else post
+        val container = networkContainer
+        if (container != null) {
+            runCatching {
+                val remotePosts = container.authorizedClient
+                    .get(ApiEndpoints.Instagram.HOME_FEED)
+                    .body<List<InstagramPost>>()
+                if (remotePosts.isNotEmpty()) {
+                    postsFlow.value = remotePosts
+                    instagramDao.insertPosts(remotePosts.map { InstagramPostEntity.fromDomainModel(it, isStory = false) })
+                }
+            }.onFailure {
+                delay(600)
+                postsFlow.update { current ->
+                    val updated = current.map { post ->
+                        if (Random.nextBoolean()) {
+                            post.copy(unreadNotificationCount = (0..3).random())
+                        } else post
+                    }
+                    scope.launch {
+                        instagramDao.insertPosts(updated.map { InstagramPostEntity.fromDomainModel(it, isStory = false) })
+                    }
+                    updated
+                }
             }
-            scope.launch {
-                instagramDao.insertPosts(updated.map { InstagramPostEntity.fromDomainModel(it, isStory = false) })
+        } else {
+            delay(600)
+            postsFlow.update { current ->
+                val updated = current.map { post ->
+                    if (Random.nextBoolean()) {
+                        post.copy(unreadNotificationCount = (0..3).random())
+                    } else post
+                }
+                scope.launch {
+                    instagramDao.insertPosts(updated.map { InstagramPostEntity.fromDomainModel(it, isStory = false) })
+                }
+                updated
             }
-            updated
         }
     }
 
