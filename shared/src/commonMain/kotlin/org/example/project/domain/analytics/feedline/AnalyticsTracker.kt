@@ -1,47 +1,35 @@
 /**
  * @File: AnalyticsTracker.kt
  * @Package: org.example.project.domain.analytics.feedline
- * @Description: 数据埋点追踪器接口定义
+ * @Description: 旧版本埋点接口向全局 core.analytics 模块的兼容桥接定义
  * @Author: 何聚敛
- * @Date: 2026-07-20
+ * @Date: 2026-08-10
  */
 package org.example.project.domain.analytics.feedline
 
-interface AnalyticsTracker {
-    /**
-     * 上报事件
-     * @param eventName事件名称
-     * @param params附加参数键值对
-     */
-    fun trackEvent(eventName: String, params: Map<String, Any> = emptyMap())
-}
+import org.example.project.core.analytics.AnalyticsEvents as CoreEvents
+import org.example.project.core.analytics.AnalyticsParams as CoreParams
+import org.example.project.core.analytics.AnalyticsTracker as CoreTracker
 
-/**
- * 埋点事件名称常量定义
- */
+typealias AnalyticsTracker = CoreTracker
+
 object AnalyticsEvents {
-    const val OPEN_FEED = "open_feed"             // 打开朋友圈
-    const val REFRESH_FEED = "refresh_feed"       // 刷新数据
-    const val CREATE_POST = "create_post"         // 发布朋友圈动态
-    const val DELETE_POST = "delete_post"         // 删除动态
-    const val LIKE_POST = "like_post"             // 点赞
-    const val UNLIKE_POST = "unlike_post"         // 取消点赞
-    const val ADD_COMMENT = "add_comment"         // 添加评论
-    const val DELETE_COMMENT = "delete_comment"   // 删除评论
-    const val ENTER_SCREEN = "enter_screen"       // 进入页面
+    const val OPEN_FEED = CoreEvents.FEED_OPEN
+    const val REFRESH_FEED = CoreEvents.FEED_REFRESH
+    const val CREATE_POST = CoreEvents.POST_CREATE
+    const val DELETE_POST = CoreEvents.POST_DELETE
+    const val LIKE_POST = CoreEvents.POST_LIKE
+    const val UNLIKE_POST = CoreEvents.POST_UNLIKE
+    const val ADD_COMMENT = CoreEvents.COMMENT_ADD
+    const val DELETE_COMMENT = CoreEvents.COMMENT_DELETE
+    const val ENTER_SCREEN = CoreEvents.ENTER_SCREEN
 }
 
-/**
- * 埋点事件参数名常量定义
- */
 object AnalyticsParams {
-    const val POST_ID = "post_id"                 // 动态ID
-    const val USER_ID = "user_id"                 // 用户ID
-    const val COMMENT_ID = "comment_id"           // 评论ID
-    const val SCREEN_NAME = "screen_name"         // 页面名称
-    const val MEDIA_COUNT = "media_count"         // 包含媒体（图片/视频）的数量
-    const val HAS_TEXT = "has_text"               // 是否包含文字内容
+    const val POST_ID = CoreParams.POST_ID
+    const val USER_ID = CoreParams.USER_ID
+    const val COMMENT_ID = CoreParams.COMMENT_ID
+    const val SCREEN_NAME = CoreParams.SCREEN_NAME
+    const val MEDIA_COUNT = CoreParams.MEDIA_COUNT
+    const val HAS_TEXT = CoreParams.HAS_TEXT
 }
-
-
-

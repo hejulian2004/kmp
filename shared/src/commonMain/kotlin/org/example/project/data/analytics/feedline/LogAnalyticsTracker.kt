@@ -1,22 +1,12 @@
 /**
  * @File: LogAnalyticsTracker.kt
  * @Package: org.example.project.data.analytics.feedline
- * @Description: 数据上报/埋点追踪器的日志输出具体实现类
+ * @Description: 旧版本 LogAnalyticsTracker 向全局 core.analytics 模块的类型别名转发
  * @Author: 何聚敛
- * @Date: 2026-07-20
+ * @Date: 2026-08-10
  */
 package org.example.project.data.analytics.feedline
 
-import org.example.project.domain.analytics.feedline.AnalyticsTracker
+import org.example.project.core.analytics.LogAnalyticsTracker as CoreLogTracker
 
-class LogAnalyticsTracker : AnalyticsTracker {
-    override fun trackEvent(eventName: String, params: Map<String, Any>) {
-        val paramsString = if (params.isNotEmpty()) {
-            params.entries.joinToString(prefix = "{", postfix = "}") { "${it.key}: ${it.value}" }
-        } else {
-            "无参数"
-        }
-        val message  = "【数据上报】事件: $eventName | 参数: $paramsString"
-        println("AnalyticsTracker: $message")
-    }
-}
+typealias LogAnalyticsTracker = CoreLogTracker
