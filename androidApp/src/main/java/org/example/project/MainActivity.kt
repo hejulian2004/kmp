@@ -3,7 +3,7 @@
  * @Package: org.example.project
  * @Description: Android 应用主 Activity 入口（配置高刷新率 120Hz 申请与降级策略）
  * @Author: 何聚敛
- * @Date: 2026-08-05
+ * @Date: 2026-08-10
  */
 package org.example.project
 
@@ -20,7 +20,8 @@ import coil3.request.crossfade
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import io.github.vinceglb.filekit.dialogs.init
-import org.example.project.core.network.client.AppNetworkInitializer
+import org.example.project.core.init.AppInitParams
+import org.example.project.core.init.AppInitializer
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,7 +29,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         requestHighRefreshRate()
         FileKit.init(this)
-        AppNetworkInitializer.init(applicationContext)
+        AppInitializer.init(
+            AppInitParams(
+                context = applicationContext,
+                platformName = "Android",
+                appVersion = "1.0.0",
+                deviceId = Build.MODEL
+            )
+        )
         SingletonImageLoader.setSafe { context ->
             ImageLoader.Builder(context)
                 .components {
