@@ -3,7 +3,7 @@
  * @Package: org.example.project.presentation.viewmodel.instagram
  * @Description: Instagram首页的MVI核心视图模型，负责状态管理与事件处理（结构与FeedLineViewModel保持100%一致）
  * @Author: 何聚敛
- * @Date: 2026-07-28
+ * @Date: 2026-08-10
  */
 package org.example.project.presentation.viewmodel.instagram
 
@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.example.project.core.network.client.AppNetworkInitializer
 import org.example.project.data.repository.instagram.InstagramHomeRepositoryImpl
 import org.example.project.domain.model.instagram.InstagramMedia
 import org.example.project.domain.model.instagram.ProfileUser
@@ -40,7 +41,9 @@ import org.example.project.presentation.state.instagram.InstagramHomeUiState
  * @param currentUser当前登录用户
  */
 class InstagramHomeViewModel(
-    private val repository: InstagramHomeRepository = InstagramHomeRepositoryImpl(),
+    private val repository: InstagramHomeRepository = InstagramHomeRepositoryImpl(
+        networkContainer = AppNetworkInitializer.container
+    ),
     currentUser: ProfileUser? = null
 ) : ViewModel() {
 
