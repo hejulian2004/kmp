@@ -1,7 +1,7 @@
 ﻿/**
  * @File: AppInitializer.kt
  * @Package: org.example.project.core.init
- * @Description: 项目全局启动统一初始化器 (appInit)，集中编排网络架构、 Room 数据库与数据埋点单例的启动初始化链
+ * @Description: 项目全局启动统一初始化器 (appInit)，具备可恢复初始化状态机与并发安全保障
  * @Author: 何聚敛
  * @Date: 2026-08-12
  */
@@ -11,17 +11,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.example.project.core.analytics.AnalyticsConfig
 import org.example.project.core.analytics.AnalyticsEvents
+import org.example.project.core.analytics.AnalyticsParams
 import org.example.project.core.analytics.AppAnalyticsManager
 import org.example.project.core.analytics.LogAnalyticsTracker
 import org.example.project.core.database.getRoomDatabase
 import org.example.project.core.network.client.AppNetworkInitializer
 import org.example.project.core.sdui.repository.SduiLayoutRepositoryImpl
-
 import org.example.project.core.storage.client.AppStorageInitializer
-
-import org.example.project.core.analytics.AnalyticsParams
 import org.example.project.platform.currentTimeMillis
 
 /**
@@ -42,109 +42,174 @@ data class AppInitParams(
 )
 
 /**
+ * 初始化状态枚举
+ */
+enum class AppInitState {
+    NOT_INITIALIZED,
+    INITIALIZING,
+    INITIALIZED,
+    FAILED
+}
+
+/**
+ * 初始化失败模块详情
+ */
+data class AppInitFailure(
+    val module: String,
+    val message: String
+)
+
+/**
+ * 初始化结果模型
+ */
+data class AppInitResult(
+    val success: Boolean,
+    val state: AppInitState,
+    val failures: List<AppInitFailure>
+)
+
+/**
  * 全局应用启动统一初始化器 (AppInitializer / appInit)
  */
 object AppInitializer {
-    private var isInitialized = false
+    private var _state = AppInitState.NOT_INITIALIZED
+    private val stateMutex = Mutex()
     private val initScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     /**
-     * 统一执行应用冷启动依赖链初始化（对齐大厂 APM 与数据埋点架构标准）。
-     * 【主线程强同步完成】：1. 数据埋点单例 (最优先零依赖) -> 2. 文件存储架构 -> 3. 网络架构核心 -> 4. Room 数据库 -> 5. 上报冷启动总结事件；
-     * 【后台异步非阻塞】：6. 异步并发拉取与更新全量模块（Airbnb / FeedLine / Instagram）SDUI 热更 JSON。
+     * 当前初始化状态
+     */
+    val state: AppInitState
+        get() = _state
+
+    /**
+     * 判断是否已完成初始化
+     */
+    val isInitialized: Boolean
+        get() = _state == AppInitState.INITIALIZED
+
+    /**
+     * 统一执行应用冷启动依赖链初始化（具备线程安全、错误捕获与状态恢复能力）。
      * 
      * @param params 应用启动初始化参数
+     * @return AppInitResult 包含是否成功、当前状态及失败模块列表
      */
-    fun init(params: AppInitParams) {
-        if (isInitialized) return
-        isInitialized = true
-
-        val startTime = currentTimeMillis()
-
-        // 1. 最高优先级强同步：最先初始化全局数据埋点单例，确保后续任何崩溃或故障均能被成功捕获与上报
-        var isAnalyticsInitialized = false
-        try {
-            AppAnalyticsManager.init(
-                AnalyticsConfig(
-                    platformName = params.platformName,
-                    appVersion = params.appVersion,
-                    deviceId = params.deviceId,
-                    maxLogRetentionCount = params.maxLogRetentionCount,
-                    trackers = listOf(LogAnalyticsTracker())
+    suspend fun init(params: AppInitParams): AppInitResult {
+        return stateMutex.withLock {
+            if (_state == AppInitState.INITIALIZED) {
+                return@withLock AppInitResult(
+                    success = true,
+                    state = AppInitState.INITIALIZED,
+                    failures = emptyList()
                 )
-            )
-            isAnalyticsInitialized = true
-        } catch (e: Throwable) {
-            println("[AppInitializer 错误] 全局埋点单例初始化失败: ${e.message}")
-        }
+            }
 
-        var isSuccess = true
-        val errorMessages = mutableListOf<String>()
+            _state = AppInitState.INITIALIZING
+            val failures = mutableListOf<AppInitFailure>()
+            val startTime = currentTimeMillis()
 
-        // 2. 隔离初始化：文件存储架构单例 (Storage Core Infrastructure)
-        try {
-            AppStorageInitializer.init(params.context)
-        } catch (e: Throwable) {
-            isSuccess = false
-            val errorMsg = "文件存储架构初始化失败: ${e.message ?: "未知异常"}"
-            errorMessages.add(errorMsg)
-            AppAnalyticsManager.trackEvent(
-                AnalyticsEvents.INIT_SUB_ERROR,
-                mapOf(
-                    AnalyticsParams.SUB_MODULE to "storage",
-                    AnalyticsParams.ERROR_MSG to errorMsg
-                )
-            )
-        }
-
-        // 3. 隔离初始化：网络架构单例
-        try {
-            AppNetworkInitializer.init(params.context)
-        } catch (e: Throwable) {
-            isSuccess = false
-            val errorMsg = "网络层初始化失败: ${e.message ?: "未知异常"}"
-            errorMessages.add(errorMsg)
-            AppAnalyticsManager.trackEvent(
-                AnalyticsEvents.INIT_SUB_ERROR,
-                mapOf(
-                    AnalyticsParams.SUB_MODULE to "network",
-                    AnalyticsParams.ERROR_MSG to errorMsg
-                )
-            )
-        }
-
-        // 3. 隔离初始化：Room 本地数据库单例
-        try {
-            getRoomDatabase(params.context)
-        } catch (e: Throwable) {
-            isSuccess = false
-            val errorMsg = "数据库初始化失败: ${e.message ?: "未知异常"}"
-            errorMessages.add(errorMsg)
-            AppAnalyticsManager.trackEvent(
-                AnalyticsEvents.INIT_SUB_ERROR,
-                mapOf(
-                    AnalyticsParams.SUB_MODULE to "database",
-                    AnalyticsParams.ERROR_MSG to errorMsg
-                )
-            )
-        }
-
-        // 4. 上报冷启动/全链条初始化总结事件
-        val duration = currentTimeMillis() - startTime
-        AppAnalyticsManager.trackEvent(
-            AnalyticsEvents.APP_LAUNCH,
-            buildMap {
-                put(AnalyticsParams.IS_SUCCESS, isSuccess)
-                put(AnalyticsParams.DURATION_MS, duration)
-                if (!isSuccess && errorMessages.isNotEmpty()) {
-                    put(AnalyticsParams.ERROR_MSG, errorMessages.joinToString("; "))
+            // 1. 数据埋点单例 (零依赖基础设施)
+            if (!AppAnalyticsManager.isInitialized) {
+                try {
+                    AppAnalyticsManager.init(
+                        AnalyticsConfig(
+                            platformName = params.platformName,
+                            appVersion = params.appVersion,
+                            deviceId = params.deviceId,
+                            maxLogRetentionCount = params.maxLogRetentionCount,
+                            trackers = listOf(LogAnalyticsTracker())
+                        )
+                    )
+                } catch (e: Throwable) {
+                    println("[AppInitializer 错误] 数据埋点单例初始化失败: ${e.message}")
                 }
             }
-        )
 
-        // 5. 后台并发异步拉取与下载全量模块 SDUI 热更 JSON 布局（隔离保护与细分报错上报）
-        initScope.launch {
-            prefetchHotUpdateLayouts()
+            // 2. 核心基础设施：文件存储架构
+            try {
+                AppStorageInitializer.init(params.context)
+            } catch (e: Throwable) {
+                val errorMsg = "文件存储架构初始化失败: ${e.message ?: "未知异常"}"
+                failures.add(AppInitFailure("storage", errorMsg))
+                runCatching {
+                    AppAnalyticsManager.trackEvent(
+                        AnalyticsEvents.INIT_SUB_ERROR,
+                        mapOf(
+                            AnalyticsParams.SUB_MODULE to "storage",
+                            AnalyticsParams.ERROR_MSG to errorMsg
+                        )
+                    )
+                }
+            }
+
+            // 3. 网络架构单例
+            try {
+                AppNetworkInitializer.init(params.context)
+            } catch (e: Throwable) {
+                val errorMsg = "网络层初始化失败: ${e.message ?: "未知异常"}"
+                failures.add(AppInitFailure("network", errorMsg))
+                runCatching {
+                    AppAnalyticsManager.trackEvent(
+                        AnalyticsEvents.INIT_SUB_ERROR,
+                        mapOf(
+                            AnalyticsParams.SUB_MODULE to "network",
+                            AnalyticsParams.ERROR_MSG to errorMsg
+                        )
+                    )
+                }
+            }
+
+            // 4. 核心基础设施：Room 本地数据库
+            try {
+                getRoomDatabase(params.context)
+            } catch (e: Throwable) {
+                val errorMsg = "数据库初始化失败: ${e.message ?: "未知异常"}"
+                failures.add(AppInitFailure("database", errorMsg))
+                runCatching {
+                    AppAnalyticsManager.trackEvent(
+                        AnalyticsEvents.INIT_SUB_ERROR,
+                        mapOf(
+                            AnalyticsParams.SUB_MODULE to "database",
+                            AnalyticsParams.ERROR_MSG to errorMsg
+                        )
+                    )
+                }
+            }
+
+            val isSuccess = failures.isEmpty()
+            val duration = currentTimeMillis() - startTime
+
+            runCatching {
+                AppAnalyticsManager.trackEvent(
+                    AnalyticsEvents.APP_LAUNCH,
+                    buildMap {
+                        put(AnalyticsParams.IS_SUCCESS, isSuccess)
+                        put(AnalyticsParams.DURATION_MS, duration)
+                        if (!isSuccess && failures.isNotEmpty()) {
+                            put(AnalyticsParams.ERROR_MSG, failures.joinToString("; ") { "${it.module}: ${it.message}" })
+                        }
+                    }
+                )
+            }
+
+            if (isSuccess) {
+                _state = AppInitState.INITIALIZED
+                initScope.launch {
+                    prefetchHotUpdateLayouts()
+                }
+                AppInitResult(
+                    success = true,
+                    state = AppInitState.INITIALIZED,
+                    failures = emptyList()
+                )
+            } else {
+                _state = AppInitState.FAILED
+                AppInitResult(
+                    success = false,
+                    state = AppInitState.FAILED,
+                    failures = failures
+                )
+            }
         }
     }
 
@@ -157,15 +222,24 @@ object AppInitializer {
             try {
                 repository.fetchLayoutFromNetwork(module)
             } catch (e: Exception) {
-                AppAnalyticsManager.trackEvent(
-                    AnalyticsEvents.INIT_SUB_ERROR,
-                    mapOf(
-                        AnalyticsParams.SUB_MODULE to "sdui_prefetch",
-                        AnalyticsParams.MODULE_NAME to module,
-                        AnalyticsParams.ERROR_MSG to (e.message ?: "SDUI布局 [$module] 拉取失败")
+                runCatching {
+                    AppAnalyticsManager.trackEvent(
+                        AnalyticsEvents.INIT_SUB_ERROR,
+                        mapOf(
+                            AnalyticsParams.SUB_MODULE to "sdui_prefetch",
+                            AnalyticsParams.MODULE_NAME to module,
+                            AnalyticsParams.ERROR_MSG to (e.message ?: "SDUI布局 [$module] 拉取失败")
+                        )
                     )
-                )
+                }
             }
         }
+    }
+
+    /**
+     * 仅供单元测试重置初始化状态使用
+     */
+    internal fun resetForTesting() {
+        _state = AppInitState.NOT_INITIALIZED
     }
 }
