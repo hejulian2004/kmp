@@ -1,9 +1,9 @@
-/**
+﻿/**
  * @File: AppAnalyticsManager.kt
  * @Package: org.example.project.core.analytics
  * @Description: KMP全局数据埋点应用单例管理器，提供统一事件分发、全局属性注入与多渠道Tracker挂载能力
  * @Author: 何聚敛
- * @Date: 2026-08-10
+ * @Date: 2026-08-11
  */
 package org.example.project.core.analytics
 
@@ -24,21 +24,40 @@ object AppAnalyticsManager : AnalyticsTracker {
     private val scope = CoroutineScope(Dispatchers.IO)
 
     /**
-     * 显式初始化埋点单例
+     * 显式初始化埋点单例（强制唯一性，严禁重复初始化）
      * 
      * @param config 初始化配置对象
+     * @throws IllegalStateException 若已初始化过则抛出异常，防止重复初始化
      */
     fun init(config: AnalyticsConfig) {
-        if (isInitialized) return
-        isInitialized = true
-        this.config = config
-        
-        globalParams["platform"] = config.platformName
-        globalParams["app_version"] = config.appVersion
-        globalParams["device_id"] = config.deviceId
+        synchronized(this) {
+            check(!isInitialized) {
+                "AppAnalyticsManager 已经初始化过，严禁重复初始化！"
+            }
+            this.config = config
 
-        trackers.clear()
-        trackers.addAll(config.trackers)
+            synchronized(globalParams) {
+                globalParams["platform"] = config.platformName
+                globalParams["app_version"] = config.appVersion
+                globalParams["device_id"] = config.deviceId
+            }
+
+            synchronized(trackers) {
+                trackers.clear()
+                trackers.addAll(config.trackers)
+            }
+
+            isInitialized = true
+        }
+    }
+
+    /**
+     * 检查单例初始化状态，未初始化时直接抛出 IllegalStateException 报错
+     */
+    private fun checkInitialized() {
+        check(isInitialized) {
+            "AppAnalyticsManager 尚未初始化！必须首先在应用入口（如 AppInitializer.init()）中显式调用 AppAnalyticsManager.init(...) 方法完成初始化！"
+        }
     }
 
     /**
@@ -48,12 +67,15 @@ object AppAnalyticsManager : AnalyticsTracker {
      * @param userRole 用户角色
      */
     fun setUserContext(userId: String?, userRole: String? = null) {
-        if (userId != null) {
-            globalParams[AnalyticsParams.USER_ID] = userId
-            userRole?.let { globalParams["user_role"] = it }
-        } else {
-            globalParams.remove(AnalyticsParams.USER_ID)
-            globalParams.remove("user_role")
+        checkInitialized()
+        synchronized(globalParams) {
+            if (userId != null) {
+                globalParams[AnalyticsParams.USER_ID] = userId
+                userRole?.let { globalParams["user_role"] = it }
+            } else {
+                globalParams.remove(AnalyticsParams.USER_ID)
+                globalParams.remove("user_role")
+            }
         }
     }
 
@@ -64,33 +86,33 @@ object AppAnalyticsManager : AnalyticsTracker {
      * @param extraParams 额外扩展参数
      */
     fun trackScreenView(screenName: String, extraParams: Map<String, Any> = emptyMap()) {
+        checkInitialized()
         val params = extraParams.toMutableMap()
         params[AnalyticsParams.SCREEN_NAME] = screenName
         trackEvent(AnalyticsEvents.ENTER_SCREEN, params)
     }
 
     /**
-     * 上报基础事件
+     * 上报基础事件（强制未初始化时直接报错，禁止默认初始化）
      * 
      * @param eventName 事件名称
      * @param params 自定义扩展参数
      */
     override fun trackEvent(eventName: String, params: Map<String, Any>) {
-        if (!isInitialized) {
-            println("AppAnalyticsManager 警告: 埋点单例尚未初始化，事件 [$eventName] 使用默认控制台保底分发")
+        checkInitialized()
+
+        val fullParams = synchronized(globalParams) {
+            globalParams.toMutableMap().apply {
+                putAll(params)
+                put("timestamp", Clock.System.now().toEpochMilliseconds())
+            }
         }
 
-        val fullParams = globalParams.toMutableMap().apply {
-            putAll(params)
-            put("timestamp", Clock.System.now().toEpochMilliseconds())
+        val targetTrackers = synchronized(trackers) {
+            if (trackers.isNotEmpty()) trackers.toList() else listOf(LogAnalyticsTracker())
         }
 
-        val targetTrackers = if (trackers.isNotEmpty()) {
-            trackers.toList()
-        } else {
-            listOf(LogAnalyticsTracker())
-        }
-
+        // 多渠道 Tracker 隔离分发，避免单渠道异常卡死主流程
         scope.launch {
             targetTrackers.forEach { tracker ->
                 runCatching {
@@ -103,7 +125,9 @@ object AppAnalyticsManager : AnalyticsTracker {
     }
 
     override fun flush() {
-        trackers.forEach { 
+        checkInitialized()
+        val targetTrackers = synchronized(trackers) { trackers.toList() }
+        targetTrackers.forEach { 
             runCatching { it.flush() }
         }
     }
