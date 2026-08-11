@@ -22,7 +22,6 @@ import org.example.project.core.network.client.NetworkContainer
 import org.example.project.core.network.config.ApiEndpoints
 import org.example.project.core.network.config.createFakeFeedPosts
 import org.example.project.data.database.dao.feedline.FeedLineDao
-import org.example.project.data.database.dao.feedline.FeedLineDaoImpl
 import org.example.project.data.database.entity.feedline.FeedLineNotificationEntity
 import org.example.project.data.database.entity.feedline.FeedLinePostEntity
 import org.example.project.domain.model.feedline.FeedLineComment
@@ -41,8 +40,8 @@ fun generateUUID(): String {
 }
 
 class FeedRepositoryImpl(
+    private val feedLineDao: FeedLineDao,
     private val networkContainer: NetworkContainer? = null,
-    private val feedLineDao: FeedLineDao = FeedLineDaoImpl(),
 ) : FeedLineRepository {
 
     private val scope = CoroutineScope(Dispatchers.Default)

@@ -21,7 +21,6 @@ import kotlinx.coroutines.launch
 import org.example.project.core.network.client.NetworkContainer
 import org.example.project.core.network.config.ApiEndpoints
 import org.example.project.data.database.dao.instagram.InstagramDao
-import org.example.project.data.database.dao.instagram.InstagramDaoImpl
 import org.example.project.data.database.entity.instagram.InstagramPostEntity
 import org.example.project.domain.model.instagram.InstagramComment
 import org.example.project.domain.model.instagram.InstagramMedia
@@ -32,7 +31,7 @@ import org.example.project.platform.currentTimeMillis
 import kotlin.random.Random
 
 class InstagramHomeRepositoryImpl(
-    private val instagramDao: InstagramDao = InstagramDaoImpl(),
+    private val instagramDao: InstagramDao,
     private val networkContainer: NetworkContainer? = null
 ) : InstagramHomeRepository {
 
