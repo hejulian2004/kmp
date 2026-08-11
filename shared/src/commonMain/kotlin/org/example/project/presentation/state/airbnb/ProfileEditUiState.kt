@@ -1,0 +1,22 @@
+/**
+ * @File: ProfileEditUiState.kt
+ * @Package: org.example.project.presentation.state.airbnb
+ * @Description: Airbnb房东资料编辑MVI页面状态
+ * @Author: 何聚敛
+ * @Date: 2026-08-05
+ */
+package org.example.project.presentation.state.airbnb
+
+data class ProfileEditState(
+    val avatarUrl: String = "",
+    val name: String = "",
+    val languages: String = "",
+    val occupation: String = "",
+    val livesIn: String = "",
+    val about: String = "",
+    val hobbies: List<String> = emptyList(),
+    val places: List<String> = emptyList(),
+    val identityVerified: Boolean = false,
+    val superHost: Boolean = false,
+    val placesVisible: Boolean = false,
+)

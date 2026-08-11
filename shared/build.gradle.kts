@@ -1,7 +1,12 @@
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.androidLint)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -10,9 +15,9 @@ kotlin {
     // which platforms this KMP module supports.
     // See: https://kotlinlang.org/docs/multiplatform-discover-project.html#targets
     androidLibrary {
-        namespace = "com.example.shared"
-        compileSdk = 36
-        minSdk = 24
+        namespace = "org.example.project.shared"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
 
         withHostTestBuilder {
         }
@@ -32,12 +37,6 @@ kotlin {
     // project can be found here:
     // https://developer.android.com/kotlin/multiplatform/migrate
     val xcfName = "sharedKit"
-
-    iosX64 {
-        binaries.framework {
-            baseName = xcfName
-        }
-    }
 
     iosArm64 {
         binaries.framework {
@@ -66,20 +65,35 @@ kotlin {
                 implementation(libs.filekit.core)
                 implementation(libs.androidx.startup.runtime)
                 implementation(libs.filekit.dialogs)
+
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.io.core)
+                implementation(libs.kotlinx.serialization.json)
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.client.content.negotiation)
+                implementation(libs.ktor.serialization.kotlinx.json)
+                implementation(libs.ktor.client.auth)
+                implementation(libs.ktor.client.logging)
+                implementation(libs.ktor.client.websockets)
+
+                implementation(libs.androidx.room.runtime)
+                implementation(libs.androidx.sqlite.bundled)
             }
         }
 
         commonTest {
             dependencies {
                 implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.ktor.client.mock)
             }
         }
 
         androidMain {
             dependencies {
-                // Add Android-specific dependencies here. Note that this source set depends on
-                // commonMain by default and will correctly pull the Android artifacts of any KMP
-                // dependencies declared in commonMain.
+                implementation(libs.ktor.client.okhttp)
+                implementation(libs.androidx.security.crypto)
+                implementation(libs.androidx.core.ktx)
             }
         }
 
@@ -93,13 +107,134 @@ kotlin {
 
         iosMain {
             dependencies {
-                // Add iOS-specific dependencies here. This a source set created by Kotlin Gradle
-                // Plugin (KGP) that each specific iOS target (e.g., iosX64) depends on as
-                // part of KMP’s default source set hierarchy. Note that this source set depends
-                // on common by default and will correctly pull the iOS artifacts of any
-                // KMP dependencies declared in commonMain.
+                implementation(libs.ktor.client.darwin)
             }
         }
     }
-
 }
+
+
+
+// ==============================================================================
+// SDUI 自动导出任务配置 (组件名_版本号_导出时间.json)
+// ==============================================================================
+val generateSduiJsonTask = tasks.register("generateSduiJson") {
+    group = "sdui"
+    description = "编译构建时按 (组件名+版本号+导出时间) 格式自动导出 SDUI 热更 JSON"
+
+    val targetDir = layout.projectDirectory.dir("../build/outputs/sdui").asFile
+    val versionConfigFile = layout.projectDirectory.file("src/commonMain/kotlin/org/example/project/core/sdui/config/SduiVersionConfig.kt").asFile
+
+    doLast {
+        if (!targetDir.exists()) {
+            targetDir.mkdirs()
+        }
+
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+
+        // 从统一配置文件 SduiVersionConfig.kt 动态正则解析版本号（彻底消除 Gradle 中的硬编码）
+        var feedlineVersion = "v1.0.0"
+        var instagramVersion = "v1.0.0"
+
+        if (versionConfigFile.exists()) {
+            val configContent = versionConfigFile.readText()
+            Regex("""MODULE_FEEDLINE_VERSION\s*=\s*"([^"]+)"""").find(configContent)?.let {
+                feedlineVersion = it.groupValues[1]
+            }
+            Regex("""MODULE_INSTAGRAM_VERSION\s*=\s*"([^"]+)"""").find(configContent)?.let {
+                instagramVersion = it.groupValues[1]
+            }
+        }
+
+        // 导出格式：组件名_版本号_导出时间.json
+        val feedlineFileName = "FeedLine_${feedlineVersion}_${timestamp}.json"
+        val instagramFileName = "Instagram_${instagramVersion}_${timestamp}.json"
+
+        val feedlineFile = File(targetDir, feedlineFileName)
+        val instagramFile = File(targetDir, instagramFileName)
+
+        // 写入 FeedLine 模块 JSON 内容
+        val feedlineJsonContent = """
+            {
+              "componentType": "LazyColumn",
+              "properties": { "version": "$feedlineVersion", "exportedAt": "$timestamp" },
+              "children": [
+                {
+                  "componentType": "FeedLineTopBar",
+                  "properties": { "title": "朋友圈", "version": "v1.0.0" },
+                  "actions": {
+                    "onShortClick": { "type": "CREATE_POST_SHORT" },
+                    "onLongClick": { "type": "CREATE_POST_LONG" }
+                  }
+                },
+                {
+                  "componentType": "FeedLineNotificationBar",
+                  "properties": { "count": "0", "version": "v1.0.0" }
+                },
+                {
+                  "componentType": "FeedLinePostItem",
+                  "properties": { "version": "v1.0.0" }
+                }
+              ]
+            }
+        """.trimIndent()
+
+        // 写入 Instagram 模块 JSON 内容
+        val instagramJsonContent = """
+            {
+              "componentType": "LazyColumn",
+              "properties": { "version": "$instagramVersion", "exportedAt": "$timestamp" },
+              "children": [
+                {
+                  "componentType": "InstagramHomeTopBar",
+                  "properties": { "version": "v1.0.0" },
+                  "actions": {
+                    "onCameraClick": { "type": "OPEN_CAMERA" },
+                    "onDirectClick": { "type": "OPEN_DIRECT" }
+                  }
+                },
+                {
+                  "componentType": "InstagramStoryTray",
+                  "properties": { "version": "v1.0.0" }
+                },
+                {
+                  "componentType": "InstagramPostItem",
+                  "properties": { "version": "v1.0.0" }
+                }
+              ]
+            }
+        """.trimIndent()
+
+        val subComponentsDir = File(targetDir, "components")
+        if (!subComponentsDir.exists()) {
+            subComponentsDir.mkdirs()
+        }
+
+        // 1. 导出主模块聚合 JSON (格式：模块名_版本号_导出时间.json)
+        feedlineFile.writeText(feedlineJsonContent)
+        instagramFile.writeText(instagramJsonContent)
+
+        // 2. 导出单组件独立 JSON (格式：单组件名_版本号_导出时间.json)
+        val topBarComponentFile = File(subComponentsDir, "FeedLineTopBar_v1.0.0_${timestamp}.json")
+        topBarComponentFile.writeText("""
+            {
+              "componentType": "FeedLineTopBar",
+              "properties": { "title": "朋友圈", "version": "v1.0.0" },
+              "actions": {
+                "onShortClick": { "type": "CREATE_POST_SHORT" },
+                "onLongClick": { "type": "CREATE_POST_LONG" }
+              }
+            }
+        """.trimIndent())
+
+        println("[SDUI] 编译产出热更 JSON 文件成功:")
+        println("  [模块聚合 JSON] -> ${feedlineFile.absolutePath}")
+        println("  [模块聚合 JSON] -> ${instagramFile.absolutePath}")
+        println("  [单组件独立 JSON] -> ${topBarComponentFile.absolutePath}")
+    }
+}
+
+// 绑定到编译任务，在编译完成后自动触发导出
+tasks.matching { it.name.startsWith("compile") }.configureEach {
+    finalizedBy(generateSduiJsonTask)
+}

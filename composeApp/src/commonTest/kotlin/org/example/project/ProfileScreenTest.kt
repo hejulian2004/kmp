@@ -7,8 +7,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runComposeUiTest
-import org.example.project.model.DiscoverUser
-import org.example.project.model.ProfileUser
+import org.example.project.domain.model.DiscoverUser
+import org.example.project.domain.model.ProfileUser
 import org.example.project.presentation.state.PostsSection
 import org.example.project.presentation.state.ProfileUiState
 import org.example.project.presentation.state.UiState
@@ -274,7 +274,7 @@ class ProfileScreenTest {
         assertTrue(intents.any { it is ProfileIntent.UserCardDismissed && it.userId == "user_001" })
     }
 
-    // Tab 切换
+    // Tab切换
 
     @Test
     fun Tab_默认选中posts() = runComposeUiTest {
@@ -371,7 +371,7 @@ class ProfileScreenTest {
         assertTrue(intents.contains(ProfileIntent.CreateReelClicked))
     }
 
-    // Loading 状态
+    // Loading状态
 
     @Test
     fun Loading_profileState为Loading_页面不崩溃且按钮行可见() = runComposeUiTest {

@@ -1,10 +1,8 @@
-import org.gradle.kotlin.dsl.invoke
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
 }
@@ -30,6 +28,7 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
+            implementation(libs.compose.uiTooling)
             implementation(libs.androidx.activity.compose)
         }
 
@@ -52,6 +51,7 @@ kotlin {
             implementation(libs.coil.network.ktor3)
             implementation(libs.ktor.client.cio)
             implementation(project(":shared"))
+            implementation(libs.kotlinx.serialization.json)
             implementation(libs.google.accompanist.systemuicontroller)
             implementation(libs.androidx.core.ktx.v1120)
             implementation(libs.google.accompanist.systemuicontroller)
@@ -59,9 +59,7 @@ kotlin {
 
         commonTest.dependencies {
             implementation(kotlin("test"))
-            implementation(libs.kotlin.test)
-            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-            implementation(compose.uiTest)
+            implementation(libs.compose.uiTest)
             implementation(libs.androidx.uiautomator)
         }
         androidUnitTest.dependencies {
@@ -73,16 +71,11 @@ kotlin {
     }
 }
 
-android {
-    namespace = "org.example.project"
+extensions.configure<com.android.build.api.dsl.LibraryExtension> {
+    namespace = "org.example.project.composeapp"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
-    testOptions.unitTests.isIncludeAndroidResources = true
     defaultConfig {
-        applicationId = "org.example.project"
         minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
     }
     packaging {
         resources {
@@ -107,9 +100,7 @@ android {
 
 dependencies {
     testImplementation(libs.junit.junit)
-    testImplementation(libs.junit.junit)
     debugImplementation(libs.compose.uiTooling)
-    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.4.0-alpha05")
-
+    androidTestImplementation(libs.androidx.uiautomator.v240)
 }
 

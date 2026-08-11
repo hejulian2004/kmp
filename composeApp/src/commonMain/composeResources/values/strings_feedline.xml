@@ -1,0 +1,33 @@
+<resources>
+    <string name="feedline_title">Moments</string>
+    <string name="feedline_publish">Publish</string>
+    <string name="feedline_publish_text">Publish Text</string>
+    <string name="feedline_placeholder">Share your thoughts...</string>
+    <string name="feedline_publishing">Publishing...</string>
+    <string name="feedline_confirm_delete">Confirm Delete</string>
+    <string name="feedline_delete_post_prompt">Are you sure you want to delete this post? This action cannot be undone.</string>
+    <string name="feedline_delete_comment_prompt">Are you sure you want to delete this comment? This action cannot be undone.</string>
+    <string name="feedline_delete_photo_prompt">Delete this photo?</string>
+    <string name="feedline_delete_video_prompt">Delete this video?</string>
+    <string name="feedline_delete">Delete</string>
+    <string name="feedline_like">Like</string>
+    <string name="feedline_unlike">Unlike</string>
+    <string name="feedline_comment">Comment</string>
+    <string name="feedline_more">More</string>
+    <string name="feedline_no_posts">No posts</string>
+    <string name="feedline_no_notifications">No new messages</string>
+    <string name="feedline_clear">Clear</string>
+    <string name="feedline_notification_title">Messages</string>
+    <string name="feedline_liked_your_post">liked your post</string>
+    <string name="feedline_commented_your_post">commented on your post</string>
+    <string name="feedline_comment_hint">Comment:</string>
+    <string name="feedline_send">Send</string>
+    <string name="feedline_take_photo">Take Photo</string>
+    <string name="feedline_take_video">Record Video</string>
+    <string name="feedline_select_from_album">Select from Album</string>
+    <string name="feedline_new_messages_suffix">new messages</string>
+    <string name="feedline_time_just_now">Just now</string>
+    <string name="feedline_time_minutes_ago">%1$d mins ago</string>
+    <string name="feedline_time_hours_ago">%1$d hrs ago</string>
+    <string name="feedline_time_days_ago">%1$d days ago</string>
+</resources>

@@ -1,0 +1,18 @@
+{
+  "componentType": "LazyColumn",
+  "children": [
+    {
+      "componentType": "InstagramHomeTopBar",
+      "actions": {
+        "onCameraClick": { "type": "OPEN_CAMERA" },
+        "onDirectClick": { "type": "OPEN_DIRECT" }
+      }
+    },
+    {
+      "componentType": "InstagramStoryTray"
+    },
+    {
+      "componentType": "InstagramPostItem"
+    }
+  ]
+}

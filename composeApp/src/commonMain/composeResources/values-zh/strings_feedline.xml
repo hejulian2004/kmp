@@ -1,0 +1,33 @@
+<resources>
+    <string name="feedline_title">朋友圈</string>
+    <string name="feedline_publish">发表</string>
+    <string name="feedline_publish_text">发表文字</string>
+    <string name="feedline_placeholder">这一刻的想法...</string>
+    <string name="feedline_publishing">正在发表...</string>
+    <string name="feedline_confirm_delete">确认删除</string>
+    <string name="feedline_delete_post_prompt">确定要删除这条动态吗？删除后不可恢复</string>
+    <string name="feedline_delete_comment_prompt">确定要删除这条评论吗？删除后不可恢复</string>
+    <string name="feedline_delete_photo_prompt">要删除这张照片吗？</string>
+    <string name="feedline_delete_video_prompt">要删除这段视频吗？</string>
+    <string name="feedline_delete">删除</string>
+    <string name="feedline_like">赞</string>
+    <string name="feedline_unlike">取消赞</string>
+    <string name="feedline_comment">评论</string>
+    <string name="feedline_more">更多</string>
+    <string name="feedline_no_posts">暂无动态</string>
+    <string name="feedline_no_notifications">暂无新消息</string>
+    <string name="feedline_clear">清空</string>
+    <string name="feedline_notification_title">消息</string>
+    <string name="feedline_liked_your_post">赞了你的动态</string>
+    <string name="feedline_commented_your_post">评论了你的动态</string>
+    <string name="feedline_comment_hint">评论：</string>
+    <string name="feedline_send">发送</string>
+    <string name="feedline_take_photo">拍摄</string>
+    <string name="feedline_take_video">拍摄视频</string>
+    <string name="feedline_select_from_album">从相册选择</string>
+    <string name="feedline_new_messages_suffix">条新消息</string>
+    <string name="feedline_time_just_now">刚刚</string>
+    <string name="feedline_time_minutes_ago">%1$d分钟前</string>
+    <string name="feedline_time_hours_ago">%1$d小时前</string>
+    <string name="feedline_time_days_ago">%1$d天前</string>
+</resources>
