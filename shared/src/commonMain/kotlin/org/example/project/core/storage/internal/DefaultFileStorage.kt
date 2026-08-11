@@ -42,10 +42,7 @@ class DefaultFileStorage internal constructor(
 ) : FileStorage {
 
     private val resolver = StoragePathResolver(directories)
-
-    /** 路径并发锁 Map */
-    private val pathLocks = mutableMapOf<String, Mutex>()
-    private val mapMutex = Mutex()
+    private val lockRegistry = PathLockRegistry()
 
     override suspend fun write(
         area: StorageArea,
@@ -53,13 +50,15 @@ class DefaultFileStorage internal constructor(
         data: ByteArray,
         mode: WriteMode
     ): Unit = withContext(Dispatchers.IO) {
-        val targetPath = resolver.resolve(area, path)
+        val targetPath = resolver.resolve(area, path, allowEmpty = false)
         val canonicalPathKey = targetPath.toString()
 
-        withPathLock(canonicalPathKey) {
-            when (mode) {
-                WriteMode.ATOMIC -> executeAtomicWrite(targetPath, data)
-                WriteMode.OVERWRITE, WriteMode.APPEND -> driver.write(targetPath, data, mode)
+        lockRegistry.withAreaLock(area) {
+            lockRegistry.withPathLock(canonicalPathKey) {
+                when (mode) {
+                    WriteMode.ATOMIC -> executeAtomicWrite(targetPath, data)
+                    WriteMode.OVERWRITE, WriteMode.APPEND -> driver.write(targetPath, data, mode)
+                }
             }
         }
     }
@@ -68,11 +67,13 @@ class DefaultFileStorage internal constructor(
         area: StorageArea,
         path: StoragePath
     ): ByteArray = withContext(Dispatchers.IO) {
-        val targetPath = resolver.resolve(area, path)
+        val targetPath = resolver.resolve(area, path, allowEmpty = false)
         val canonicalPathKey = targetPath.toString()
 
-        withPathLock(canonicalPathKey) {
-            driver.read(targetPath)
+        lockRegistry.withAreaLock(area) {
+            lockRegistry.withPathLock(canonicalPathKey) {
+                driver.read(targetPath)
+            }
         }
     }
 
@@ -80,7 +81,7 @@ class DefaultFileStorage internal constructor(
         area: StorageArea,
         path: StoragePath
     ): Boolean = withContext(Dispatchers.IO) {
-        val targetPath = resolver.resolve(area, path)
+        val targetPath = resolver.resolve(area, path, allowEmpty = false)
         driver.exists(targetPath)
     }
 
@@ -88,11 +89,13 @@ class DefaultFileStorage internal constructor(
         area: StorageArea,
         path: StoragePath
     ): Boolean = withContext(Dispatchers.IO) {
-        val targetPath = resolver.resolve(area, path)
+        val targetPath = resolver.resolve(area, path, allowEmpty = false)
         val canonicalPathKey = targetPath.toString()
 
-        withPathLock(canonicalPathKey) {
-            driver.delete(targetPath)
+        lockRegistry.withAreaLock(area) {
+            lockRegistry.withPathLock(canonicalPathKey) {
+                driver.delete(targetPath)
+            }
         }
     }
 
@@ -100,7 +103,7 @@ class DefaultFileStorage internal constructor(
         area: StorageArea,
         path: StoragePath
     ): StorageMetadata? = withContext(Dispatchers.IO) {
-        val targetPath = resolver.resolve(area, path)
+        val targetPath = resolver.resolve(area, path, allowEmpty = false)
         driver.metadata(targetPath)
     }
 
@@ -108,7 +111,7 @@ class DefaultFileStorage internal constructor(
         area: StorageArea,
         directory: StoragePath
     ): List<StorageFile> = withContext(Dispatchers.IO) {
-        val dirPath = resolver.resolve(area, directory)
+        val dirPath = resolver.resolve(area, directory, allowEmpty = true)
         val areaRootPathStr = resolver.resolveAreaRoot(area).toString()
         val childPaths = driver.list(dirPath)
 
@@ -130,15 +133,22 @@ class DefaultFileStorage internal constructor(
     override suspend fun clear(
         area: StorageArea
     ): Unit = withContext(Dispatchers.IO) {
-        val rootPath = resolver.resolveAreaRoot(area)
-        val childPaths = driver.list(rootPath)
-        childPaths.forEach { child ->
-            val canonicalKey = child.toString()
-            withPathLock(canonicalKey) {
-                driver.delete(child)
+        lockRegistry.withAreaLock(area) {
+            val rootPath = resolver.resolveAreaRoot(area)
+            val childPaths = driver.list(rootPath)
+            childPaths.forEach { child ->
+                val canonicalKey = child.toString()
+                lockRegistry.withPathLock(canonicalKey) {
+                    driver.delete(child)
+                }
             }
         }
     }
+
+    /**
+     * 获取当前注册表中活跃的 Path Lock 数量 (供单元测试验证内存释放)。
+     */
+    internal suspend fun activeLockCount(): Int = lockRegistry.activeLockCount()
 
     /**
      * 执行原子写逻辑：
@@ -164,13 +174,48 @@ class DefaultFileStorage internal constructor(
             }
         }
     }
+}
 
-    private suspend fun <T> withPathLock(key: String, action: suspend () -> T): T {
-        val mutex = mapMutex.withLock {
-            pathLocks.getOrPut(key) { Mutex() }
+/**
+ * 路径与区域级并发锁注册表实现类。
+ * 包含引用计数清理机制，防止 Map 无界增长。
+ */
+internal class PathLockRegistry {
+    private class LockEntry {
+        val mutex = Mutex()
+        var refCount = 0
+    }
+
+    private val locks = mutableMapOf<String, LockEntry>()
+    private val registryMutex = Mutex()
+    private val areaMutexes = StorageArea.entries.associateWith { Mutex() }
+
+    suspend fun <T> withPathLock(key: String, action: suspend () -> T): T {
+        val entry = registryMutex.withLock {
+            locks.getOrPut(key) { LockEntry() }.also { it.refCount++ }
         }
-        return mutex.withLock {
+        try {
+            return entry.mutex.withLock {
+                action()
+            }
+        } finally {
+            registryMutex.withLock {
+                entry.refCount--
+                if (entry.refCount == 0) {
+                    locks.remove(key)
+                }
+            }
+        }
+    }
+
+    suspend fun <T> withAreaLock(area: StorageArea, action: suspend () -> T): T {
+        val areaMutex = areaMutexes.getValue(area)
+        return areaMutex.withLock {
             action()
         }
+    }
+
+    suspend fun activeLockCount(): Int {
+        return registryMutex.withLock { locks.size }
     }
 }
