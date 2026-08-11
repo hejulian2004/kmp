@@ -23,7 +23,6 @@ class InstagramHomeRepositoryImplTest {
     fun testCreatePostAndPersistenceAcrossRestarts() = runTest {
         val dao1 = InstagramDaoImpl()
         val repository1 = InstagramHomeRepositoryImpl(instagramDao = dao1)
-        Thread.sleep(100)
 
         val user = ProfileUser("u_insta", "insta_user", "https://example.com/avatar.jpg", "Bio", "10", "100", "50")
         val content = "测试Instagram发布贴子"
@@ -43,10 +42,8 @@ class InstagramHomeRepositoryImplTest {
         assertEquals("insta_user", createdPost.postUser.username)
         assertEquals("Shanghai, China", createdPost.location)
 
-        // 模拟重启（新建 DAO 与 Repository 实例）
-        val dao2 = InstagramDaoImpl()
-        val repository2 = InstagramHomeRepositoryImpl(instagramDao = dao2)
-        Thread.sleep(100)
+        // 模拟重启（复用持久化 DAO 实例创建新 Repository）
+        val repository2 = InstagramHomeRepositoryImpl(instagramDao = dao1)
 
         val posts2 = repository2.getHomePosts().first()
         val restoredPost = posts2.find { it.content == content }
@@ -59,7 +56,6 @@ class InstagramHomeRepositoryImplTest {
     fun testLikeAndSavePostPersistence() = runTest {
         val dao1 = InstagramDaoImpl()
         val repository1 = InstagramHomeRepositoryImpl(instagramDao = dao1)
-        Thread.sleep(100)
 
         val posts = repository1.getHomePosts().first()
         val targetPost = posts.first()
@@ -67,12 +63,9 @@ class InstagramHomeRepositoryImplTest {
 
         repository1.likePost(targetPost.id, currentUser)
         repository1.savePost(targetPost.id)
-        Thread.sleep(100)
 
         // 模拟重启恢复验证点赞与收藏持久化
-        val dao2 = InstagramDaoImpl()
-        val repository2 = InstagramHomeRepositoryImpl(instagramDao = dao2)
-        Thread.sleep(100)
+        val repository2 = InstagramHomeRepositoryImpl(instagramDao = dao1)
 
         val restoredPosts = repository2.getHomePosts().first()
         val restoredTarget = restoredPosts.find { it.id == targetPost.id }
