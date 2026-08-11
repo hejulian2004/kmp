@@ -1,9 +1,9 @@
-/**
+﻿/**
  * @File: HostProfileScreen.kt
  * @Package: org.example.project.ui.screens.airbnb
  * @Description: Airbnb房东主页Screen容器视图组件（符合MVI架构，全量保留原UI样式与注释）
  * @Author: 何聚敛
- * @Date: 2026-08-05
+ * @Date: 2026-08-11
  */
 package org.example.project.ui.screens.airbnb
 
@@ -37,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,6 +60,7 @@ import org.example.project.ui.components.airbnb.SectionCard
 import org.example.project.ui.components.airbnb.SectionTitle
 import org.example.project.ui.components.airbnb.TopBar
 import org.example.project.ui.components.airbnb.destinationEmojis
+import org.example.project.ui.core.sdui.registry.registerAirbnbSduiComponents
 import org.example.project.ui.theme.airbnb.Accent
 import org.example.project.ui.theme.airbnb.AirbnbTheme
 import org.example.project.ui.theme.airbnb.DividerColor
@@ -76,7 +78,12 @@ fun HostProfileScreen(
     onEditHostClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
 ) {
+    LaunchedEffect(Unit) {
+        registerAirbnbSduiComponents()
+    }
+
     if (uiState.isLoading) {
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
