@@ -7,8 +7,11 @@
  */
 package org.example.project.core.database
 
-import org.example.project.data.database.dao.airbnb.HostProfileDaoImpl
+import androidx.room.RoomDatabase
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 
 fun getRoomDatabase(context: Any? = null): AppDatabase {
-    return AppDatabase(HostProfileDaoImpl())
+    return AppDatabase()
 }

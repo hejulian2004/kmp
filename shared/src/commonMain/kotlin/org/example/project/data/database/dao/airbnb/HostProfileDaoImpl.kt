@@ -17,65 +17,13 @@ import org.example.project.data.database.entity.airbnb.HostEntity
 import org.example.project.data.database.entity.airbnb.HostReviewEntity
 import org.example.project.data.database.entity.airbnb.PropertyListingEntity
 import org.example.project.data.database.entity.airbnb.TravelGuideEntity
-import org.example.project.platform.readStorageFile
-import org.example.project.platform.writeStorageFile
 
 class HostProfileDaoImpl : HostProfileDao {
 
-    private val json = Json { ignoreUnknownKeys = true; isLenient = true }
-    private val hostsFile = "airbnb_hosts_db.json"
-    private val propertiesFile = "airbnb_properties_db.json"
-    private val reviewsFile = "airbnb_reviews_db.json"
-    private val guidesFile = "airbnb_guides_db.json"
-
-    private val hostsTable = MutableStateFlow<List<HostEntity>>(loadInitialHosts())
-    private val propertiesTable = MutableStateFlow<List<PropertyListingEntity>>(loadInitialProperties())
-    private val reviewsTable = MutableStateFlow<List<HostReviewEntity>>(loadInitialReviews())
-    private val guidesTable = MutableStateFlow<List<TravelGuideEntity>>(loadInitialGuides())
-
-    private fun loadInitialHosts(): List<HostEntity> {
-        val content = readStorageFile(hostsFile)
-        return if (!content.isNullOrBlank()) {
-            runCatching { json.decodeFromString<List<HostEntity>>(content) }.getOrDefault(emptyList())
-        } else emptyList()
-    }
-
-    private fun loadInitialProperties(): List<PropertyListingEntity> {
-        val content = readStorageFile(propertiesFile)
-        return if (!content.isNullOrBlank()) {
-            runCatching { json.decodeFromString<List<PropertyListingEntity>>(content) }.getOrDefault(emptyList())
-        } else emptyList()
-    }
-
-    private fun loadInitialReviews(): List<HostReviewEntity> {
-        val content = readStorageFile(reviewsFile)
-        return if (!content.isNullOrBlank()) {
-            runCatching { json.decodeFromString<List<HostReviewEntity>>(content) }.getOrDefault(emptyList())
-        } else emptyList()
-    }
-
-    private fun loadInitialGuides(): List<TravelGuideEntity> {
-        val content = readStorageFile(guidesFile)
-        return if (!content.isNullOrBlank()) {
-            runCatching { json.decodeFromString<List<TravelGuideEntity>>(content) }.getOrDefault(emptyList())
-        } else emptyList()
-    }
-
-    private fun persistHosts(hosts: List<HostEntity>) {
-        runCatching { writeStorageFile(hostsFile, json.encodeToString(hosts)) }
-    }
-
-    private fun persistProperties(properties: List<PropertyListingEntity>) {
-        runCatching { writeStorageFile(propertiesFile, json.encodeToString(properties)) }
-    }
-
-    private fun persistReviews(reviews: List<HostReviewEntity>) {
-        runCatching { writeStorageFile(reviewsFile, json.encodeToString(reviews)) }
-    }
-
-    private fun persistGuides(guides: List<TravelGuideEntity>) {
-        runCatching { writeStorageFile(guidesFile, json.encodeToString(guides)) }
-    }
+    private val hostsTable = MutableStateFlow<List<HostEntity>>(emptyList())
+    private val propertiesTable = MutableStateFlow<List<PropertyListingEntity>>(emptyList())
+    private val reviewsTable = MutableStateFlow<List<HostReviewEntity>>(emptyList())
+    private val guidesTable = MutableStateFlow<List<TravelGuideEntity>>(emptyList())
 
     override fun observeHosts(): Flow<List<HostEntity>> = hostsTable.asStateFlow()
 
@@ -83,9 +31,7 @@ class HostProfileDaoImpl : HostProfileDao {
         hostsTable.update { current ->
             val map = current.associateBy { it.id }.toMutableMap()
             hosts.forEach { map[it.id] = it }
-            val updated = map.values.toList()
-            persistHosts(updated)
-            updated
+            map.values.toList()
         }
     }
 
@@ -95,9 +41,7 @@ class HostProfileDaoImpl : HostProfileDao {
         propertiesTable.update { current ->
             val map = current.associateBy { it.id }.toMutableMap()
             properties.forEach { map[it.id] = it }
-            val updated = map.values.toList()
-            persistProperties(updated)
-            updated
+            map.values.toList()
         }
     }
 
@@ -107,9 +51,7 @@ class HostProfileDaoImpl : HostProfileDao {
         reviewsTable.update { current ->
             val map = current.associateBy { it.id }.toMutableMap()
             reviews.forEach { map[it.id] = it }
-            val updated = map.values.toList()
-            persistReviews(updated)
-            updated
+            map.values.toList()
         }
     }
 
@@ -119,29 +61,23 @@ class HostProfileDaoImpl : HostProfileDao {
         guidesTable.update { current ->
             val map = current.associateBy { it.id }.toMutableMap()
             guides.forEach { map[it.id] = it }
-            val updated = map.values.toList()
-            persistGuides(updated)
-            updated
+            map.values.toList()
         }
     }
 
     override suspend fun clearHosts() {
         hostsTable.value = emptyList()
-        persistHosts(emptyList())
     }
 
     override suspend fun clearProperties() {
         propertiesTable.value = emptyList()
-        persistProperties(emptyList())
     }
 
     override suspend fun clearReviews() {
         reviewsTable.value = emptyList()
-        persistReviews(emptyList())
     }
 
     override suspend fun clearGuides() {
         guidesTable.value = emptyList()
-        persistGuides(emptyList())
     }
 }

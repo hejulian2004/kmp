@@ -15,27 +15,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.example.project.data.database.entity.instagram.InstagramPostEntity
-import org.example.project.platform.readStorageFile
-import org.example.project.platform.writeStorageFile
 
 class InstagramDaoImpl : InstagramDao {
-    private val json = Json { ignoreUnknownKeys = true; isLenient = true }
-    private val postsFile = "instagram_posts_db.json"
-
-    private val postsTable = MutableStateFlow<List<InstagramPostEntity>>(loadInitialPosts())
-
-    private fun loadInitialPosts(): List<InstagramPostEntity> {
-        val content = readStorageFile(postsFile)
-        return if (!content.isNullOrBlank()) {
-            runCatching { json.decodeFromString<List<InstagramPostEntity>>(content) }.getOrDefault(emptyList())
-        } else emptyList()
-    }
-
-    private fun persistPosts(posts: List<InstagramPostEntity>) {
-        runCatching {
-            writeStorageFile(postsFile, json.encodeToString(posts))
-        }
-    }
+    private val postsTable = MutableStateFlow<List<InstagramPostEntity>>(emptyList())
 
     override fun observePosts(): Flow<List<InstagramPostEntity>> {
         return postsTable.map { list -> list.filter { !it.isStory } }
@@ -49,22 +31,17 @@ class InstagramDaoImpl : InstagramDao {
         postsTable.update { current ->
             val map = current.associateBy { it.id }.toMutableMap()
             posts.forEach { map[it.id] = it }
-            val updated = map.values.toList()
-            persistPosts(updated)
-            updated
+            map.values.toList()
         }
     }
 
     override suspend fun deletePost(postId: String) {
         postsTable.update { current ->
-            val updated = current.filterNot { it.id == postId }
-            persistPosts(updated)
-            updated
+            current.filterNot { it.id == postId }
         }
     }
 
     override suspend fun clearAll() {
         postsTable.value = emptyList()
-        persistPosts(emptyList())
     }
 }
