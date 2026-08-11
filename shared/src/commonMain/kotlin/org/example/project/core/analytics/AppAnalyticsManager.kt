@@ -54,6 +54,22 @@ object AppAnalyticsManager : AnalyticsTracker {
     }
 
     /**
+     * 重置单例内部状态（仅供单元测试隔离使用）
+     */
+    internal fun resetForTest() {
+        synchronized(this) {
+            isInitialized = false
+            config = null
+            synchronized(globalParams) {
+                globalParams.clear()
+            }
+            synchronized(trackers) {
+                trackers.clear()
+            }
+        }
+    }
+
+    /**
      * 检查单例初始化状态，未初始化时直接抛出 IllegalStateException 报错
      */
     private fun checkInitialized() {
