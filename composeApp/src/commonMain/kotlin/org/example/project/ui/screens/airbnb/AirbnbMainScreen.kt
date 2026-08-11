@@ -1,9 +1,9 @@
-/**
+﻿/**
  * @File: AirbnbMainScreen.kt
  * @Package: org.example.project.ui.screens.airbnb
  * @Description: Airbnb业务模块主Screen容器（整合Room本地DB、HostProfile聚合页面、编辑页与设置页导航状态）
  * @Author: 何聚敛
- * @Date: 2026-08-05
+ * @Date: 2026-08-11
  */
 package org.example.project.ui.screens.airbnb
 
@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.example.project.core.database.getRoomDatabase
+import org.example.project.core.network.client.AppNetworkInitializer
 import org.example.project.data.repository.airbnb.HostProfileRepositoryImpl
 import org.example.project.presentation.intent.airbnb.ProfileEditIntent
 import org.example.project.presentation.viewmodel.airbnb.HostProfileViewModel
@@ -39,7 +40,7 @@ fun AirbnbMainScreen(
     val repository = remember {
         HostProfileRepositoryImpl(
             dao = database.hostProfileDao(),
-            networkContainer = org.example.project.core.network.client.AppNetworkInitializer.container
+            networkContainer = AppNetworkInitializer.container
         )
     }
 
