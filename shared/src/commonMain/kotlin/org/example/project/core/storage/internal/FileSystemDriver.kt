@@ -99,8 +99,8 @@ internal class KotlinxIoFileSystemDriver : FileSystemDriver {
     override suspend fun exists(path: Path): Boolean {
         return try {
             SystemFileSystem.exists(path)
-        } catch (_: Exception) {
-            false
+        } catch (e: Exception) {
+            throw mapIoException("exists", path.toString(), e)
         }
     }
 
@@ -111,8 +111,8 @@ internal class KotlinxIoFileSystemDriver : FileSystemDriver {
             }
             deleteRecursively(path)
             true
-        } catch (_: Exception) {
-            false
+        } catch (e: Exception) {
+            throw mapIoException("delete", path.toString(), e)
         }
     }
 
@@ -129,14 +129,17 @@ internal class KotlinxIoFileSystemDriver : FileSystemDriver {
 
     override suspend fun metadata(path: Path): StorageMetadata? {
         return try {
+            if (!SystemFileSystem.exists(path)) {
+                return null
+            }
             val rawMeta = SystemFileSystem.metadataOrNull(path) ?: return null
             StorageMetadata(
                 size = rawMeta.size,
                 lastModifiedAt = null,
                 isDirectory = rawMeta.isDirectory
             )
-        } catch (_: Exception) {
-            null
+        } catch (e: Exception) {
+            throw mapIoException("metadata", path.toString(), e)
         }
     }
 

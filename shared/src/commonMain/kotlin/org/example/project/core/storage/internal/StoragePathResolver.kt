@@ -38,10 +38,11 @@ class StoragePathResolver(
      * 
      * @param area 逻辑存储区域
      * @param path 逻辑相对路径
+     * @param allowEmpty 是否允许空路径
      * @return 对应的 kotlinx.io.files.Path 绝对路径
      */
-    fun resolve(area: StorageArea, path: StoragePath): Path {
-        val normalizedRelativePath = StoragePathValidator.validateAndNormalize(path)
+    fun resolve(area: StorageArea, path: StoragePath, allowEmpty: Boolean = false): Path {
+        val normalizedRelativePath = StoragePathValidator.validateAndNormalize(path, allowEmpty = allowEmpty)
         val areaRoot = resolveAreaRoot(area)
         return if (normalizedRelativePath.isEmpty()) {
             areaRoot
