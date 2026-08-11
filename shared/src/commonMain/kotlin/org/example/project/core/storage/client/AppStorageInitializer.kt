@@ -1,12 +1,13 @@
 ﻿/**
  * @File: AppStorageInitializer.kt
  * @Package: org.example.project.core.storage.client
- * @Description: 应用文件存储统一单例初始化器 (对齐大厂基础设施单例标准)
+ * @Description: 应用文件存储统一单例初始化器
  * @Author: 何聚敛
  * @Date: 2026-08-12
  */
 package org.example.project.core.storage.client
 
+import kotlin.concurrent.Volatile
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.example.project.core.storage.internal.DefaultFileStorage
@@ -38,21 +39,11 @@ object AppStorageInitializer {
         get() = _container != null
 
     /**
-     * 显式初始化全局存储架构。
+     * 线程与协程安全且 exactly-once 的显式初始化入口。
      * 
      * @param context 平台上下文 (Android 平台需传入 ApplicationContext)
      */
-    fun init(context: Any?) {
-        if (_container != null) return
-        val directories = createPlatformStorageDirectories(context)
-        val fileStorage = DefaultFileStorage(directories = directories)
-        _container = DefaultStorageContainer(fileStorage = fileStorage)
-    }
-
-    /**
-     * 协程安全的显式初始化。
-     */
-    suspend fun initSuspending(context: Any?) {
+    suspend fun init(context: Any?) {
         if (_container != null) return
         initMutex.withLock {
             if (_container != null) return@withLock
@@ -65,7 +56,7 @@ object AppStorageInitializer {
     /**
      * 仅供单元测试重置初始化状态使用。
      */
-    fun resetForTesting() {
+    internal fun resetForTesting() {
         _container = null
     }
 }
