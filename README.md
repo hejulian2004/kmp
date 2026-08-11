@@ -1,6 +1,6 @@
 # Social KMP App
 
-基于 **Kotlin Multiplatform (KMP)** 和 **Compose Multiplatform** 实现的跨平台社交应用框架，集成了 **Airbnb 个人资料与设置**、**FeedLine 朋友圈**、**Instagram 动态流** 三大核心业务模块，全量采用 **MVI 架构**、**Room KMP 本地离线数据库（Local-First SWR）** 与 **SDUI（服务端驱动 UI）动态组件热更新架构**。
+基于 **Kotlin Multiplatform (KMP)** 和 **Compose Multiplatform** 实现的跨平台社交应用框架，集成了 **Airbnb 个人资料与设置**、**FeedLine 朋友圈**、**Instagram 动态流** 三大核心业务模块，全量采用 **MVI 架构**、**Room KMP 本地离线数据库（Local-First SWR）**、**跨平台数据埋点架构** 与 **SDUI（服务端驱动 UI）动态组件热更新架构**。
 
 ---
 
@@ -18,39 +18,64 @@
 - **Room KMP 离线优先数据库（Local-First SWR）**：
   - 基于 Room KMP 2.7.0+ 统一封装 `AppDatabase`，提供 `HostProfileDao`、`FeedLineDao` 与 `InstagramDao` 响应式数据持久化。
   - 实现 SWR（Stale-While-Revalidate）数据同步管道，离线即时渲染与后台增量刷新。
+- **跨平台统一初始化与数据埋点架构**：
+  - `AppInitializer` 统一管理冷启动依赖链：强同步完成网络架构、Room 数据库、数据埋点单例与冷启动事件上报，确保底层基础设施完全准备就绪。
+  - 后台非阻塞异步协程并发预加载拉取 SDUI 热更 JSON 布局。
 - **SDUI 动态热更新架构**：
-  - 符合 100% 商店合规要求，内置三级容灾缓存与自动导出编译 Task `generateSduiJson`。
+  - **零包内打底 JSON**：无热更或断网时无缝回退至 APK 打包的原生 Compose UI（`getLayout` 返回 `null`）；服务端下发热更后持久化至本地磁盘与内存，实现动态 UI 覆盖渲染。
+  - **模块集中注册表**：`AirbnbSduiRegistry`、`FeedLineSduiRegistry` 与 `InstagramSduiRegistry` 零侵入绑定原生 UI 与 MVI Action。
+  - **自动导出 Task**：`generateSduiJson` 编译构建时根据 `SduiVersionConfig` 一键导出模块聚合 JSON 与单组件独立 JSON 至 `build/outputs/sdui/`。
 - **120Hz 高刷新率适配**：
   - 动态请求 120Hz 高刷模式，不支持设备平滑降级至系统默认刷新率。
 
 ---
 
-## 项目结构
+## 项目结构说明
 
 ```
 social-kmp-app/
-├── androidApp/     # Android 原生宿主工程
-├── composeApp/     # 跨平台 Compose UI 视图与 Screen 容器
-├── shared/         # 共享业务逻辑、Room KMP 数据库、MVI ViewModel 与领域模型
-├── docs/           # 架构设计规范与 SDUI 方案文档
+├── androidApp/     # Android 原生宿主工程（Activity、120Hz高刷申请与全局AppInitializer入口）
+├── composeApp/     # 跨平台 Compose UI 视图、Screen 容器与 SDUI 渲染引擎
+├── shared/         # 共享业务逻辑、Room KMP 数据库、MVI ViewModel、SDUI 核心与数据埋点
+├── docs/           # 架构设计规范、SDUI 方案文档与跨平台数据埋点技术文档
 └── gradle/         # 依赖版本目录 (libs.versions.toml)
 ```
 
-### shared（共享业务逻辑 & 数据库 & MVI ViewModel）
+### shared（共享业务逻辑 & 数据库 & MVI & SDUI 核心）
 
 ```
 shared/src/commonMain/kotlin/org/example/project/
 ├── core/
-│   ├── database/                   # Room KMP 本地数据库配置
-│   │   ├── AppDatabase.kt          # 全局数据库定义（HostProfileDao / FeedLineDao / InstagramDao）
-│   │   └── DatabaseBuilder.kt      # 跨平台 Room 数据库构建入口
-│   ├── data/
-│   │   └── NetworkBoundResource.kt # SWR 离线优先网络与数据库同步管道
-│   └── network/                    # Ktor 客户端配置与 API 抽象
+│   ├── analytics/                  # 跨平台数据埋点系统
+│   │   ├── AnalyticsConfig.kt      # 埋点系统全局初始化配置项
+│   │   ├── AnalyticsEvents.kt      # 全局埋点事件名称常量库
+│   │   ├── AppAnalyticsManager.kt  # 全局数据埋点核心控制单例
+│   │   ├── IAnalyticsTracker.kt    # 埋点日志输出与上报抽象接口
+│   │   └── LogAnalyticsTracker.kt  # 控制台控制流日志埋点实现类
+│   ├── database/                   # Room KMP 本地离线数据库配置
+│   │   ├── AppDatabase.kt          # 全局 Room 数据库定义（HostProfileDao / FeedLineDao / InstagramDao）
+│   │   └── DatabaseBuilder.kt      # 跨平台 Room 数据库构建入口句柄
+│   ├── init/                       # 应用冷启动统一初始化管理器
+│   │   └── AppInitializer.kt       # 集中编排网络 -> 数据库 -> 埋点（强同步完成）与 SDUI 布局拉取（异步后台执行）
+│   ├── network/                    # Ktor 网络客户端与 API 抽象
+│   │   ├── ApiEndpoints.kt         # API 网络请求路径与 SDUI 热更路由
+│   │   ├── AppNetworkInitializer.kt# 跨平台 HTTP Client 初始化器
+│   │   └── NetworkContainer.kt     # 网络依赖提供容器
+│   └── sdui/                       # SDUI 核心数据结构、DSL Builder 与热更仓库
+│       ├── config/
+│       │   └── SduiVersionConfig.kt# SDUI 模块及下属子组件版本号统一集中配置文件
+│       ├── model/
+│       │   ├── SduiNode.kt         # SDUI AST 内存节点模型（@Serializable）
+│       │   ├── SduiAction.kt       # SDUI 节点交互事件 Action 模型（@Serializable）
+│       │   └── SduiStyle.kt        # SDUI 节点样式描述模型（@Serializable）
+│       ├── builder/
+│       │   └── SduiLayoutBuilder.kt# 强类型 Kotlin SDUI DSL 节点构建器句柄
+│       └── repository/
+│           └── SduiLayoutRepositoryImpl.kt # SDUI 热更 JSON 本地磁盘/内存缓存与网络下载仓库实现
 ├── domain/
-│   ├── model/                      # 领域数据模型
+│   ├── model/                      # 领域实体数据模型（符合单一源原则）
 │   │   ├── airbnb/
-│   │   │   └── HostProfileModels.kt# Airbnb 房东、房源、评价、指南模型
+│   │   │   └── HostProfileModels.kt# Airbnb 房东、房源、评价与指南模型
 │   │   ├── feedline/
 │   │   │   ├── FeedLinePost.kt     # 朋友圈动态模型
 │   │   │   ├── FeedLineUser.kt     # 朋友圈用户模型
@@ -68,72 +93,79 @@ shared/src/commonMain/kotlin/org/example/project/
 │       └── instagram/InstagramHomeRepository.kt
 ├── data/
 │   ├── database/                   # Room KMP 本地数据库持久化层
-│   │   ├── entity/                 # Room Entity 实体
+│   │   ├── entity/                 # Room Entity 表实体定义
 │   │   │   ├── airbnb/             # HostEntity / PropertyListingEntity / HostReviewEntity / TravelGuideEntity
 │   │   │   ├── feedline/           # FeedLinePostEntity / FeedLineNotificationEntity
 │   │   │   └── instagram/          # InstagramPostEntity
 │   │   ├── converter/
-│   │   │   └── StringListConverter.kt # List<String> 转换器
-│   │   └── dao/                    # Room DAO 接口及响应式实现
+│   │   │   └── StringListConverter.kt # Room List<String> 字段 JSON 类型转换器
+│   │   └── dao/                    # Room DAO 访问接口及响应式 SQL 实现
 │   │       ├── airbnb/             # HostProfileDao & HostProfileDaoImpl
 │   │       ├── feedline/           # FeedLineDao & FeedLineDaoImpl
 │   │       └── instagram/          # InstagramDao & InstagramDaoImpl
-│   └── repository/                 # 数据仓库实现（SWR + Room DAO + Network）
+│   └── repository/                 # 数据仓库实现（SWR 本地优先 + Room DAO + Network）
 │       ├── airbnb/HostProfileRepositoryImpl.kt
 │       ├── feedline/FeedRepositoryImpl.kt
 │       └── instagram/InstagramHomeRepositoryImpl.kt
-└── presentation/                   # MVI 表现层核心
-    ├── intent/                     # MVI Intent 意图
+└── presentation/                   # MVI 表现层架构核心
+    ├── intent/                     # MVI Intent 用户意图密封接口
     │   ├── airbnb/                 # HostProfileIntent / ProfileEditIntent / SettingsIntent
     │   ├── feedline/               # FeedLineIntent
     │   └── instagram/              # InstagramIntent
-    ├── state/                      # MVI UiState 页面状态
+    ├── state/                      # MVI UiState 页面全局不可变状态
     │   ├── airbnb/                 # HostProfileUiState / ProfileEditUiState / SettingsUiState
     │   ├── feedline/               # FeedLineUiState
     │   └── instagram/              # InstagramUiState
-    ├── effect/                     # MVI Effect 一次性副作用管道
+    ├── effect/                     # MVI Effect 单次副作用管道（Toast / Snackbar）
     └── viewmodel/                  # 共享 ViewModel（继承 androidx.lifecycle.ViewModel）
         ├── airbnb/                 # HostProfileViewModel / ProfileEditViewModel / SettingsViewModel
         ├── feedline/               # FeedLineViewModel
         └── instagram/              # InstagramViewModel
 ```
 
-### composeApp（UI 视图与界面组装）
+### composeApp（UI 视图、模块集中注册表与界面组装）
 
 ```
 composeApp/src/commonMain/kotlin/org/example/project/
-├── App.kt                          # 根 Composable；主导航路由（Airbnb / FeedLine / Instagram）
+├── App.kt                          # 根 Composable 视图；触发全局 AppInitializer；主导航路由
 ├── ui/
-│   ├── screens/                    # 页面容器（符合 MVI 架构）
-│   │   ├── airbnb/                 # Airbnb 页面
-│   │   │   ├── AirbnbMainScreen.kt # Airbnb 子路由切换容器
-│   │   │   ├── HostProfileScreen.kt# 房东主页 Screen
-│   │   │   ├── HostEditScreen.kt   # 资料编辑 Screen
-│   │   │   └── SettingsScreen.kt   # 设置主页 Screen
-│   │   ├── feedline/               # FeedLine 朋友圈 Screen
-│   │   └── instagram/              # Instagram 主页与个人 Screen
-│   ├── components/                 # 独立可复用 UI 组件（均含 @Preview）
+│   ├── core/sdui/                  # SDUI 动态 Compose 渲染引擎与模块注册表
+│   │   ├── SduiComponentRegistry.kt# SDUI 依赖倒置集中注册表（提供控制反转与自动 JSON 导出）
+│   │   ├── SduiRenderer.kt         # 动态 Compose 深度优先递归渲染引擎
+│   │   ├── SduiActionDispatcher.kt # SDUI 结构化 Action 转派与 MVI UiIntent 桥接分发器
+│   │   └── registry/               # 各业务模块集中注册表（严格遵循单一注册表红线）
+│   │       ├── AirbnbSduiRegistry.kt   # Airbnb 模块 16 个动态组件集中注册表
+│   │       ├── FeedLineSduiRegistry.kt # FeedLine 模块 13 个动态组件集中注册表
+│   │       └── InstagramSduiRegistry.kt# Instagram 模块 16 个动态组件集中注册表
+│   ├── screens/                    # 页面容器 Screen（符合 MVI 架构与状态收集）
+│   │   ├── airbnb/                 # Airbnb 页面视图
+│   │   │   ├── AirbnbMainScreen.kt # Airbnb 子路由与 Room/ViewModel 容器
+│   │   │   ├── HostProfileScreen.kt# 房东主页 Screen（挂载 AirbnbSduiRegistry）
+│   │   │   ├── HostEditScreen.kt   # 房东资料编辑 Screen
+│   │   │   └── SettingsScreen.kt   # 系统设置 Screen
+│   │   ├── feedline/               # FeedLine 朋友圈 Screen（挂载 FeedLineSduiRegistry）
+│   │   └── instagram/              # Instagram 主页 Screen（挂载 InstagramSduiRegistry）
+│   ├── components/                 # 纯净原生 Compose UI 组件（零 SDUI 依赖，带 @Preview）
 │   │   ├── airbnb/                 # Airbnb 专属组件
-│   │   │   ├── ProfileHeroCard.kt  # 房东 Hero 头部卡片
-│   │   │   ├── ListingCard.kt      # 房源卡片
-│   │   │   ├── ReviewCard.kt       # 评价卡片
+│   │   │   ├── ProfileHeroCard.kt  # 房东 Hero 头部主卡片
+│   │   │   ├── ListingCard.kt      # 房源名片组件
+│   │   │   ├── ReviewCard.kt       # 评价卡片组件
 │   │   │   ├── AboutMeSection.kt   # 个人简介编辑组件
-│   │   │   ├── HobbiesSection.kt   # 兴趣爱好 Flow 标签
-│   │   │   ├── PlacesSection.kt    # 去过的地点印章卡片
-│   │   │   ├── AvatarSection.kt    # 头像编辑组件
+│   │   │   ├── HobbiesSection.kt   # 兴趣爱好 Flow 标签组
+│   │   │   ├── PlacesSection.kt    # 去过的地点与纪念印章卡片
+│   │   │   ├── AvatarSection.kt    # 房东头像选择与修改组件
 │   │   │   ├── EditFieldBottomSheet.kt # 底部编辑弹窗
 │   │   │   ├── TopBar.kt           # 顶部导航栏
 │   │   │   ├── HostSelector.kt     # 多房东切换选择器
 │   │   │   ├── SectionCard.kt      # 通用圆角卡片容器
-│   │   │   ├── ActionItem.kt       # 可点击设置项
-│   │   │   └── ToggleItem.kt       # 通用开关组件
+│   │   │   ├── ActionItem.kt       # 可点击列表行动项
+│   │   │   └── ToggleItem.kt       # 通用 Switch 开关组件
 │   │   ├── feedline/               # FeedLine 专属组件
 │   │   └── instagram/              # Instagram 专属组件
-│   └── theme/                      # 设计系统与配色
+│   └── theme/                      # 设计系统、主题配色与排版
 │       ├── airbnb/                 # AirbnbTheme & AirbnbColor
 │       ├── feedline/               # FeedLineTheme
 │       └── instagram/              # InstagramTheme
-└── ui/core/sdui/                   # SDUI 动态渲染引擎与组件注册表
 ```
 
 ---
@@ -163,8 +195,11 @@ composeApp/src/commonMain/kotlin/org/example/project/
 # 全量模块构建
 ./gradlew assembleDebug
 
-# SDUI JSON 动态组件一键导出 Task
+# SDUI JSON 动态组件一键导出 Task（按组件名_版本号_时间戳格式自动导出）
 ./gradlew :shared:generateSduiJson
+
+# 运行单元测试
+./gradlew :shared:testAndroidHostTest
 ```
 
 ---
@@ -181,11 +216,18 @@ composeApp/src/commonMain/kotlin/org/example/project/
 - 页面优先从 **Room KMP 本地数据库** 加载数据并响应式渲染，保证秒开与离线可用。
 - 后台自动拉取最新 API 数据，校验变更后无缝写入 Room DB，流转更新 UI。
 
-### 3. SDUI 动态组件热更新机制
-- **5 阶段渲染流转**：组件集中注册 ➔ 3 级容灾缓存获取 ➔ DSL 解析 ➔ 动态递归渲染 ➔ MVI 事件响应。
-- **自动编译 Task**：`generateSduiJson` 根据版本配置导出模块聚合 JSON 与单组件独立 JSON。
+### 3. 应用统一初始化与数据埋点架构
+遵循 `docs/architecture/数据埋点技术文档.md` 规范：
+- `AppInitializer` 统一管理冷启动依赖链：强同步完成 `AppNetworkInitializer` ➔ `getRoomDatabase` ➔ `AppAnalyticsManager` ➔ 冷启动埋点上报。
+- 基础设施准备就绪后，启动异步协程在后台并发预加载拉取全量模块的 SDUI 热更 JSON 布局，绝对不阻塞主线程。
 
-### 4. 120Hz 高刷新率适配与全端大屏响应式
+### 4. SDUI 动态组件热更新机制
+遵循 `docs/architecture/安卓动态组件热更技术方案.md` 与 `sdui-hotupdate` 规范：
+- **零包内打底 JSON 原则**：包内无需存储默认 JSON 模板。当无热更或请求失败时，`getLayout` 返回 `null` 并直接绘制原生 Compose UI；服务端下发热更后下载持久化至磁盘与内存，启用 SDUI 递归渲染。
+- **单一集中注册表**：`AirbnbSduiRegistry`、`FeedLineSduiRegistry` 与 `InstagramSduiRegistry` 分模块集中注册，保持 Native 组件纯净。
+- **自动编译 Task**：`generateSduiJson` 任务按 `模块/组件名_版本号_时间戳.json` 自动导出热更 DSL 文件。
+
+### 5. 120Hz 高刷新率适配与全端大屏响应式
 - **120Hz 动态申请**：Android 宿主主动申请设备最高 120Hz/90Hz 刷新率，不支持的设备自动平滑降级至系统默认帧率。
 - **WindowSizeClass 适应**：对 Pad 及折叠屏大屏设备实施 `widthIn(max=840dp)` 水平居中约束与双窗格扩展。
 
@@ -194,4 +236,4 @@ composeApp/src/commonMain/kotlin/org/example/project/
 ## 预览与 UI 规范
 
 - **强制 `@Preview` 规范**：所有 `ui/components/` 和 `ui/screens/` 中的 UI 组件末尾均提供 `@Preview(showBackground = true)` 预览函数。
-- **代码规范与标准头**：全量保留完整的作者、日期及文件头注释，遵循中文与英文/代码符号之间无缝无多余空格的排版习惯。
+- **代码注释与中英文排版规范**：注释使用中文阐述逻辑意图，保留英文字符与符号。中英文与代码符号之间严禁添加无意义空格（无空格紧凑排版）。

@@ -23,6 +23,9 @@ import coil3.compose.setSingletonImageLoaderFactory
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
+import androidx.compose.runtime.LaunchedEffect
+import org.example.project.core.init.AppInitParams
+import org.example.project.core.init.AppInitializer
 import org.example.project.core.network.client.AppNetworkInitializer
 import org.example.project.data.repository.feedline.FeedRepositoryImpl
 import org.example.project.data.repository.feedline.generateUUID
@@ -35,6 +38,10 @@ import org.example.project.ui.theme.instagram.InstagramTheme
 @Composable
 @Preview
 fun App() {
+    LaunchedEffect(Unit) {
+        AppInitializer.init(AppInitParams(platformName = "Compose"))
+    }
+
     setSingletonImageLoaderFactory { context ->
         ImageLoader.Builder(context)
             .components {
@@ -45,6 +52,7 @@ fun App() {
             .build()
     }
     Surface(modifier = Modifier.fillMaxSize()) {
+
         val rootNavController = rememberNavController()
         NavHost(
             navController = rootNavController,
