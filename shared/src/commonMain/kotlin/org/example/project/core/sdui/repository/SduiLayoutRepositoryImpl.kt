@@ -88,13 +88,7 @@ class SduiLayoutRepositoryImpl(
     }
 
     private val activeFileStorage: FileStorage
-        get() {
-            if (fileStorage != null) return fileStorage
-            if (!AppStorageInitializer.isInitialized) {
-                AppStorageInitializer.init()
-            }
-            return AppStorageInitializer.container.fileStorage
-        }
+        get() = fileStorage ?: AppStorageInitializer.container.fileStorage
 
     private val activeNetworkContainer: NetworkContainer
         get() = networkContainer ?: AppNetworkInitializer.container

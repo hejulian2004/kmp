@@ -17,6 +17,7 @@ import org.example.project.core.storage.platform.createPlatformStorageDirectorie
  */
 object AppStorageInitializer {
 
+    @Volatile
     private var _container: StorageContainer? = null
     private val initMutex = Mutex()
 
@@ -41,9 +42,8 @@ object AppStorageInitializer {
      * 
      * @param context 平台上下文 (Android 平台需传入 ApplicationContext)
      */
-    fun init(context: Any? = null) {
+    fun init(context: Any?) {
         if (_container != null) return
-
         val directories = createPlatformStorageDirectories(context)
         val fileStorage = DefaultFileStorage(directories = directories)
         _container = DefaultStorageContainer(fileStorage = fileStorage)
@@ -52,7 +52,7 @@ object AppStorageInitializer {
     /**
      * 协程安全的显式初始化。
      */
-    suspend fun initSuspending(context: Any? = null) {
+    suspend fun initSuspending(context: Any?) {
         if (_container != null) return
         initMutex.withLock {
             if (_container != null) return@withLock
@@ -60,5 +60,12 @@ object AppStorageInitializer {
             val fileStorage = DefaultFileStorage(directories = directories)
             _container = DefaultStorageContainer(fileStorage = fileStorage)
         }
+    }
+
+    /**
+     * 仅供单元测试重置初始化状态使用。
+     */
+    fun resetForTesting() {
+        _container = null
     }
 }

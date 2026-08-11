@@ -24,9 +24,6 @@ actual fun currentTimeMillis(): Long {
 
 actual fun readStorageFile(fileName: String): String? {
     return try {
-        if (!AppStorageInitializer.isInitialized) {
-            AppStorageInitializer.init()
-        }
         val storage = AppStorageInitializer.container.fileStorage
         val path = StoragePath(fileName)
         runBlocking(Dispatchers.IO) {
@@ -41,9 +38,6 @@ actual fun readStorageFile(fileName: String): String? {
 
 actual fun writeStorageFile(fileName: String, content: String) {
     try {
-        if (!AppStorageInitializer.isInitialized) {
-            AppStorageInitializer.init()
-        }
         val storage = AppStorageInitializer.container.fileStorage
         val path = StoragePath(fileName)
         runBlocking(Dispatchers.IO) {
