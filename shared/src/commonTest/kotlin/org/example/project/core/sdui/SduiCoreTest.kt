@@ -1,9 +1,9 @@
-/**
+﻿/**
  * @File: SduiCoreTest.kt
  * @Package: org.example.project.core.sdui
  * @Description: SDUI核心数据模型、Kotlin DSL Builder与三级降级仓库单元测试
  * @Author: 何聚敛
- * @Date: 2026-08-05
+ * @Date: 2026-08-11
  */
 package org.example.project.core.sdui
 
@@ -102,4 +102,23 @@ class SduiCoreTest {
         assertEquals("Banner", nodeSecondTime.componentType)
         assertEquals("已保存的本地热更标题", nodeSecondTime.properties["title"])
     }
+
+    @Test
+    fun testAirbnbSduiLayoutFallback() = runTest {
+        val repository = SduiLayoutRepositoryImpl()
+        repository.clearDiskCache("airbnb")
+        val bundledAirbnbJson = """
+            {
+                "componentType": "LazyColumn",
+                "children": [
+                    { "componentType": "AirbnbTopBar", "properties": { "title": "个人资料" } }
+                ]
+            }
+        """.trimIndent()
+
+        val node = repository.getLayout("airbnb", bundledAirbnbJson)
+        assertEquals("LazyColumn", node.componentType)
+        assertEquals("AirbnbTopBar", node.children.firstOrNull()?.componentType)
+    }
 }
+
