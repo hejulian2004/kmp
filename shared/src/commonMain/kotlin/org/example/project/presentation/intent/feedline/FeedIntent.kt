@@ -1,9 +1,9 @@
-/**
+﻿/**
  * @File: FeedIntent.kt
  * @Package: org.example.project.presentation.intent.feedline
  * @Description: 朋友圈MVI架构中的用户意图与操作定义
  * @Author: 何聚敛
- * @Date: 2026-07-20
+ * @Date: 2026-08-11
  */
 package org.example.project.presentation.intent.feedline
 
@@ -70,4 +70,32 @@ sealed interface FeedIntent {
     data object ClearAllNotifications: FeedIntent
 
     data class NavigateTo(val screen: Screen): FeedIntent
+
+    data object LoadMore: FeedIntent
+
+    data class PreviewMedia(
+        val postId: String,
+        val mediaUrl: String,
+        val isVideo: Boolean
+    ): FeedIntent
+
+    data class ViewUserProfile(
+        val targetUserId: String,
+        val clickSource: String
+    ): FeedIntent
+
+    data class ClickNotificationBar(
+        val unreadCount: Int
+    ): FeedIntent
+
+    data class SelectMedia(
+        val sourceType: String,
+        val mediaCount: Int
+    ): FeedIntent
+
+    data class CancelPublish(
+        val hasContent: Boolean
+    ): FeedIntent
+
+    data object LongClickCreatePostTextOnly: FeedIntent
 }
