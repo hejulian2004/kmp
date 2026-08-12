@@ -1,11 +1,18 @@
-package org.example.project.platform
+﻿package org.example.project.platform
 
 import android.os.Build
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.runBlocking
+import org.example.project.core.storage.api.StorageArea
+import org.example.project.core.storage.api.StoragePath
+import org.example.project.core.storage.api.WriteMode
+import org.example.project.core.storage.client.AppStorageInitializer
 
 /**
  * @File: Platform.android.kt
  * @Description: Android平台特定实现
- * @Date: 2026-04-20
+ * @Date: 2026-08-12
  */
 
 actual fun getPlatformName(): String = "Android ${Build.VERSION.SDK_INT}"
@@ -17,21 +24,35 @@ actual fun currentTimeMillis(): Long {
 
 actual fun readStorageFile(fileName: String): String? {
     return try {
-        val dir = java.io.File(System.getProperty("java.io.tmpdir") ?: ".", "social_kmp_db")
-        if (!dir.exists()) dir.mkdirs()
-        val file = java.io.File(dir, fileName)
-        if (file.exists()) file.readText() else null
-    } catch (e: Exception) {
+        if (!AppStorageInitializer.isInitialized) {
+            AppStorageInitializer.init()
+        }
+        val storage = AppStorageInitializer.container.fileStorage
+        val path = StoragePath(fileName)
+        runBlocking(Dispatchers.IO) {
+            if (storage.exists(StorageArea.PERSISTENT, path)) {
+                storage.read(StorageArea.PERSISTENT, path).decodeToString()
+            } else null
+        }
+    } catch (_: Exception) {
         null
     }
 }
 
 actual fun writeStorageFile(fileName: String, content: String) {
     try {
-        val dir = java.io.File(System.getProperty("java.io.tmpdir") ?: ".", "social_kmp_db")
-        if (!dir.exists()) dir.mkdirs()
-        val file = java.io.File(dir, fileName)
-        file.writeText(content)
+        if (!AppStorageInitializer.isInitialized) {
+            AppStorageInitializer.init()
+        }
+        val storage = AppStorageInitializer.container.fileStorage
+        val path = StoragePath(fileName)
+        runBlocking(Dispatchers.IO) {
+            if (content.isEmpty()) {
+                storage.delete(StorageArea.PERSISTENT, path)
+            } else {
+                storage.write(StorageArea.PERSISTENT, path, content.encodeToByteArray(), WriteMode.ATOMIC)
+            }
+        }
     } catch (e: Exception) {
         e.printStackTrace()
     }

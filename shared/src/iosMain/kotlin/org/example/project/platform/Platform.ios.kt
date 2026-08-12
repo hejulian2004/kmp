@@ -1,14 +1,20 @@
-package org.example.project.platform
+﻿package org.example.project.platform
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.runBlocking
+import org.example.project.core.storage.api.StorageArea
+import org.example.project.core.storage.api.StoragePath
+import org.example.project.core.storage.api.WriteMode
+import org.example.project.core.storage.client.AppStorageInitializer
 import platform.Foundation.NSDate
-import platform.Foundation.dateWithTimeIntervalSince1970
 import platform.Foundation.timeIntervalSince1970
 import platform.UIKit.UIDevice
 
 /**
  * @File: Platform.ios.kt
  * @Description: iOS平台特定实现
- * @Date: 2026-04-20
+ * @Date: 2026-08-12
  */
 
 actual fun getPlatformName(): String {
@@ -22,42 +28,36 @@ actual fun currentTimeMillis(): Long {
 
 actual fun readStorageFile(fileName: String): String? {
     return try {
-        val paths = platform.Foundation.NSSearchPathForDirectoriesInDomains(
-            platform.Foundation.NSDocumentDirectory,
-            platform.Foundation.NSUserDomainMask,
-            true
-        )
-        val documentsDirectory = paths.first() as String
-        val filePath = "$documentsDirectory/$fileName"
-        val fileManager = platform.Foundation.NSFileManager.defaultManager
-        if (fileManager.fileExistsAtPath(filePath)) {
-            platform.Foundation.NSString.stringWithContentsOfFile(
-                filePath,
-                platform.Foundation.NSUTF8StringEncoding,
-                null
-            ) as String?
-        } else null
-    } catch (e: Exception) {
+        if (!AppStorageInitializer.isInitialized) {
+            AppStorageInitializer.init()
+        }
+        val storage = AppStorageInitializer.container.fileStorage
+        val path = StoragePath(fileName)
+        runBlocking(Dispatchers.IO) {
+            if (storage.exists(StorageArea.PERSISTENT, path)) {
+                storage.read(StorageArea.PERSISTENT, path).decodeToString()
+            } else null
+        }
+    } catch (_: Exception) {
         null
     }
 }
 
 actual fun writeStorageFile(fileName: String, content: String) {
     try {
-        val paths = platform.Foundation.NSSearchPathForDirectoriesInDomains(
-            platform.Foundation.NSDocumentDirectory,
-            platform.Foundation.NSUserDomainMask,
-            true
-        )
-        val documentsDirectory = paths.first() as String
-        val filePath = "$documentsDirectory/$fileName"
-        (content as platform.Foundation.NSString).writeToFile(
-            filePath,
-            true,
-            platform.Foundation.NSUTF8StringEncoding,
-            null
-        )
+        if (!AppStorageInitializer.isInitialized) {
+            AppStorageInitializer.init()
+        }
+        val storage = AppStorageInitializer.container.fileStorage
+        val path = StoragePath(fileName)
+        runBlocking(Dispatchers.IO) {
+            if (content.isEmpty()) {
+                storage.delete(StorageArea.PERSISTENT, path)
+            } else {
+                storage.write(StorageArea.PERSISTENT, path, content.encodeToByteArray(), WriteMode.ATOMIC)
+            }
+        }
     } catch (e: Exception) {
-        // ignore
+        e.printStackTrace()
     }
 }
