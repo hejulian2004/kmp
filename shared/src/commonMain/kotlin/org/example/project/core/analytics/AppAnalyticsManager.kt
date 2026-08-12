@@ -3,7 +3,7 @@
  * @Package: org.example.project.core.analytics
  * @Description: KMP全局数据埋点应用单例管理器，提供统一事件分发、全局属性注入与多渠道Tracker挂载能力
  * @Author: 何聚敛
- * @Date: 2026-08-11
+ * @Date: 2026-08-12
  */
 package org.example.project.core.analytics
 
@@ -12,6 +12,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
+
+private inline fun <T> synchronized(lock: Any, block: () -> T): T = block()
 
 /**
  * 全局应用数据埋点单例管理器 (App Singleton)
@@ -127,8 +129,8 @@ object AppAnalyticsManager : AnalyticsTracker {
     override fun flush() {
         checkInitialized()
         val targetTrackers = synchronized(trackers) { trackers.toList() }
-        targetTrackers.forEach { 
-            runCatching { it.flush() }
+        targetTrackers.forEach { tracker ->
+            runCatching { tracker.flush() }
         }
     }
 }

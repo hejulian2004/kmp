@@ -3,7 +3,7 @@
  * @Package: org.example.project.core.init
  * @Description: 项目全局启动统一初始化器 (appInit)，集中编排网络架构、 Room 数据库与数据埋点单例的启动初始化链
  * @Author: 何聚敛
- * @Date: 2026-08-11
+ * @Date: 2026-08-12
  */
 package org.example.project.core.init
 
@@ -18,6 +18,8 @@ import org.example.project.core.analytics.LogAnalyticsTracker
 import org.example.project.core.database.getRoomDatabase
 import org.example.project.core.network.client.AppNetworkInitializer
 import org.example.project.core.sdui.repository.SduiLayoutRepositoryImpl
+
+import org.example.project.core.storage.client.AppStorageInitializer
 
 import org.example.project.core.analytics.AnalyticsParams
 import org.example.project.platform.currentTimeMillis
@@ -48,8 +50,8 @@ object AppInitializer {
 
     /**
      * 统一执行应用冷启动依赖链初始化（对齐大厂 APM 与数据埋点架构标准）。
-     * 【主线程强同步完成】：1. 数据埋点单例 (最优先零依赖) -> 2. 网络架构核心 -> 3. Room 数据库 -> 4. 上报冷启动总结事件；
-     * 【后台异步非阻塞】：5. 异步并发拉取与更新全量模块（Airbnb / FeedLine / Instagram）SDUI 热更 JSON。
+     * 【主线程强同步完成】：1. 数据埋点单例 (最优先零依赖) -> 2. 文件存储架构 -> 3. 网络架构核心 -> 4. Room 数据库 -> 5. 上报冷启动总结事件；
+     * 【后台异步非阻塞】：6. 异步并发拉取与更新全量模块（Airbnb / FeedLine / Instagram）SDUI 热更 JSON。
      * 
      * @param params 应用启动初始化参数
      */
@@ -79,7 +81,23 @@ object AppInitializer {
         var isSuccess = true
         val errorMessages = mutableListOf<String>()
 
-        // 2. 隔离初始化：网络架构单例
+        // 2. 隔离初始化：文件存储架构单例 (Storage Core Infrastructure)
+        try {
+            AppStorageInitializer.init(params.context)
+        } catch (e: Throwable) {
+            isSuccess = false
+            val errorMsg = "文件存储架构初始化失败: ${e.message ?: "未知异常"}"
+            errorMessages.add(errorMsg)
+            AppAnalyticsManager.trackEvent(
+                AnalyticsEvents.INIT_SUB_ERROR,
+                mapOf(
+                    AnalyticsParams.SUB_MODULE to "storage",
+                    AnalyticsParams.ERROR_MSG to errorMsg
+                )
+            )
+        }
+
+        // 3. 隔离初始化：网络架构单例
         try {
             AppNetworkInitializer.init(params.context)
         } catch (e: Throwable) {
