@@ -57,9 +57,16 @@ object AppStorageInitializer {
     }
 
     /**
+     * 仅供单元测试注入模拟容器使用。
+     */
+    fun initForTesting(container: StorageContainer) {
+        _container = container
+    }
+
+    /**
      * 仅供单元测试重置初始化状态使用。
      */
-    internal fun resetForTesting() {
+    fun resetForTesting() {
         _container = null
     }
 }

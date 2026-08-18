@@ -54,7 +54,6 @@ social-kmp-app/
 ├── composeApp/     # 跨平台 Compose UI 视图、Screen 容器、多媒体缓存与 SDUI 渲染引擎
 ├── shared/         # 共享业务逻辑、真实 Room SQLite 数据库、Core 文件存储、MVI ViewModel、SDUI 核心与数据埋点
 ├── docs/           # 架构设计规范、文件存储架构文档、SDUI 方案文档与跨平台数据埋点技术文档
-├── .github/        # GitHub Actions CI 工作流（Android / iOS 编译与跨平台测试）
 └── gradle/         # 依赖版本目录 (libs.versions.toml)
 ```
 
