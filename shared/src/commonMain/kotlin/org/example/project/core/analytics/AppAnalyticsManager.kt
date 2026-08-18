@@ -1,7 +1,7 @@
-﻿/**
+/**
  * @File: AppAnalyticsManager.kt
  * @Package: org.example.project.core.analytics
- * @Description: KMP全局数据埋点应用单例管理器，提供统一事件分发、全局属性注入与多渠道Tracker挂载能力
+ * @Description: KMP全局数据埋点应用单例管理器，提供统一事件分发、全局属性注入与多渠道Tracker挂载能力（基于PlatformLock平台锁实现并发安全）
  * @Author: 何聚敛
  * @Date: 2026-08-18
  */
@@ -11,17 +11,18 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import org.example.project.core.concurrent.PlatformLock
 import kotlin.time.Clock
-
-private inline fun <T> synchronized(lock: Any, block: () -> T): T = block()
 
 /**
  * 全局应用数据埋点单例管理器 (App Singleton)
  */
 object AppAnalyticsManager : AnalyticsTracker {
+    private val lock = PlatformLock()
     private var _isInitialized = false
+
     val isInitialized: Boolean
-        get() = _isInitialized
+        get() = lock.withLock { _isInitialized }
 
     private var config: AnalyticsConfig? = null
     private val trackers = mutableListOf<AnalyticsTracker>()
@@ -35,22 +36,18 @@ object AppAnalyticsManager : AnalyticsTracker {
      * @throws IllegalStateException 若已初始化过则抛出异常，防止重复初始化
      */
     fun init(config: AnalyticsConfig) {
-        synchronized(this) {
+        lock.withLock {
             check(!_isInitialized) {
                 "AppAnalyticsManager 已经初始化过，严禁重复初始化！"
             }
             this.config = config
 
-            synchronized(globalParams) {
-                globalParams["platform"] = config.platformName
-                globalParams["app_version"] = config.appVersion
-                globalParams["device_id"] = config.deviceId
-            }
+            globalParams["platform"] = config.platformName
+            globalParams["app_version"] = config.appVersion
+            globalParams["device_id"] = config.deviceId
 
-            synchronized(trackers) {
-                trackers.clear()
-                trackers.addAll(config.trackers)
-            }
+            trackers.clear()
+            trackers.addAll(config.trackers)
 
             _isInitialized = true
         }
@@ -60,15 +57,18 @@ object AppAnalyticsManager : AnalyticsTracker {
      * 重置单例内部状态（仅供单元测试隔离使用）
      */
     internal fun resetForTest() {
-        synchronized(this) {
+        resetForTesting()
+    }
+
+    /**
+     * 重置单例内部状态（仅供单元测试隔离使用）
+     */
+    internal fun resetForTesting() {
+        lock.withLock {
             _isInitialized = false
             config = null
-            synchronized(globalParams) {
-                globalParams.clear()
-            }
-            synchronized(trackers) {
-                trackers.clear()
-            }
+            globalParams.clear()
+            trackers.clear()
         }
     }
 
@@ -76,7 +76,8 @@ object AppAnalyticsManager : AnalyticsTracker {
      * 检查单例初始化状态，未初始化时直接抛出 IllegalStateException 报错
      */
     private fun checkInitialized() {
-        check(_isInitialized) {
+        val initialized = lock.withLock { _isInitialized }
+        check(initialized) {
             "AppAnalyticsManager 尚未初始化！必须首先在应用入口（如 AppInitializer.init()）中显式调用 AppAnalyticsManager.init(...) 方法完成初始化！"
         }
     }
@@ -89,7 +90,7 @@ object AppAnalyticsManager : AnalyticsTracker {
      */
     fun setUserContext(userId: String?, userRole: String? = null) {
         checkInitialized()
-        synchronized(globalParams) {
+        lock.withLock {
             if (userId != null) {
                 globalParams[AnalyticsParams.USER_ID] = userId
                 userRole?.let { globalParams["user_role"] = it }
@@ -122,18 +123,16 @@ object AppAnalyticsManager : AnalyticsTracker {
     override fun trackEvent(eventName: String, params: Map<String, Any>) {
         checkInitialized()
 
-        val fullParams = synchronized(globalParams) {
-            globalParams.toMutableMap().apply {
+        val (fullParams, targetTrackers) = lock.withLock {
+            val combinedParams = globalParams.toMutableMap().apply {
                 putAll(params)
                 put("timestamp", Clock.System.now().toEpochMilliseconds())
             }
+            val currentTrackers = if (trackers.isNotEmpty()) trackers.toList() else listOf(LogAnalyticsTracker())
+            Pair(combinedParams, currentTrackers)
         }
 
-        val targetTrackers = synchronized(trackers) {
-            if (trackers.isNotEmpty()) trackers.toList() else listOf(LogAnalyticsTracker())
-        }
-
-        // 多渠道 Tracker 隔离分发，避免单渠道异常卡死主流程
+        // 多渠道 Tracker 隔离分发，在持锁区域外异步上报
         scope.launch {
             targetTrackers.forEach { tracker ->
                 runCatching {
@@ -147,7 +146,7 @@ object AppAnalyticsManager : AnalyticsTracker {
 
     override fun flush() {
         checkInitialized()
-        val targetTrackers = synchronized(trackers) { trackers.toList() }
+        val targetTrackers = lock.withLock { trackers.toList() }
         targetTrackers.forEach { tracker ->
             runCatching { tracker.flush() }
         }
