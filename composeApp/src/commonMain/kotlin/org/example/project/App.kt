@@ -35,11 +35,15 @@ import org.example.project.core.network.client.AppNetworkInitializer
 import org.example.project.data.repository.feedline.FeedRepositoryImpl
 import org.example.project.data.repository.feedline.generateUUID
 import org.example.project.domain.model.feedline.FeedLineUser
+import org.example.project.data.repository.wechat.WeChatMpRepositoryImpl
 import org.example.project.presentation.viewmodel.feedline.FeedLineViewModel
+import org.example.project.presentation.viewmodel.wechat.WeChatMpViewModel
 import org.example.project.ui.screens.airbnb.AirbnbMainScreen
 import org.example.project.ui.screens.feedline.FeedScreen
 import org.example.project.ui.screens.instagram.InstagramMainScreen
+import org.example.project.ui.screens.wechat.WeChatMpScreen
 import org.example.project.ui.theme.instagram.InstagramTheme
+import org.example.project.ui.theme.wechat.WeChatTheme
 
 @Composable
 @Preview
@@ -94,6 +98,20 @@ fun App() {
                         Button(onClick = { rootNavController.navigate("airbnb") }) {
                             Text("Airbnb")
                         }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = {
+                                AppAnalyticsManager.trackEvent(
+                                    AnalyticsEvents.WECHAT_MP_OPEN,
+                                    mapOf(
+                                        AnalyticsParams.MODULE_NAME to AnalyticsModules.WECHAT_MP
+                                    )
+                                )
+                                rootNavController.navigate("wechat_mp")
+                            }
+                        ) {
+                            Text("微信公众号 (WeChat)")
+                        }
                     }
                 }
             }
@@ -122,6 +140,21 @@ fun App() {
             }
             composable("airbnb") {
                 AirbnbMainScreen()
+            }
+            composable("wechat_mp") {
+                val viewModel = remember {
+                    val repo = WeChatMpRepositoryImpl(
+                        weChatMpDao = AppDatabaseInitializer.database.weChatMpDao(),
+                        networkContainer = AppNetworkInitializer.container
+                    )
+                    WeChatMpViewModel(repository = repo)
+                }
+                WeChatTheme {
+                    WeChatMpScreen(
+                        viewModel = viewModel,
+                        onBackClick = { rootNavController.popBackStack() }
+                    )
+                }
             }
         }
     }
