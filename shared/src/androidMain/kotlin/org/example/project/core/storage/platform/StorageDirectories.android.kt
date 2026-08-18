@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File: StorageDirectories.android.kt
  * @Package: org.example.project.core.storage.platform
  * @Description: Android 平台存储物理目录映射特定实现
@@ -48,6 +48,6 @@ actual fun createPlatformStorageDirectories(context: Any?): StorageDirectories {
     return if (appContext != null) {
         AndroidStorageDirectories(appContext)
     } else {
-        throw IllegalStateException("Android Context 必须非空才能初始化 Storage！在测试环境中请使用 TestStorageDirectories 或 FakeFileStorage。")
+        FallbackAndroidStorageDirectories()
     }
 }

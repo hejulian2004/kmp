@@ -23,19 +23,17 @@ import coil3.compose.setSingletonImageLoaderFactory
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
-import androidx.compose.runtime.LaunchedEffect
 import org.example.project.core.analytics.AnalyticsEvents
 import org.example.project.core.analytics.AnalyticsModules
 import org.example.project.core.analytics.AnalyticsParams
 import org.example.project.core.analytics.AppAnalyticsManager
 import org.example.project.core.database.AppDatabaseInitializer
-import org.example.project.core.init.AppInitParams
-import org.example.project.core.init.AppInitializer
 import org.example.project.core.network.client.AppNetworkInitializer
+import org.example.project.core.storage.client.AppStorageInitializer
 import org.example.project.data.repository.feedline.FeedRepositoryImpl
 import org.example.project.data.repository.feedline.generateUUID
-import org.example.project.domain.model.feedline.FeedLineUser
 import org.example.project.data.repository.wechat.WeChatMpRepositoryImpl
+import org.example.project.domain.model.feedline.FeedLineUser
 import org.example.project.presentation.viewmodel.feedline.FeedLineViewModel
 import org.example.project.presentation.viewmodel.wechat.WeChatMpViewModel
 import org.example.project.ui.screens.airbnb.AirbnbMainScreen
@@ -45,24 +43,16 @@ import org.example.project.ui.screens.wechat.WeChatMpScreen
 import org.example.project.ui.theme.instagram.InstagramTheme
 import org.example.project.ui.theme.wechat.WeChatTheme
 
+import org.example.project.ui.core.image.createAppImageLoader
+
 @Composable
 @Preview
 fun App() {
-    LaunchedEffect(Unit) {
-        AppInitializer.init(AppInitParams(platformName = "Compose"))
-    }
-
     setSingletonImageLoaderFactory { context ->
-        ImageLoader.Builder(context)
-            .components {
-                add(KtorNetworkFetcherFactory())
-                addPlatformFileSupport()
-            }
-            .crossfade(true)
-            .build()
+        createAppImageLoader(context)
     }
-    Surface(modifier = Modifier.fillMaxSize()) {
 
+    Surface(modifier = Modifier.fillMaxSize()) {
         val rootNavController = rememberNavController()
         NavHost(
             navController = rootNavController,
@@ -145,7 +135,8 @@ fun App() {
                 val viewModel = remember {
                     val repo = WeChatMpRepositoryImpl(
                         weChatMpDao = AppDatabaseInitializer.database.weChatMpDao(),
-                        networkContainer = AppNetworkInitializer.container
+                        networkContainer = AppNetworkInitializer.container,
+                        fileStorage = AppStorageInitializer.container.fileStorage
                     )
                     WeChatMpViewModel(repository = repo)
                 }
