@@ -18,7 +18,7 @@ import org.example.project.core.analytics.AnalyticsEvents
 import org.example.project.core.analytics.AnalyticsParams
 import org.example.project.core.analytics.AppAnalyticsManager
 import org.example.project.core.analytics.LogAnalyticsTracker
-import org.example.project.core.database.getRoomDatabase
+import org.example.project.core.database.AppDatabaseInitializer
 import org.example.project.core.network.client.AppNetworkInitializer
 import org.example.project.core.sdui.repository.SduiLayoutRepositoryImpl
 import org.example.project.core.storage.client.AppStorageInitializer
@@ -161,7 +161,7 @@ object AppInitializer {
 
             // 4. 核心基础设施：Room 本地数据库
             try {
-                getRoomDatabase(params.context)
+                AppDatabaseInitializer.init(params.context)
             } catch (e: Throwable) {
                 val errorMsg = "数据库初始化失败: ${e.message ?: "未知异常"}"
                 failures.add(AppInitFailure("database", errorMsg))
