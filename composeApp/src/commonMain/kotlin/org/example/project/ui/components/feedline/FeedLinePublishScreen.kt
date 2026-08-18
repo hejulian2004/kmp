@@ -147,19 +147,10 @@ fun PublishScreen(
         mode = FileKitMode.Multiple(maxItems = remainingMediaSpace),
         onResult = { files ->
             files?.let { list ->
-                val newMedia = list.map { file ->
-                    val filePath = file.path
-                    val fileName = file.name
-                    val isVideo = fileName.endsWith(".mp4", ignoreCase = true) ||
-                            fileName.endsWith(".mov", ignoreCase = true) ||
-                            fileName.endsWith(".mkv", ignoreCase = true)
-                    if (isVideo) {
-                        FeedLineMedia.Video(coverUrl = filePath, videoUrl = filePath)
-                    } else {
-                        FeedLineMedia.Image(url = filePath)
-                    }
+                coroutineScope.launch {
+                    val newMedia = list.map { file -> org.example.project.ui.utils.persistPickedMedia(file) }
+                    selectedMedia = (selectedMedia + newMedia).take(9)
                 }
-                selectedMedia = (selectedMedia + newMedia).take(9)
             }
         }
     )
@@ -169,9 +160,10 @@ fun PublishScreen(
         type = CameraMediaType.Photo,
         onResult = { file ->
             file?.let {
-                val filePath = it.path
-                val newMedia = FeedLineMedia.Image(url = filePath)
-                selectedMedia = (selectedMedia + newMedia).take(9)
+                coroutineScope.launch {
+                    val newMedia = org.example.project.ui.utils.persistPickedMedia(it)
+                    selectedMedia = (selectedMedia + newMedia).take(9)
+                }
             }
         }
     )
@@ -181,9 +173,10 @@ fun PublishScreen(
         type = CameraMediaType.Video,
         onResult = { file ->
             file?.let {
-                val filePath = it.path
-                val newMedia = FeedLineMedia.Video(coverUrl = filePath, videoUrl = filePath)
-                selectedMedia = (selectedMedia + newMedia).take(9)
+                coroutineScope.launch {
+                    val newMedia = org.example.project.ui.utils.persistPickedMedia(it)
+                    selectedMedia = (selectedMedia + newMedia).take(9)
+                }
             }
         }
     )

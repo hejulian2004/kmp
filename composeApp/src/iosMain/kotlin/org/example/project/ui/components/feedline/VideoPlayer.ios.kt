@@ -26,11 +26,17 @@ actual fun VideoPlayer(
     videoUrl: String,
     modifier: Modifier
 ) {
-    val player = remember(videoUrl) {
-        val url = if (videoUrl.startsWith("http://") || videoUrl.startsWith("https://")) {
-            NSURL.URLWithString(videoUrl)
+    var resolvedUrl by remember(videoUrl) { mutableStateOf(videoUrl) }
+
+    LaunchedEffect(videoUrl) {
+        resolvedUrl = org.example.project.ui.core.video.AppVideoCacheManager.getPlayableVideoUrl(videoUrl)
+    }
+
+    val player = remember(resolvedUrl) {
+        val url = if (resolvedUrl.startsWith("http://") || resolvedUrl.startsWith("https://")) {
+            NSURL.URLWithString(resolvedUrl)
         } else {
-            NSURL.fileURLWithPath(videoUrl)
+            NSURL.fileURLWithPath(resolvedUrl)
         }
         url?.let { AVPlayer.playerWithURL(it) }
     }
