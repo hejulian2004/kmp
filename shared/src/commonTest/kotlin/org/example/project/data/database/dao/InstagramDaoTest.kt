@@ -9,7 +9,7 @@ package org.example.project.data.database.dao
 
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import org.example.project.data.database.dao.instagram.InstagramDaoImpl
+import org.example.project.core.database.FakeInstagramDao
 import org.example.project.data.database.entity.instagram.InstagramPostEntity
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -17,11 +17,11 @@ import kotlin.test.assertEquals
 
 class InstagramDaoTest {
 
-    private lateinit var dao: InstagramDaoImpl
+    private lateinit var dao: FakeInstagramDao
 
     @BeforeTest
     fun setUp() = runTest {
-        dao = InstagramDaoImpl()
+        dao = FakeInstagramDao()
         dao.clearAll()
     }
 

@@ -9,7 +9,7 @@ package org.example.project.data.repository.feedline
 
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import org.example.project.data.database.dao.feedline.FeedLineDaoImpl
+import org.example.project.core.database.FakeFeedLineDao
 import org.example.project.domain.model.feedline.FeedLineMedia
 import org.example.project.domain.model.feedline.FeedLineNotification
 import org.example.project.domain.model.feedline.FeedLinePost
@@ -23,7 +23,7 @@ class FeedRepositoryImplTest {
 
     @Test
     fun testCreatePostSavesToDatabaseSuccessfully() = runTest {
-        val mockDao = FeedLineDaoImpl()
+        val mockDao = FakeFeedLineDao()
         val repository = FeedRepositoryImpl(feedLineDao = mockDao)
 
         val testUser = FeedLineUser(
@@ -60,7 +60,7 @@ class FeedRepositoryImplTest {
 
     @Test
     fun testPostsPersistAcrossAppRestarts() = runTest {
-        val daoInstance1 = FeedLineDaoImpl()
+        val daoInstance1 = FakeFeedLineDao()
         val repository1 = FeedRepositoryImpl(feedLineDao = daoInstance1)
 
         val testUser = FeedLineUser(id = "u_restart", name = "重启测试用户", avatarUrl = "")
@@ -80,7 +80,7 @@ class FeedRepositoryImplTest {
 
     @Test
     fun testNotificationPersistenceAndReadStatus() = runTest {
-        val dao1 = FeedLineDaoImpl()
+        val dao1 = FakeFeedLineDao()
         val repo1 = FeedRepositoryImpl(feedLineDao = dao1)
 
         val user = FeedLineUser("u_notify", "通知用户", "")

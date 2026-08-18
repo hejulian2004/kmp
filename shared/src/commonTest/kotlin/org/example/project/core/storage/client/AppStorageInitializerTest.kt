@@ -33,7 +33,7 @@ class AppStorageInitializerTest {
     }
 
     @Test
-    fun testStorageInitializerInitAndContainer() {
+    fun testStorageInitializerInitAndContainer() = runTest {
         val testDirs = TestStorageDirectories()
         AppStorageInitializer.init(testDirs)
 
@@ -44,7 +44,7 @@ class AppStorageInitializerTest {
     }
 
     @Test
-    fun testReInitReturnsSameContainer() {
+    fun testReInitReturnsSameContainer() = runTest {
         val testDirs = TestStorageDirectories()
         AppStorageInitializer.init(testDirs)
         val container1 = AppStorageInitializer.container
@@ -60,7 +60,7 @@ class AppStorageInitializerTest {
         val testDirs = TestStorageDirectories()
         val deferreds = (1..10).map {
             async {
-                AppStorageInitializer.initSuspending(testDirs)
+                AppStorageInitializer.init(testDirs)
             }
         }
         deferreds.awaitAll()
