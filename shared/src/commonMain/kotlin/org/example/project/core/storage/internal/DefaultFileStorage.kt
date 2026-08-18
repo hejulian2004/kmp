@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File: DefaultFileStorage.kt
  * @Package: org.example.project.core.storage.internal
  * @Description: 应用统一文件存储 Core 核心实现类 (Storage V1 Area-Level 并发模型)
@@ -131,6 +131,33 @@ class DefaultFileStorage internal constructor(
             val childPaths = driver.list(rootPath)
             childPaths.forEach { child ->
                 driver.delete(child)
+            }
+        }
+    }
+
+    override suspend fun copyFile(
+        area: StorageArea,
+        path: StoragePath,
+        sourceAbsolutePath: String,
+        bufferSizeBytes: Int
+    ): Unit = withContext(Dispatchers.IO) {
+        val targetPath = resolver.resolve(area, path, allowEmpty = false)
+        val tempPath = Path("${targetPath}${StorageConstants.TEMP_SUFFIX}")
+        val sourcePath = Path(sourceAbsolutePath)
+
+        areaMutexes.getValue(area).withLock {
+            try {
+                driver.copyStream(sourcePath, tempPath, bufferSizeBytes)
+                driver.atomicMove(tempPath, targetPath)
+            } catch (e: Exception) {
+                if (driver.exists(tempPath)) {
+                    driver.delete(tempPath)
+                }
+                if (e is StorageException) {
+                    throw e
+                } else {
+                    throw StorageException(StorageError.IoError("Atomic stream copy failed: ${e.message}"), cause = e)
+                }
             }
         }
     }

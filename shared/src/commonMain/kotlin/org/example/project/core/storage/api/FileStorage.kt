@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File: FileStorage.kt
  * @Package: org.example.project.core.storage.api
  * @Description: 应用统一文件存储基础契约接口
@@ -98,5 +98,20 @@ interface FileStorage {
      */
     suspend fun clear(
         area: StorageArea
+    )
+
+    /**
+     * 将外部物理文件以流式分块（Buffer）原子复制至指定存储区域与相对路径。
+     * 
+     * @param area 目标逻辑存储区域
+     * @param path 目标逻辑相对路径
+     * @param sourceAbsolutePath 来源物理文件的绝对路径
+     * @param bufferSizeBytes 复制缓冲区大小，默认 64KB
+     */
+    suspend fun copyFile(
+        area: StorageArea,
+        path: StoragePath,
+        sourceAbsolutePath: String,
+        bufferSizeBytes: Int = 64 * 1024
     )
 }
