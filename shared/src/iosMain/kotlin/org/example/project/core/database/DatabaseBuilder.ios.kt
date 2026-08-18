@@ -27,20 +27,12 @@ fun getIosDatabaseBuilder(): RoomDatabase.Builder<AppDatabase> {
     val dbFilePath = requireNotNull(documentDirectory?.path) + "/app_database.db"
     return Room.databaseBuilder<AppDatabase>(
         name = dbFilePath
-    )
+    ).setDriver(androidx.sqlite.driver.bundled.BundledSQLiteDriver())
 }
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun getRoomDatabase(context: Any?): AppDatabase {
-    val documentDirectory = NSFileManager.defaultManager.URLForDirectory(
-        directory = NSDocumentDirectory,
-        inDomain = NSUserDomainMask,
-        appropriateForURL = null,
-        create = true,
-        error = null
-    )
-    val dbFilePath = requireNotNull(documentDirectory?.path) + "/app_database.db"
-    return RealSqliteAppDatabase(dbFilePath)
+    return getRoomDatabase(getIosDatabaseBuilder())
 }
 
 actual fun getTestDatabasePath(dbName: String): String {
@@ -51,5 +43,5 @@ actual fun getTestDatabasePath(dbName: String): String {
 actual fun getTestDatabaseBuilder(dbPath: String): RoomDatabase.Builder<AppDatabase> {
     return Room.databaseBuilder<AppDatabase>(
         name = dbPath
-    )
+    ).setDriver(androidx.sqlite.driver.bundled.BundledSQLiteDriver())
 }

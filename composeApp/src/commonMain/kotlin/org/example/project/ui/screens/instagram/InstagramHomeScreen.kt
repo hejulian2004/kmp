@@ -58,6 +58,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
+import org.example.project.domain.model.instagram.InstagramMedia
+import org.example.project.domain.model.instagram.ProfileUser
 import kotlinx.coroutines.launch
 import org.example.project.data.repository.instagram.InstagramHomeRepositoryImpl
 import org.example.project.data.repository.instagram.createFakeInstagramPosts
@@ -469,10 +471,18 @@ fun InstagramHomeScreen(
 @Composable
 fun InstagramHomeScreenPreview() {
     InstagramTheme {
-        val db = org.example.project.core.database.RealSqliteAppDatabase(org.example.project.core.database.getTestDatabasePath("preview_insta"))
-        val mockRepo = object : InstagramHomeRepository by InstagramHomeRepositoryImpl(instagramDao = db.instagramDao()) {
+        val mockRepo = object : InstagramHomeRepository {
             override fun getHomePosts() = flowOf(createFakeInstagramPosts())
             override fun getStories() = flowOf(createFakeInstagramStories())
+            override suspend fun refreshHome() {}
+            override suspend fun likePost(postId: String, currentUser: ProfileUser) {}
+            override suspend fun unlikePost(postId: String, currentUser: ProfileUser) {}
+            override suspend fun savePost(postId: String) {}
+            override suspend fun unsavePost(postId: String) {}
+            override suspend fun addComment(postId: String, currentUser: ProfileUser, content: String) {}
+            override suspend fun deleteComment(postId: String, commentId: String) {}
+            override suspend fun deletePost(postId: String) {}
+            override suspend fun createPost(user: ProfileUser, content: String, mediaList: List<InstagramMedia>, location: String?) {}
         }
 
         InstagramHomeScreen(
