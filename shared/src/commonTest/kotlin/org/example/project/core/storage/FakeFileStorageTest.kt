@@ -79,4 +79,39 @@ class FakeFileStorageTest {
         }
         assertEquals(StorageError.NotFound, ex.error)
     }
+
+    @Test
+    fun testNestedListDirectChildrenOnly() = runTest {
+        val path1 = StoragePath("foo/a.txt")
+        val path2 = StoragePath("foo/bar/b.txt")
+        storage.write(StorageArea.PERSISTENT, path1, "a".encodeToByteArray(), WriteMode.OVERWRITE)
+        storage.write(StorageArea.PERSISTENT, path2, "b".encodeToByteArray(), WriteMode.OVERWRITE)
+
+        val list = storage.list(StorageArea.PERSISTENT, StoragePath("foo"))
+        assertEquals(2, list.size)
+
+        val names = list.map { it.path.value }
+        assertTrue(names.contains("foo/a.txt"))
+        assertTrue(names.contains("foo/bar"))
+    }
+
+    @Test
+    fun testByteArrayMutationIsolation() = runTest {
+        val path = StoragePath("test/bytes.bin")
+        val original = byteArrayOf(1, 2, 3)
+        storage.write(StorageArea.CACHE, path, original, WriteMode.OVERWRITE)
+
+        // 修改原始 ByteArray
+        original[0] = 99
+
+        val readBytes = storage.read(StorageArea.CACHE, path)
+        assertEquals(1, readBytes[0], "修改外部 ByteArray 不应改变 FakeStorage 内部保存的数据")
+    }
+
+    @Test
+    fun testEmptyPathForbidden() = runTest {
+        assertFailsWith<StorageException> {
+            storage.write(StorageArea.PERSISTENT, StoragePath(""), "test".encodeToByteArray(), WriteMode.OVERWRITE)
+        }
+    }
 }
