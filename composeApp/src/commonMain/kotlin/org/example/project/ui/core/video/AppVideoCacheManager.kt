@@ -65,8 +65,6 @@ object AppVideoCacheManager {
             }
         }
 
-        // 未命中本地缓存，后台静默预下载
-        preloadVideo(videoUrl)
         return@withContext videoUrl
     }
 
