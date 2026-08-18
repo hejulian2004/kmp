@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File: AppStorageInitializer.kt
  * @Package: org.example.project.core.storage.client
  * @Description: 应用文件存储统一单例初始化器
@@ -49,7 +49,10 @@ object AppStorageInitializer {
             if (_container != null) return@withLock
             val directories = createPlatformStorageDirectories(context)
             val fileStorage = DefaultFileStorage(directories = directories)
-            _container = DefaultStorageContainer(fileStorage = fileStorage)
+            _container = DefaultStorageContainer(
+                fileStorage = fileStorage,
+                directories = directories
+            )
         }
     }
 

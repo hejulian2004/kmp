@@ -2,9 +2,12 @@ package org.example.project
 
 import androidx.compose.ui.window.ComposeUIViewController
 import org.example.project.core.init.AppInitParams
-import org.example.project.core.init.AppInitializer
+import org.example.project.ui.components.StartupGate
 
 fun MainViewController() = ComposeUIViewController {
-    AppInitializer.init(AppInitParams(platformName = "iOS"))
-    App()
+    StartupGate(
+        initParams = AppInitParams(platformName = "iOS")
+    ) {
+        App()
+    }
 }

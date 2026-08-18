@@ -1,9 +1,9 @@
 /**
  * @File: MainActivity.kt
  * @Package: org.example.project
- * @Description: Android 应用主 Activity 入口（配置高刷新率 120Hz 申请与降级策略）
+ * @Description: Android 应用主 Activity 入口（配置高刷新率 120Hz 申请与 StartupGate 启动拦截）
  * @Author: 何聚敛
- * @Date: 2026-08-10
+ * @Date: 2026-08-18
  */
 package org.example.project
 
@@ -20,10 +20,8 @@ import coil3.request.crossfade
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import io.github.vinceglb.filekit.dialogs.init
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
 import org.example.project.core.init.AppInitParams
-import org.example.project.core.init.AppInitializer
+import org.example.project.ui.components.StartupGate
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,27 +29,22 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         requestHighRefreshRate()
         FileKit.init(this)
-        lifecycleScope.launch {
-            AppInitializer.init(
-                AppInitParams(
+
+        SingletonImageLoader.setSafe { context ->
+            org.example.project.ui.core.image.createAppImageLoader(context)
+        }
+
+        setContent {
+            StartupGate(
+                initParams = AppInitParams(
                     context = applicationContext,
                     platformName = "Android",
                     appVersion = "1.0.0",
                     deviceId = Build.MODEL
                 )
-            )
-        }
-        SingletonImageLoader.setSafe { context ->
-            ImageLoader.Builder(context)
-                .components {
-                    add(KtorNetworkFetcherFactory())
-                    addPlatformFileSupport()
-                }
-                .crossfade(true)
-                .build()
-        }
-        setContent {
-            App()
+            ) {
+                App()
+            }
         }
     }
 
