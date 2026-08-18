@@ -32,6 +32,7 @@ import org.example.project.presentation.effect.wechat.WeChatMpEffect
 import org.example.project.presentation.intent.wechat.WeChatMpIntent
 import org.example.project.presentation.state.RefreshState
 import org.example.project.presentation.state.UiState
+import org.example.project.core.storage.client.AppStorageInitializer
 import org.example.project.presentation.state.wechat.WeChatMpUiState
 
 /**
@@ -42,7 +43,10 @@ import org.example.project.presentation.state.wechat.WeChatMpUiState
 class WeChatMpViewModel(
     private val repository: WeChatMpRepository = WeChatMpRepositoryImpl(
         weChatMpDao = AppDatabaseInitializer.database.weChatMpDao(),
-        networkContainer = AppNetworkInitializer.container
+        networkContainer = AppNetworkInitializer.container,
+        fileStorage = try {
+            if (AppStorageInitializer.isInitialized) AppStorageInitializer.container.fileStorage else null
+        } catch (_: Exception) { null }
     )
 ) : ViewModel() {
 
