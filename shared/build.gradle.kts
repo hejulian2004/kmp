@@ -143,6 +143,7 @@ val generateSduiJsonTask = tasks.register("generateSduiJson") {
         var feedlineVersion = "v1.0.0"
         var instagramVersion = "v1.0.0"
         var airbnbVersion = "v1.0.0"
+        var wechatMpVersion = "v1.0.0"
 
         if (versionConfigFile.exists()) {
             val configContent = versionConfigFile.readText()
@@ -155,16 +156,21 @@ val generateSduiJsonTask = tasks.register("generateSduiJson") {
             Regex("""MODULE_AIRBNB_VERSION\s*=\s*"([^"]+)"""").find(configContent)?.let {
                 airbnbVersion = it.groupValues[1]
             }
+            Regex("""MODULE_WECHAT_MP_VERSION\s*=\s*"([^"]+)"""").find(configContent)?.let {
+                wechatMpVersion = it.groupValues[1]
+            }
         }
 
         // 导出格式：组件名_版本号_导出时间.json
         val feedlineFileName = "FeedLine_${feedlineVersion}_${timestamp}.json"
         val instagramFileName = "Instagram_${instagramVersion}_${timestamp}.json"
         val airbnbFileName = "Airbnb_${airbnbVersion}_${timestamp}.json"
+        val wechatMpFileName = "WeChatMp_${wechatMpVersion}_${timestamp}.json"
 
         val feedlineFile = File(targetDir, feedlineFileName)
         val instagramFile = File(targetDir, instagramFileName)
         val airbnbFile = File(targetDir, airbnbFileName)
+        val wechatMpFile = File(targetDir, wechatMpFileName)
 
         // 写入 FeedLine 模块 JSON 内容
         val feedlineJsonContent = """
@@ -262,6 +268,41 @@ val generateSduiJsonTask = tasks.register("generateSduiJson") {
             }
         """.trimIndent()
 
+        // 写入 WeChatMp 微信公众号模块 JSON 内容
+        val wechatMpJsonContent = """
+            {
+              "componentType": "LazyVerticalStaggeredGrid",
+              "properties": { "version": "$wechatMpVersion", "exportedAt": "$timestamp", "columns": "2" },
+              "children": [
+                {
+                  "componentType": "WeChatMpTopBar",
+                  "properties": { "title": "公众号", "version": "v1.0.0" },
+                  "actions": {
+                    "onBackClick": { "type": "NAVIGATE_BACK" },
+                    "onSearchClick": { "type": "OPEN_SEARCH" },
+                    "onProfileClick": { "type": "OPEN_PROFILE" }
+                  }
+                },
+                {
+                  "componentType": "WeChatMpFrequentlyReadBar",
+                  "properties": { "title": "常读", "version": "v1.0.0" }
+                },
+                {
+                  "componentType": "WeChatMpFeaturedBannerCard",
+                  "properties": { "version": "v1.0.0" }
+                },
+                {
+                  "componentType": "WeChatMpHorizontalCard",
+                  "properties": { "version": "v1.0.0" }
+                },
+                {
+                  "componentType": "WeChatMpWaterfallCard",
+                  "properties": { "version": "v1.0.0" }
+                }
+              ]
+            }
+        """.trimIndent()
+
         val subComponentsDir = File(targetDir, "components")
         if (!subComponentsDir.exists()) {
             subComponentsDir.mkdirs()
@@ -271,6 +312,7 @@ val generateSduiJsonTask = tasks.register("generateSduiJson") {
         feedlineFile.writeText(feedlineJsonContent)
         instagramFile.writeText(instagramJsonContent)
         airbnbFile.writeText(airbnbJsonContent)
+        wechatMpFile.writeText(wechatMpJsonContent)
 
         // 2. 导出单组件独立 JSON (格式：单组件名_版本号_导出时间.json)
         val topBarComponentFile = File(subComponentsDir, "FeedLineTopBar_v1.0.0_${timestamp}.json")
@@ -296,12 +338,27 @@ val generateSduiJsonTask = tasks.register("generateSduiJson") {
             }
         """.trimIndent())
 
+        val wechatTopBarComponentFile = File(subComponentsDir, "WeChatMpTopBar_v1.0.0_${timestamp}.json")
+        wechatTopBarComponentFile.writeText("""
+            {
+              "componentType": "WeChatMpTopBar",
+              "properties": { "title": "公众号", "version": "v1.0.0" },
+              "actions": {
+                "onBackClick": { "type": "NAVIGATE_BACK" },
+                "onSearchClick": { "type": "OPEN_SEARCH" },
+                "onProfileClick": { "type": "OPEN_PROFILE" }
+              }
+            }
+        """.trimIndent())
+
         println("[SDUI] 编译产出热更 JSON 文件成功:")
         println("  [模块聚合 JSON] -> ${feedlineFile.absolutePath}")
         println("  [模块聚合 JSON] -> ${instagramFile.absolutePath}")
         println("  [模块聚合 JSON] -> ${airbnbFile.absolutePath}")
+        println("  [模块聚合 JSON] -> ${wechatMpFile.absolutePath}")
         println("  [单组件独立 JSON] -> ${topBarComponentFile.absolutePath}")
         println("  [单组件独立 JSON] -> ${airbnbTopBarComponentFile.absolutePath}")
+        println("  [单组件独立 JSON] -> ${wechatTopBarComponentFile.absolutePath}")
     }
 }
 

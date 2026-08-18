@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File: SduiVersionConfig.kt
  * @Package: org.example.project.core.sdui.config
  * @Description: SDUI大组件与小组件版本号集中统一配置文件
@@ -69,5 +69,16 @@ object SduiVersionConfig {
     const val AIRBNB_AVATAR_SECTION_VERSION = "v1.0.0"
     const val AIRBNB_PROFILE_FIELD_ITEM_VERSION = "v1.0.0"
     const val AIRBNB_TOGGLE_ITEM_VERSION = "v1.0.0"
+
+    // ==========================================
+    // 5. WeChatMp微信公众号模块下属子组件版本号 (WeChatMp Sub-Components)
+    // ==========================================
+    const val MODULE_WECHAT_MP_VERSION = "v1.0.0"
+    const val WECHAT_MP_TOPBAR_VERSION = "v1.0.0"
+    const val WECHAT_MP_FREQUENTLY_READ_VERSION = "v1.0.0"
+    const val WECHAT_MP_FEATURED_BANNER_VERSION = "v1.0.0"
+    const val WECHAT_MP_HORIZONTAL_CARD_VERSION = "v1.0.0"
+    const val WECHAT_MP_WATERFALL_CARD_VERSION = "v1.0.0"
+    const val WECHAT_MP_DISLIKE_SHEET_VERSION = "v1.0.0"
 }
 
