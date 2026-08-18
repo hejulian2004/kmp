@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File: FakeFileStorage.kt
  * @Package: org.example.project.core.storage.testing
  * @Description: 内存 Map 实现的 FakeFileStorage，供 Repository 与 Domain 单元测试消费
@@ -134,5 +134,14 @@ class FakeFileStorage : FileStorage {
         mapMutex.withLock {
             storageMap.keys.removeAll { it.area == area }
         }
+    }
+
+    override suspend fun copyFile(
+        area: StorageArea,
+        path: StoragePath,
+        sourceAbsolutePath: String,
+        bufferSizeBytes: Int
+    ) {
+        write(area, path, "fake_stream_copied_data".encodeToByteArray())
     }
 }

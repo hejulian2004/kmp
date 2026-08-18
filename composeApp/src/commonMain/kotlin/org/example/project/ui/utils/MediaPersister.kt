@@ -32,22 +32,44 @@ suspend fun persistPickedMedia(file: PlatformFile): FeedLineMedia {
     val targetFileName = "${generateUUID()}.$extension"
     val relativePath = StoragePath("feedline/media/$targetFileName")
 
+    val fileStorage = AppStorageInitializer.container.fileStorage
+    val persistentRoot = AppStorageInitializer.container.directories.persistent
+    val persistentPath = "$persistentRoot/feedline/media/$targetFileName"
+
+    val sourcePath = file.path
+    if (!sourcePath.isNullOrBlank()) {
+        try {
+            fileStorage.copyFile(
+                area = StorageArea.PERSISTENT,
+                path = relativePath,
+                sourceAbsolutePath = sourcePath,
+                bufferSizeBytes = 128 * 1024
+            )
+            return if (isVideo) {
+                FeedLineMedia.Video(coverUrl = persistentPath, videoUrl = persistentPath)
+            } else {
+                FeedLineMedia.Image(url = persistentPath)
+            }
+        } catch (_: Throwable) {
+            // 流式复制失败时继续回退
+        }
+    }
+
     return try {
         val bytes = file.readBytes()
         if (bytes.isNotEmpty()) {
-            AppStorageInitializer.container.fileStorage.write(
+            fileStorage.write(
                 area = StorageArea.PERSISTENT,
                 path = relativePath,
                 data = bytes
             )
-            val persistentPath = "${AppStorageInitializer.container.directories.persistent}/feedline/media/$targetFileName"
             if (isVideo) {
                 FeedLineMedia.Video(coverUrl = persistentPath, videoUrl = persistentPath)
             } else {
                 FeedLineMedia.Image(url = persistentPath)
             }
         } else {
-            val fallbackPath = file.path ?: ""
+            val fallbackPath = file.path
             if (isVideo) {
                 FeedLineMedia.Video(coverUrl = fallbackPath, videoUrl = fallbackPath)
             } else {
@@ -55,7 +77,7 @@ suspend fun persistPickedMedia(file: PlatformFile): FeedLineMedia {
             }
         }
     } catch (_: Throwable) {
-        val fallbackPath = file.path ?: ""
+        val fallbackPath = file.path
         if (isVideo) {
             FeedLineMedia.Video(coverUrl = fallbackPath, videoUrl = fallbackPath)
         } else {
