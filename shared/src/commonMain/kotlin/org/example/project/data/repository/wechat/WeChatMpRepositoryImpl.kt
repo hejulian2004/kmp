@@ -1,7 +1,7 @@
 /**
  * @File: WeChatMpRepositoryImpl.kt
  * @Package: org.example.project.data.repository.wechat
- * @Description: 微信公众号数据仓库实现类（结合AppMockConfig假数据开关、Room KMP与FileStorage文件缓存）
+ * @Description: 微信公众号数据仓库实现类（结合AppMockConfig假数据开关、Room KMP、FileStorage文件缓存与负反馈持久化）
  * @Author: 何聚敛
  * @Date: 2026-08-18
  */
@@ -9,6 +9,7 @@ package org.example.project.data.repository.wechat
 
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -18,6 +19,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -28,6 +31,7 @@ import org.example.project.core.network.config.ApiEndpoints
 import org.example.project.core.storage.api.FileStorage
 import org.example.project.core.storage.api.StorageArea
 import org.example.project.core.storage.api.StoragePath
+import org.example.project.core.storage.api.WriteMode
 import org.example.project.data.database.dao.wechat.WeChatMpDao
 import org.example.project.data.database.entity.wechat.WeChatArticleEntity
 import org.example.project.domain.model.wechat.WeChatAccount
@@ -36,6 +40,13 @@ import org.example.project.domain.model.wechat.WeChatCardType
 import org.example.project.domain.repository.wechat.WeChatMpRepository
 import org.example.project.platform.currentTimeMillis
 import kotlin.random.Random
+
+@Serializable
+data class WeChatDislikeRecord(
+    val articleId: String,
+    val reason: String,
+    val createdAt: Long
+)
 
 @Serializable
 private data class WeChatMpCacheSnapshot(
@@ -47,7 +58,8 @@ private data class WeChatMpCacheSnapshot(
 class WeChatMpRepositoryImpl(
     private val weChatMpDao: WeChatMpDao,
     private val networkContainer: NetworkContainer? = null,
-    private val fileStorage: FileStorage? = null
+    private val fileStorage: FileStorage? = null,
+    coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : WeChatMpRepository {
 
     private val isMockActive: Boolean
@@ -55,7 +67,11 @@ class WeChatMpRepositoryImpl(
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true; prettyPrint = false }
     private val cachePath = StoragePath("wechat_mp/articles_cache.json")
-    private val scope = CoroutineScope(Dispatchers.Default)
+    private val dislikesStoragePath = StoragePath("wechat_mp/dislikes.json")
+    private val scope = CoroutineScope(coroutineDispatcher)
+
+    private val dislikesMutex = Mutex()
+    private val dislikedArticleIds = mutableSetOf<String>()
 
     private val accountsFlow = MutableStateFlow<List<WeChatAccount>>(
         if (isMockActive) createMockWeChatAccounts() else emptyList()
@@ -69,44 +85,93 @@ class WeChatMpRepositoryImpl(
 
     init {
         scope.launch {
+            // 1. 优先加载已持久化的“不感兴趣”记录
+            loadDislikesFromStorage()
+
             val existingArticles = weChatMpDao.observeWaterfallArticles().first()
+                .map { it.toDomainModel() }
+                .filterNot { isDisliked(it.id) }
             val existingFeatured = weChatMpDao.observeFeaturedArticle().first()
+                ?.toDomainModel()
+                ?.takeUnless { isDisliked(it.id) }
 
             if (existingArticles.isEmpty() && existingFeatured == null) {
                 // 优先尝试从 FileStorage 文件磁盘缓存中读取快照
                 val cachedSnapshot = loadFromDiskCache()
                 if (cachedSnapshot != null) {
+                    val filteredFeatured = cachedSnapshot.featuredArticle?.takeUnless { isDisliked(it.id) }
+                    val filteredWaterfall = cachedSnapshot.waterfallArticles.filterNot { isDisliked(it.id) }
+
                     accountsFlow.value = cachedSnapshot.accounts
-                    featuredFlow.value = cachedSnapshot.featuredArticle
-                    waterfallFlow.value = cachedSnapshot.waterfallArticles
+                    featuredFlow.value = filteredFeatured
+                    waterfallFlow.value = filteredWaterfall
 
                     val entities = buildList {
-                        cachedSnapshot.featuredArticle?.let { add(WeChatArticleEntity.fromDomainModel(it)) }
-                        addAll(cachedSnapshot.waterfallArticles.map { WeChatArticleEntity.fromDomainModel(it) })
+                        filteredFeatured?.let { add(WeChatArticleEntity.fromDomainModel(it)) }
+                        addAll(filteredWaterfall.map { WeChatArticleEntity.fromDomainModel(it) })
                     }
                     weChatMpDao.insertArticles(entities)
                 } else if (isMockActive) {
                     // 无本地文件缓存且处于 Mock 模式时采用预置 Mock 种子数据并落地写入文件缓存
-                    val currentFeatured = featuredFlow.value ?: createMockFeaturedArticle()
-                    val currentWaterfall = waterfallFlow.value.ifEmpty { createMockWaterfallArticles() }
+                    val currentFeatured = (featuredFlow.value ?: createMockFeaturedArticle()).takeUnless { isDisliked(it.id) }
+                    val currentWaterfall = (waterfallFlow.value.ifEmpty { createMockWaterfallArticles() }).filterNot { isDisliked(it.id) }
                     featuredFlow.value = currentFeatured
                     waterfallFlow.value = currentWaterfall
 
-                    weChatMpDao.insertArticles(
-                        listOf(WeChatArticleEntity.fromDomainModel(currentFeatured)) +
-                        currentWaterfall.map { WeChatArticleEntity.fromDomainModel(it) }
-                    )
+                    val entities = buildList {
+                        currentFeatured?.let { add(WeChatArticleEntity.fromDomainModel(it)) }
+                        addAll(currentWaterfall.map { WeChatArticleEntity.fromDomainModel(it) })
+                    }
+                    weChatMpDao.insertArticles(entities)
                     saveToDiskCache(accountsFlow.value, currentFeatured, currentWaterfall)
                 }
             } else {
                 if (existingFeatured != null) {
-                    featuredFlow.value = existingFeatured.toDomainModel()
+                    featuredFlow.value = existingFeatured
                 }
                 if (existingArticles.isNotEmpty()) {
-                    waterfallFlow.value = existingArticles.map { it.toDomainModel() }
+                    waterfallFlow.value = existingArticles
                 }
             }
         }
+    }
+
+    private suspend fun loadDislikesFromStorage() {
+        val storage = fileStorage ?: return
+        dislikesMutex.withLock {
+            runCatching {
+                if (storage.exists(StorageArea.PERSISTENT, dislikesStoragePath)) {
+                    val bytes = storage.read(StorageArea.PERSISTENT, dislikesStoragePath)
+                    val records = json.decodeFromString<List<WeChatDislikeRecord>>(bytes.decodeToString())
+                    dislikedArticleIds.clear()
+                    dislikedArticleIds.addAll(records.map { it.articleId })
+                }
+            }
+        }
+    }
+
+    private suspend fun appendDislikeRecordToStorage(record: WeChatDislikeRecord) {
+        val storage = fileStorage ?: return
+        dislikesMutex.withLock {
+            runCatching {
+                val currentRecords = if (storage.exists(StorageArea.PERSISTENT, dislikesStoragePath)) {
+                    val bytes = storage.read(StorageArea.PERSISTENT, dislikesStoragePath)
+                    json.decodeFromString<List<WeChatDislikeRecord>>(bytes.decodeToString()).toMutableList()
+                } else {
+                    mutableListOf()
+                }
+                currentRecords.removeAll { it.articleId == record.articleId }
+                currentRecords.add(record)
+                dislikedArticleIds.add(record.articleId)
+
+                val bytes = json.encodeToString(currentRecords).encodeToByteArray()
+                storage.write(StorageArea.PERSISTENT, dislikesStoragePath, bytes, WriteMode.ATOMIC)
+            }
+        }
+    }
+
+    private fun isDisliked(articleId: String): Boolean {
+        return dislikedArticleIds.contains(articleId)
     }
 
     private suspend fun loadFromDiskCache(): WeChatMpCacheSnapshot? {
@@ -128,7 +193,7 @@ class WeChatMpRepositoryImpl(
         runCatching {
             val snapshot = WeChatMpCacheSnapshot(accounts, featured, waterfall)
             val bytes = json.encodeToString(snapshot).encodeToByteArray()
-            storage.write(StorageArea.CACHE, cachePath, bytes)
+            storage.write(StorageArea.CACHE, cachePath, bytes, WriteMode.ATOMIC)
         }
     }
 
@@ -136,17 +201,19 @@ class WeChatMpRepositoryImpl(
 
     override fun observeFeaturedArticle(): Flow<WeChatArticle?> {
         return weChatMpDao.observeFeaturedArticle().map { entity ->
-            entity?.toDomainModel() ?: featuredFlow.value
+            val model = entity?.toDomainModel() ?: featuredFlow.value
+            model?.takeUnless { isDisliked(it.id) }
         }
     }
 
     override fun observeWaterfallArticles(): Flow<List<WeChatArticle>> {
         return weChatMpDao.observeWaterfallArticles().map { entities ->
-            if (entities.isEmpty()) {
+            val list = if (entities.isEmpty()) {
                 waterfallFlow.value
             } else {
                 entities.map { it.toDomainModel() }
             }
+            list.filterNot { isDisliked(it.id) }
         }
     }
 
@@ -159,27 +226,34 @@ class WeChatMpRepositoryImpl(
                 }
                 accountsFlow.value = refreshedAccounts
 
-                val newFeatured = createMockFeaturedArticle().copy(
+                val rawFeatured = createMockFeaturedArticle().copy(
                     publishTimestamp = currentTimeMillis(),
                     readCount = (30000..90000).random()
                 )
+                val newFeatured = rawFeatured.takeUnless { isDisliked(it.id) }
                 featuredFlow.value = newFeatured
 
-                val currentWaterfall = createMockWaterfallArticles().shuffled()
+                val currentWaterfall = createMockWaterfallArticles()
+                    .shuffled()
+                    .filterNot { isDisliked(it.id) }
                 waterfallFlow.value = currentWaterfall
 
                 weChatMpDao.clearAll()
-                weChatMpDao.insertArticles(
-                    listOf(WeChatArticleEntity.fromDomainModel(newFeatured)) +
-                    currentWaterfall.map { WeChatArticleEntity.fromDomainModel(it) }
-                )
+                val entities = buildList {
+                    newFeatured?.let { add(WeChatArticleEntity.fromDomainModel(it)) }
+                    addAll(currentWaterfall.map { WeChatArticleEntity.fromDomainModel(it) })
+                }
+                weChatMpDao.insertArticles(entities)
 
                 saveToDiskCache(refreshedAccounts, newFeatured, currentWaterfall)
             } else {
                 val client = networkContainer?.authorizedClient ?: error("NetworkContainer 尚未配置，无法发起真实网络请求")
                 val accounts: List<WeChatAccount> = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_ACCOUNTS}").body()
-                val featured: WeChatArticle? = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_FEATURED}").body()
-                val waterfall: List<WeChatArticle> = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_WATERFALL}").body()
+                val rawFeatured: WeChatArticle? = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_FEATURED}").body()
+                val rawWaterfall: List<WeChatArticle> = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_WATERFALL}").body()
+
+                val featured = rawFeatured?.takeUnless { isDisliked(it.id) }
+                val waterfall = rawWaterfall.filterNot { isDisliked(it.id) }
 
                 accountsFlow.value = accounts
                 featuredFlow.value = featured
@@ -201,7 +275,7 @@ class WeChatMpRepositoryImpl(
             if (isMockActive) {
                 delay(AppMockConfig.mockNetworkDelayMs)
                 val now = currentTimeMillis()
-                val moreArticles = listOf(
+                val rawMoreArticles = listOf(
                     WeChatArticle(
                         id = "art_more_${Random.nextInt(1000, 9999)}",
                         account = WeChatAccount(
@@ -237,6 +311,7 @@ class WeChatMpRepositoryImpl(
                         coverAspectRatio = 1.0f
                     )
                 )
+                val moreArticles = rawMoreArticles.filterNot { isDisliked(it.id) }
                 waterfallFlow.update { it + moreArticles }
                 weChatMpDao.insertArticles(moreArticles.map { WeChatArticleEntity.fromDomainModel(it) })
 
@@ -245,7 +320,8 @@ class WeChatMpRepositoryImpl(
             } else {
                 val client = networkContainer?.authorizedClient ?: error("NetworkContainer 尚未配置")
                 val page = (waterfallFlow.value.size / 10) + 1
-                val moreArticles: List<WeChatArticle> = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_WATERFALL}?page=$page").body()
+                val rawMoreArticles: List<WeChatArticle> = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_WATERFALL}?page=$page").body()
+                val moreArticles = rawMoreArticles.filterNot { isDisliked(it.id) }
 
                 waterfallFlow.update { it + moreArticles }
                 weChatMpDao.insertArticles(moreArticles.map { WeChatArticleEntity.fromDomainModel(it) })
@@ -257,7 +333,17 @@ class WeChatMpRepositoryImpl(
 
     override suspend fun dislikeArticle(articleId: String, reason: String): Result<Unit> {
         return runCatching {
+            val record = WeChatDislikeRecord(
+                articleId = articleId,
+                reason = reason,
+                createdAt = currentTimeMillis()
+            )
+            appendDislikeRecordToStorage(record)
+
             waterfallFlow.update { list -> list.filterNot { it.id == articleId } }
+            if (featuredFlow.value?.id == articleId) {
+                featuredFlow.value = null
+            }
             weChatMpDao.deleteArticle(articleId)
             saveToDiskCache(accountsFlow.value, featuredFlow.value, waterfallFlow.value)
         }

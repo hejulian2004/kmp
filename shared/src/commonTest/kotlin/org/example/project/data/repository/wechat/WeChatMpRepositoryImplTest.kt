@@ -1,7 +1,7 @@
 /**
  * @File: WeChatMpRepositoryImplTest.kt
  * @Package: org.example.project.data.repository.wechat
- * @Description: WeChatMpRepositoryImpl微信公众号数据仓库与持久化同步单元测试
+ * @Description: WeChatMpRepositoryImpl微信公众号数据仓库与持久化同步单元测试（包含不感兴趣负反馈持久化校验）
  * @Author: 何聚敛
  * @Date: 2026-08-18
  */
@@ -90,6 +90,48 @@ class WeChatMpRepositoryImplTest {
 
         val daoList = dao.observeWaterfallArticles().first()
         assertFalse(daoList.any { it.id == targetId })
+    }
+
+    @Test
+    fun testDislikePersistenceAcrossRepositoryRecreation() = runTest {
+        val testDirs = TestStorageDirectories()
+        val fileStorage = DefaultFileStorage(directories = testDirs)
+        val repo1 = WeChatMpRepositoryImpl(weChatMpDao = dao, fileStorage = fileStorage)
+
+        val initialList = repo1.observeWaterfallArticles().first()
+        assertTrue(initialList.isNotEmpty())
+        val targetId = initialList.first().id
+
+        val dislikeResult = repo1.dislikeArticle(targetId, "不感兴趣")
+        assertTrue(dislikeResult.isSuccess)
+
+        // 验证持久化文件已写入
+        assertTrue(fileStorage.exists(StorageArea.PERSISTENT, StoragePath("wechat_mp/dislikes.json")))
+
+        // 重建 Repository 模拟进程重启
+        val repo2 = WeChatMpRepositoryImpl(weChatMpDao = dao, fileStorage = fileStorage)
+        val listAfterRestart = repo2.observeWaterfallArticles().first()
+        assertFalse(listAfterRestart.any { it.id == targetId })
+    }
+
+    @Test
+    fun testDislikedArticleDoesNotReappearOnRefresh() = runTest {
+        val testDirs = TestStorageDirectories()
+        val fileStorage = DefaultFileStorage(directories = testDirs)
+        val repo = WeChatMpRepositoryImpl(weChatMpDao = dao, fileStorage = fileStorage)
+
+        val initialList = repo.observeWaterfallArticles().first()
+        val targetId = initialList.first().id
+
+        repo.dislikeArticle(targetId, "减少此类推荐")
+        assertFalse(repo.observeWaterfallArticles().first().any { it.id == targetId })
+
+        // 触发刷新
+        val refreshResult = repo.refreshData()
+        assertTrue(refreshResult.isSuccess)
+
+        // 刷新后依然不出现
+        assertFalse(repo.observeWaterfallArticles().first().any { it.id == targetId })
     }
 
     @Test
