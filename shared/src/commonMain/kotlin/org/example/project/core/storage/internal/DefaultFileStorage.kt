@@ -12,6 +12,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.io.Source
 import kotlinx.io.files.Path
 import org.example.project.core.storage.api.FileStorage
 import org.example.project.core.storage.api.StorageArea
@@ -157,6 +158,34 @@ class DefaultFileStorage internal constructor(
                     throw e
                 } else {
                     throw StorageException(StorageError.IoError("Atomic stream copy failed: ${e.message}"), cause = e)
+                }
+            }
+        }
+    }
+
+    override suspend fun copyFile(
+        area: StorageArea,
+        path: StoragePath,
+        source: Source,
+        bufferSizeBytes: Int
+    ): Unit = withContext(Dispatchers.IO) {
+        val targetPath = resolver.resolve(area, path, allowEmpty = false)
+        val tempPath = Path("${targetPath}${StorageConstants.TEMP_SUFFIX}")
+
+        source.use {
+            areaMutexes.getValue(area).withLock {
+                try {
+                    driver.copyStream(it, tempPath, bufferSizeBytes)
+                    driver.atomicMove(tempPath, targetPath)
+                } catch (e: Exception) {
+                    if (driver.exists(tempPath)) {
+                        driver.delete(tempPath)
+                    }
+                    if (e is StorageException) {
+                        throw e
+                    } else {
+                        throw StorageException(StorageError.IoError("Atomic stream copy failed: ${e.message}"), cause = e)
+                    }
                 }
             }
         }

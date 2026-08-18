@@ -7,6 +7,7 @@
  */
 package org.example.project.core.storage.internal
 
+import kotlinx.io.Source
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
@@ -61,6 +62,12 @@ internal interface FileSystemDriver {
         destination: Path,
         bufferSize: Int = 64 * 1024
     )
+
+    suspend fun copyStream(
+        source: Source,
+        destination: Path,
+        bufferSize: Int = 64 * 1024
+    )
 }
 
 /**
@@ -74,27 +81,41 @@ internal class KotlinxIoFileSystemDriver : FileSystemDriver {
         bufferSize: Int
     ) {
         try {
-            ensureParentDirectoriesExist(destination)
             if (!SystemFileSystem.exists(source)) {
                 throw StorageException(StorageError.NotFound, "Source file not found: $source")
             }
             val src = SystemFileSystem.source(source).buffered()
-            val dst = SystemFileSystem.sink(destination, append = false).buffered()
             src.use { input ->
-                dst.use { output ->
-                    val buffer = ByteArray(bufferSize)
-                    while (true) {
-                        val bytesRead = input.readAtMostTo(buffer)
-                        if (bytesRead <= 0) break
-                        output.write(buffer, 0, bytesRead)
-                    }
-                    output.flush()
-                }
+                copyStream(input, destination, bufferSize)
             }
         } catch (e: StorageException) {
             throw e
         } catch (e: Exception) {
             throw mapIoException("copyStream", "$source -> $destination", e)
+        }
+    }
+
+    override suspend fun copyStream(
+        source: Source,
+        destination: Path,
+        bufferSize: Int
+    ) {
+        try {
+            ensureParentDirectoriesExist(destination)
+            val dst = SystemFileSystem.sink(destination, append = false).buffered()
+            dst.use { output ->
+                val buffer = ByteArray(bufferSize)
+                while (true) {
+                    val bytesRead = source.readAtMostTo(buffer)
+                    if (bytesRead <= 0) break
+                    output.write(buffer, 0, bytesRead)
+                }
+                output.flush()
+            }
+        } catch (e: StorageException) {
+            throw e
+        } catch (e: Exception) {
+            throw mapIoException("copyStream", "stream -> $destination", e)
         }
     }
 

@@ -7,6 +7,8 @@
  */
 package org.example.project.core.storage.api
 
+import kotlinx.io.Source
+
 /**
  * 应用统一文件存储接口。
  * 
@@ -112,6 +114,23 @@ interface FileStorage {
         area: StorageArea,
         path: StoragePath,
         sourceAbsolutePath: String,
+        bufferSizeBytes: Int = 64 * 1024
+    )
+
+    /**
+     * 将外部输入流以流式分块（Buffer）原子复制至指定存储区域与相对路径。
+     *
+     * 调用方移交[source]的生命周期，复制完成或失败后由存储层关闭输入流。
+     *
+     * @param area目标逻辑存储区域
+     * @param path目标逻辑相对路径
+     * @param source来源输入流，可来自文件系统或Content URI
+     * @param bufferSizeBytes复制缓冲区大小，默认64KB
+     */
+    suspend fun copyFile(
+        area: StorageArea,
+        path: StoragePath,
+        source: Source,
         bufferSizeBytes: Int = 64 * 1024
     )
 }

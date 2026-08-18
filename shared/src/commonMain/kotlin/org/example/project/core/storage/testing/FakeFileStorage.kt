@@ -9,6 +9,7 @@ package org.example.project.core.storage.testing
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.io.Source
 import org.example.project.core.storage.api.FileStorage
 import org.example.project.core.storage.api.StorageArea
 import org.example.project.core.storage.api.StorageError
@@ -143,5 +144,32 @@ class FakeFileStorage : FileStorage {
         bufferSizeBytes: Int
     ) {
         write(area, path, "fake_stream_copied_data".encodeToByteArray())
+    }
+
+    override suspend fun copyFile(
+        area: StorageArea,
+        path: StoragePath,
+        source: Source,
+        bufferSizeBytes: Int
+    ) {
+        source.use {
+            val chunks = mutableListOf<ByteArray>()
+            var totalSize = 0
+            val buffer = ByteArray(bufferSizeBytes)
+            while (true) {
+                val bytesRead = it.readAtMostTo(buffer)
+                if (bytesRead <= 0) break
+                chunks += buffer.copyOf(bytesRead)
+                totalSize += bytesRead
+            }
+
+            val data = ByteArray(totalSize)
+            var offset = 0
+            chunks.forEach { chunk ->
+                chunk.copyInto(data, destinationOffset = offset)
+                offset += chunk.size
+            }
+            write(area, path, data, WriteMode.ATOMIC)
+        }
     }
 }

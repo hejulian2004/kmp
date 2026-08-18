@@ -54,6 +54,7 @@ kotlin {
             implementation(libs.filekit.coil)
             implementation(libs.coil.network.ktor3)
             implementation(libs.ktor.client.cio)
+            implementation(libs.kotlinx.io.core)
             implementation(project(":shared"))
             implementation(libs.androidx.room.runtime)
             implementation(libs.kotlinx.serialization.json)

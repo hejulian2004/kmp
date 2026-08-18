@@ -11,6 +11,8 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.path
 import io.github.vinceglb.filekit.readBytes
+import io.github.vinceglb.filekit.source
+import kotlinx.io.buffered
 import org.example.project.core.storage.api.StorageArea
 import org.example.project.core.storage.api.StoragePath
 import org.example.project.core.storage.client.AppStorageInitializer
@@ -36,23 +38,26 @@ suspend fun persistPickedMedia(file: PlatformFile): FeedLineMedia {
     val persistentRoot = AppStorageInitializer.container.directories.persistent
     val persistentPath = "$persistentRoot/feedline/media/$targetFileName"
 
-    val sourcePath = file.path
-    if (!sourcePath.isNullOrBlank()) {
-        try {
-            fileStorage.copyFile(
-                area = StorageArea.PERSISTENT,
-                path = relativePath,
-                sourceAbsolutePath = sourcePath,
-                bufferSizeBytes = 128 * 1024
-            )
-            return if (isVideo) {
-                FeedLineMedia.Video(coverUrl = persistentPath, videoUrl = persistentPath)
-            } else {
-                FeedLineMedia.Image(url = persistentPath)
-            }
-        } catch (_: Throwable) {
-            // 流式复制失败时继续回退
+    try {
+        fileStorage.copyFile(
+            area = StorageArea.PERSISTENT,
+            path = relativePath,
+            source = file.source().buffered(),
+            bufferSizeBytes = 128 * 1024
+        )
+        return if (isVideo) {
+            FeedLineMedia.Video(coverUrl = persistentPath, videoUrl = persistentPath)
+        } else {
+            FeedLineMedia.Image(url = persistentPath)
         }
+    } catch (_: Throwable) {
+        // 流式复制失败时继续回退
+    }
+
+    // 视频不再回退到readBytes()，避免大文件整块进入内存。
+    if (isVideo) {
+        val fallbackPath = file.path
+        return FeedLineMedia.Video(coverUrl = fallbackPath, videoUrl = fallbackPath)
     }
 
     return try {
