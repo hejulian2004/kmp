@@ -1,6 +1,6 @@
 # Social KMP App
 
-基于 **Kotlin Multiplatform (KMP)** 和 **Compose Multiplatform** 实现的跨平台社交应用框架，集成了 **Airbnb 个人资料与设置**、**FeedLine 朋友圈**、**Instagram 动态流** 三大核心业务模块，全量采用 **MVI 架构**、**Room KMP 本地离线数据库（Local-First SWR）**、**Core Infrastructure 统一文件存储架构**、**跨平台数据埋点架构** 与 **SDUI（服务端驱动 UI）动态组件热更新架构**。
+基于 **Kotlin Multiplatform (KMP)** 和 **Compose Multiplatform** 实现的跨平台社交应用框架，集成了 **Airbnb 个人资料与设置**、**FeedLine 朋友圈**、**Instagram 动态流**、**WeChatMp 微信公众号与看一看瀑布流** 四大核心业务模块，全量采用 **MVI 架构**、**Room KMP 本地离线数据库（Local-First SWR）**、**Core Infrastructure 统一文件存储架构**、**跨平台数据埋点架构** 与 **SDUI（服务端驱动 UI）动态组件热更新架构**。
 
 ---
 
@@ -15,20 +15,28 @@
   - 图文/视频多媒体流、点赞互动、嵌套评论发表与删除、未读通知中心。
 - **Instagram 社交动态流**：
   - Story 快拍横向列表、Carousel 多图轮播、个性化个人主页、沉浸式全屏图文。
+- **WeChatMp 微信公众号与看一看瀑布流**：
+  - **常读公众号头像条**：横向滑动列表、未读小绿点状态与点击消点响应。
+  - **常读置顶头条卡片**：大图 Banner、阅读量/点赞数统计、发布时间与“更多消息”入口。
+  - **看一看混合瀑布流**：单列左文右图（“关注的号”小蓝标）、单列通栏大图、双列垂直瀑布流大图、双列视频大图（带时长与播放蒙层）。
+  - **不感兴趣负反馈抽屉**：ModalBottomSheet 负反馈原因提交、即时剔除与本地持久化同步。
+  - **全端断点自适应**：基于 WindowSizeClass 的 1~4 列自适应瀑布流与大屏宽度约束居中。
 - **Room KMP 离线优先数据库（Local-First SWR）**：
-  - 基于 Room KMP 2.7.0+ 统一封装 `AppDatabase`，提供 `HostProfileDao`、`FeedLineDao` 与 `InstagramDao` 响应式数据持久化。
+  - 基于 Room KMP 2.7.0+ 统一封装 `AppDatabase`，提供 `HostProfileDao`、`FeedLineDao`、`InstagramDao` 与 `WeChatMpDao` 响应式数据持久化。
   - 实现 SWR（Stale-While-Revalidate）数据同步管道，离线即时渲染与后台增量刷新。
 - **Core Infrastructure 统一文件存储架构 (`core/storage`)**：
   - **平台物理隔离与逻辑区域**：提供 `StorageArea.PERSISTENT`（持久数据）、`CACHE`（缓存）与 `TEMPORARY`（临时文件）抽象，屏蔽 Android (`filesDir`/`cacheDir`) 与 iOS (`Application Support`/`Caches`/`Temp`) 物理目录差异。
   - **路径安全防护与防逃逸 (`StoragePathValidator`)**：防范绝对路径与目录穿越 (`..`)，确保文件操作严格限制在逻辑根目录内。
   - **原子写入与并发锁防护 (`DefaultFileStorage`)**：默认基于 `.tmp` 临时文件 swap 实现原子写 (`ATOMIC`)，并按 Path 粒度提供 `Mutex` 并发锁保护，IO 操作统一在 `Dispatchers.IO` 下执行。
   - **测试 Mock 扩展**：提供 `FakeFileStorage` 内存实现，方便 Domain 与 Repository 进行纯粹单元测试。
+  - **多级快照容灾**：支持将微信公众号等业务流快照落地至 `StorageArea.CACHE`（`wechat_mp/articles_cache.json`），实现秒级冷启恢复。
 - **跨平台统一初始化与数据埋点架构**：
   - `AppInitializer` 统一管理冷启动依赖链：强同步完成 数据埋点单例 ➔ 文件存储架构 ➔ 网络架构核心 ➔ Room 数据库 ➔ 冷启动事件上报，确保底层基础设施完全准备就绪。
   - 后台非阻塞异步协程并发预加载拉取 SDUI 热更 JSON 布局。
+  - 全链路埋点覆盖：四大业务模块的用户行为、页面曝光（`enter_screen`/`leave_screen`）、网络异常与组件渲染全量监控。
 - **SDUI 动态热更新架构**：
   - **零包内打底 JSON**：无热更或断网时无缝回退至 APK 打包的原生 Compose UI（`getLayout` 返回 `null`）；服务端下发热更后通过 `FileStorage` 持久化至 `sdui/<module>/layout.json` 本地磁盘与内存，实现动态 UI 覆盖渲染。
-  - **模块集中注册表**：`AirbnbSduiRegistry`、`FeedLineSduiRegistry` 与 `InstagramSduiRegistry` 零侵入绑定原生 UI 与 MVI Action。
+  - **模块集中注册表**：`AirbnbSduiRegistry`、`FeedLineSduiRegistry`、`InstagramSduiRegistry` 与 `WeChatMpSduiRegistry` 零侵入绑定原生 UI 与 MVI Action。
   - **自动导出 Task**：`generateSduiJson` 编译构建时根据 `SduiVersionConfig` 一键导出模块聚合 JSON 与单组件独立 JSON 至 `build/outputs/sdui/`。
 - **120Hz 高刷新率适配**：
   - 动态请求 120Hz 高刷模式，不支持设备平滑降级至系统默认刷新率。
@@ -53,12 +61,13 @@ shared/src/commonMain/kotlin/org/example/project/
 ├── core/
 │   ├── analytics/                  # 跨平台数据埋点系统
 │   │   ├── AnalyticsConfig.kt      # 埋点系统全局初始化配置项
+│   │   ├── AnalyticsConstants.kt   # 全局埋点模块标识与事件常量
 │   │   ├── AnalyticsEvents.kt      # 全局埋点事件名称常量库
 │   │   ├── AppAnalyticsManager.kt  # 全局数据埋点核心控制单例
 │   │   ├── IAnalyticsTracker.kt    # 埋点日志输出与上报抽象接口
 │   │   └── LogAnalyticsTracker.kt  # 控制台控制流日志埋点实现类
 │   ├── database/                   # Room KMP 本地离线数据库配置
-│   │   ├── AppDatabase.kt          # 全局 Room 数据库定义（HostProfileDao / FeedLineDao / InstagramDao）
+│   │   ├── AppDatabase.kt          # 全局 Room 数据库定义（HostProfileDao / FeedLineDao / InstagramDao / WeChatMpDao）
 │   │   └── DatabaseBuilder.kt      # 跨平台 Room 数据库构建入口句柄
 │   ├── init/                       # 应用冷启动统一初始化管理器
 │   │   └── AppInitializer.kt       # 集中编排 埋点 -> 存储 -> 网络 -> 数据库（强同步）与 SDUI 布局拉取（异步后台执行）
@@ -93,45 +102,58 @@ shared/src/commonMain/kotlin/org/example/project/
 │   │   │   ├── FeedLineComment.kt  # 评论模型
 │   │   │   ├── FeedLineMedia.kt    # 媒体类型模型
 │   │   │   └── FeedLineNotification.kt # 通知模型
-│   │   └── instagram/
-│   │       ├── InstagramPost.kt    # Instagram 动态与 Story 统一模型
-│   │       ├── InstagramProfileUser.kt # 个人资料模型
-│   │       ├── InstagramComment.kt # 评论模型
-│   │       └── InstagramMedia.kt   # 媒体模型
+│   │   ├── instagram/
+│   │   │   ├── InstagramPost.kt    # Instagram 动态与 Story 统一模型
+│   │   │   ├── InstagramProfileUser.kt # 个人资料模型
+│   │   │   ├── InstagramComment.kt # 评论模型
+│   │   │   └── InstagramMedia.kt   # 媒体模型
+│   │   └── wechat/
+│   │       ├── WeChatAccount.kt    # 公众号主体模型
+│   │       ├── WeChatArticle.kt    # 公众号推文与卡片实体模型
+│   │       └── WeChatCardType.kt   # 卡片视觉形态枚举
 │   └── repository/                 # 数据仓库契约接口
 │       ├── airbnb/HostProfileRepository.kt
 │       ├── feedline/FeedLineRepository.kt
-│       └── instagram/InstagramHomeRepository.kt
+│       ├── instagram/InstagramHomeRepository.kt
+│       └── wechat/WeChatMpRepository.kt
 ├── data/
 │   ├── database/                   # Room KMP 本地数据库持久化层
 │   │   ├── entity/                 # Room Entity 表实体定义
 │   │   │   ├── airbnb/             # HostEntity / PropertyListingEntity / HostReviewEntity / TravelGuideEntity
 │   │   │   ├── feedline/           # FeedLinePostEntity / FeedLineNotificationEntity
-│   │   │   └── instagram/          # InstagramPostEntity
+│   │   │   ├── instagram/          # InstagramPostEntity
+│   │   │   └── wechat/             # WeChatArticleEntity
 │   │   ├── converter/
 │   │   │   └── StringListConverter.kt # Room List<String> 字段 JSON 类型转换器
 │   │   └── dao/                    # Room DAO 访问接口及响应式 SQL 实现
 │   │       ├── airbnb/             # HostProfileDao & HostProfileDaoImpl
 │   │       ├── feedline/           # FeedLineDao & FeedLineDaoImpl
-│   │       └── instagram/          # InstagramDao & InstagramDaoImpl
-│   └── repository/                 # 数据仓库实现（SWR 本地优先 + Room DAO + Network）
+│   │       ├── instagram/          # InstagramDao & InstagramDaoImpl
+│   │       └── wechat/             # WeChatMpDao & FakeWeChatMpDao
+│   └── repository/                 # 数据仓库实现（SWR 本地优先 + Room DAO + FileStorage + Network）
 │       ├── airbnb/HostProfileRepositoryImpl.kt
 │       ├── feedline/FeedRepositoryImpl.kt
-│       └── instagram/InstagramHomeRepositoryImpl.kt
+│       ├── instagram/InstagramHomeRepositoryImpl.kt
+│       └── wechat/
+│           ├── WeChatMpRepositoryImpl.kt
+│           └── DevMockWeChatData.kt# 开发与种子数据生成器
 └── presentation/                   # MVI 表现层架构核心
     ├── intent/                     # MVI Intent 用户意图密封接口
     │   ├── airbnb/                 # HostProfileIntent / ProfileEditIntent / SettingsIntent
     │   ├── feedline/               # FeedLineIntent
-    │   └── instagram/              # InstagramIntent
+    │   ├── instagram/              # InstagramIntent
+    │   └── wechat/                 # WeChatMpIntent
     ├── state/                      # MVI UiState 页面全局不可变状态
     │   ├── airbnb/                 # HostProfileUiState / ProfileEditUiState / SettingsUiState
     │   ├── feedline/               # FeedLineUiState
-    │   └── instagram/              # InstagramUiState
+    │   ├── instagram/              # InstagramUiState
+    │   └── wechat/                 # WeChatMpUiState
     ├── effect/                     # MVI Effect 单次副作用管道（Toast / Snackbar）
     └── viewmodel/                  # 共享 ViewModel（继承 androidx.lifecycle.ViewModel）
         ├── airbnb/                 # HostProfileViewModel / ProfileEditViewModel / SettingsViewModel
         ├── feedline/               # FeedLineViewModel
-        └── instagram/              # InstagramViewModel
+        ├── instagram/              # InstagramViewModel
+        └── wechat/                 # WeChatMpViewModel
 ```
 
 ---
@@ -165,7 +187,7 @@ shared/src/commonMain/kotlin/org/example/project/
 # SDUI JSON 动态组件一键导出 Task（按组件名_版本号_时间戳格式自动导出）
 ./gradlew :shared:generateSduiJson
 
-# 运行单元测试 (包含 FileStorage 与系统 DAO 校验)
+# 运行全量单元测试 (包含 WeChatMp、FileStorage 与系统 DAO 校验)
 ./gradlew :shared:testAndroidHostTest
 ```
 
@@ -180,9 +202,10 @@ shared/src/commonMain/kotlin/org/example/project/
 
 ### 2. Core Infrastructure 统一文件存储架构 (`core/storage`)
 遵循 `docs/architecture/文件存储架构.md` 规范：
-- **逻辑存储区域划分**：`PERSISTENT`（草稿/SDUI JSON/长期持久数据）、`CACHE`（网络/图片可重新生成缓存）、`TEMPORARY`（上传/下载/解压临时文件）。
+- **逻辑存储区域划分**：`PERSISTENT`（草稿/长期持久数据）、`CACHE`（快照缓存/网络/图片可重新生成缓存）、`TEMPORARY`（上传/下载/解压临时文件）。
 - **安全与防逃逸**：业务层严禁直接操作物理路径或 Java `File`/iOS `NSURL`，所有路径必须经过 `StoragePathValidator` 过滤，拦截绝对路径与 `..` 穿越。
 - **原子写与并发锁**：`DefaultFileStorage` 在 `Dispatchers.IO` 下通过临时写与原子移动机制 (`WriteMode.ATOMIC`) 保证数据可靠性，并按 Path 粒度使用 `Mutex` 防止并发竞争。
+- **业务磁盘快照**：微信公众号与瀑布流文章列表实时备份写入 `wechat_mp/articles_cache.json`，提供断网与空库秒级恢复能力。
 
 ### 3. SWR 本地优先数据同步管道 (Stale-While-Revalidate)
 遵循 `docs/architecture/数据同步与离线策略.md` 规范：
@@ -193,16 +216,17 @@ shared/src/commonMain/kotlin/org/example/project/
 遵循 `docs/architecture/数据埋点技术文档.md` 规范：
 - `AppInitializer` 统一管理冷启动依赖链：强同步完成 `AppAnalyticsManager` ➔ `AppStorageInitializer` ➔ `AppNetworkInitializer` ➔ `getRoomDatabase` ➔ 冷启动埋点上报。
 - 基础设施准备就绪后，启动异步协程在后台并发预加载拉取全量模块的 SDUI 热更 JSON 布局，绝对不阻塞主线程。
+- 全量业务场景覆盖：涵盖进入/离开页面曝光、核心按钮点击、下拉刷新、触底加载与负反馈原因提交。
 
 ### 5. SDUI 动态组件热更新机制
 遵循 `docs/architecture/安卓动态组件热更技术方案.md` 与 `sdui-hotupdate` 规范：
 - **零包内打底 JSON 原则**：包内无需存储默认 JSON 模板。当无热更或请求失败时，`getLayout` 返回 `null` 并直接绘制原生 Compose UI；服务端下发热更后通过 `FileStorage` 持久化至磁盘与内存，启用 SDUI 递归渲染。
-- **单一集中注册表**：`AirbnbSduiRegistry`、`FeedLineSduiRegistry` 与 `InstagramSduiRegistry` 分模块集中注册，保持 Native 组件纯净。
-- **自动编译 Task**：`generateSduiJson` 任务按 `模块/组件名_版本号_时间戳.json` 自动导出热更 DSL 文件。
+- **单一集中注册表**：`AirbnbSduiRegistry`、`FeedLineSduiRegistry`、`InstagramSduiRegistry` 与 `WeChatMpSduiRegistry` 分模块集中注册，保持 Native 组件纯净。
+- **自动编译 Task**：`generateSduiJson` 任务按 `模块/组件名_版本号_时间戳.json` 自动导出热更 DSL 文件至 `build/outputs/sdui/`。
 
 ### 6. 120Hz 高刷新率适配与全端大屏响应式
 - **120Hz 动态申请**：Android 宿主主动申请设备最高 120Hz/90Hz 刷新率，不支持的设备自动平滑降级至系统默认帧率。
-- **WindowSizeClass 适应**：对 Pad 及折叠屏大屏设备实施 `widthIn(max=840dp)` 水平居中约束与双窗格扩展。
+- **WindowSizeClass 适应**：对 Pad 及折叠屏大屏设备实施 `widthIn(max=840dp~960dp)` 水平居中约束与多列瀑布流扩展（手机 2 列、折叠屏 3 列、平板 4 列）。
 
 ---
 
