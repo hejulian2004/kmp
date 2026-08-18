@@ -77,7 +77,7 @@ kotlin {
                 implementation(libs.ktor.client.logging)
                 implementation(libs.ktor.client.websockets)
 
-                implementation(libs.androidx.room.runtime)
+                api(libs.androidx.room.runtime)
                 implementation(libs.androidx.sqlite.bundled)
             }
         }
