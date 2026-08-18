@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File: AppInitializer.kt
  * @Package: org.example.project.core.init
  * @Description: 项目全局启动统一初始化器 (appInit)，具备可恢复初始化状态机与并发安全保障
@@ -216,7 +216,7 @@ object AppInitializer {
     /**
      * 后台异步并发拉取与更新 SDUI 热更 JSON 布局
      */
-    suspend fun prefetchHotUpdateLayouts(modules: List<String> = listOf("airbnb", "feedline", "instagram")) {
+    suspend fun prefetchHotUpdateLayouts(modules: List<String> = listOf("airbnb", "feedline", "instagram", "wechat_mp")) {
         val repository = SduiLayoutRepositoryImpl.Instance
         modules.forEach { module ->
             try {
