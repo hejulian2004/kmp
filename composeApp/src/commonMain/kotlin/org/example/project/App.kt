@@ -23,18 +23,35 @@ import coil3.compose.setSingletonImageLoaderFactory
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
+import androidx.compose.runtime.LaunchedEffect
+import org.example.project.core.analytics.AnalyticsEvents
+import org.example.project.core.analytics.AnalyticsModules
+import org.example.project.core.analytics.AnalyticsParams
+import org.example.project.core.analytics.AppAnalyticsManager
+import org.example.project.core.database.AppDatabaseInitializer
+import org.example.project.core.init.AppInitParams
+import org.example.project.core.init.AppInitializer
 import org.example.project.core.network.client.AppNetworkInitializer
 import org.example.project.data.repository.feedline.FeedRepositoryImpl
 import org.example.project.data.repository.feedline.generateUUID
 import org.example.project.domain.model.feedline.FeedLineUser
+import org.example.project.data.repository.wechat.WeChatMpRepositoryImpl
 import org.example.project.presentation.viewmodel.feedline.FeedLineViewModel
+import org.example.project.presentation.viewmodel.wechat.WeChatMpViewModel
+import org.example.project.ui.screens.airbnb.AirbnbMainScreen
 import org.example.project.ui.screens.feedline.FeedScreen
 import org.example.project.ui.screens.instagram.InstagramMainScreen
+import org.example.project.ui.screens.wechat.WeChatMpScreen
 import org.example.project.ui.theme.instagram.InstagramTheme
+import org.example.project.ui.theme.wechat.WeChatTheme
 
 @Composable
 @Preview
 fun App() {
+    LaunchedEffect(Unit) {
+        AppInitializer.init(AppInitParams(platformName = "Compose"))
+    }
+
     setSingletonImageLoaderFactory { context ->
         ImageLoader.Builder(context)
             .components {
@@ -45,6 +62,7 @@ fun App() {
             .build()
     }
     Surface(modifier = Modifier.fillMaxSize()) {
+
         val rootNavController = rememberNavController()
         NavHost(
             navController = rootNavController,
@@ -59,7 +77,17 @@ fun App() {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Button(onClick = { rootNavController.navigate("feedline") }) {
+                        Button(
+                            onClick = {
+                                AppAnalyticsManager.trackEvent(
+                                    AnalyticsEvents.OPEN_FEED,
+                                    mapOf(
+                                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE
+                                    )
+                                )
+                                rootNavController.navigate("feedline")
+                            }
+                        ) {
                             Text("FeedLine")
                         }
                         Spacer(modifier = Modifier.height(16.dp))
@@ -69,6 +97,20 @@ fun App() {
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = { rootNavController.navigate("airbnb") }) {
                             Text("Airbnb")
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = {
+                                AppAnalyticsManager.trackEvent(
+                                    AnalyticsEvents.WECHAT_MP_OPEN,
+                                    mapOf(
+                                        AnalyticsParams.MODULE_NAME to AnalyticsModules.WECHAT_MP
+                                    )
+                                )
+                                rootNavController.navigate("wechat_mp")
+                            }
+                        ) {
+                            Text("微信公众号 (WeChat)")
                         }
                     }
                 }
@@ -80,10 +122,9 @@ fun App() {
                         name = "何聚敛",
                         avatarUrl = "https://i.pravatar.cc/300"
                     )
-                    val database = org.example.project.core.database.getRoomDatabase()
                     val feedRepository = FeedRepositoryImpl(
                         networkContainer = AppNetworkInitializer.container,
-                        feedLineDao = database.feedLineDao()
+                        feedLineDao = AppDatabaseInitializer.database.feedLineDao()
                     )
                     FeedLineViewModel(
                         feedRepository = feedRepository,
@@ -98,7 +139,22 @@ fun App() {
                 }
             }
             composable("airbnb") {
-                org.example.project.ui.screens.airbnb.AirbnbMainScreen()
+                AirbnbMainScreen()
+            }
+            composable("wechat_mp") {
+                val viewModel = remember {
+                    val repo = WeChatMpRepositoryImpl(
+                        weChatMpDao = AppDatabaseInitializer.database.weChatMpDao(),
+                        networkContainer = AppNetworkInitializer.container
+                    )
+                    WeChatMpViewModel(repository = repo)
+                }
+                WeChatTheme {
+                    WeChatMpScreen(
+                        viewModel = viewModel,
+                        onBackClick = { rootNavController.popBackStack() }
+                    )
+                }
             }
         }
     }

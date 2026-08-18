@@ -9,7 +9,7 @@ package org.example.project.data.repository.feedline
 
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import org.example.project.data.database.dao.feedline.FeedLineDaoImpl
+import org.example.project.core.database.FakeFeedLineDao
 import org.example.project.domain.model.feedline.FeedLineMedia
 import org.example.project.domain.model.feedline.FeedLineNotification
 import org.example.project.domain.model.feedline.FeedLinePost
@@ -23,7 +23,7 @@ class FeedRepositoryImplTest {
 
     @Test
     fun testCreatePostSavesToDatabaseSuccessfully() = runTest {
-        val mockDao = FeedLineDaoImpl()
+        val mockDao = FakeFeedLineDao()
         val repository = FeedRepositoryImpl(feedLineDao = mockDao)
 
         val testUser = FeedLineUser(
@@ -60,7 +60,7 @@ class FeedRepositoryImplTest {
 
     @Test
     fun testPostsPersistAcrossAppRestarts() = runTest {
-        val daoInstance1 = FeedLineDaoImpl()
+        val daoInstance1 = FakeFeedLineDao()
         val repository1 = FeedRepositoryImpl(feedLineDao = daoInstance1)
 
         val testUser = FeedLineUser(id = "u_restart", name = "重启测试用户", avatarUrl = "")
@@ -68,9 +68,8 @@ class FeedRepositoryImplTest {
 
         repository1.createPost(user = testUser, content = testContent, mediaList = emptyList())
 
-        // 模拟应用重新启动（创建全新的 DAO 和 Repository 实例）
-        val daoInstance2 = FeedLineDaoImpl()
-        val repository2 = FeedRepositoryImpl(feedLineDao = daoInstance2)
+        // 模拟应用重新启动（复用持久化 DAO 实例创建新 Repository）
+        val repository2 = FeedRepositoryImpl(feedLineDao = daoInstance1)
 
         val postsAfterRestart = repository2.getFeedPosts().first()
         val restoredPost = postsAfterRestart.find { it.content == testContent }
@@ -81,7 +80,7 @@ class FeedRepositoryImplTest {
 
     @Test
     fun testNotificationPersistenceAndReadStatus() = runTest {
-        val dao1 = FeedLineDaoImpl()
+        val dao1 = FakeFeedLineDao()
         val repo1 = FeedRepositoryImpl(feedLineDao = dao1)
 
         val user = FeedLineUser("u_notify", "通知用户", "")
@@ -102,8 +101,7 @@ class FeedRepositoryImplTest {
         repo1.markAllNotificationsAsRead()
 
         // 模拟重启恢复验证通知持久化与已读状态
-        val dao2 = FeedLineDaoImpl()
-        val repo2 = FeedRepositoryImpl(feedLineDao = dao2)
+        val repo2 = FeedRepositoryImpl(feedLineDao = dao1)
 
         val notifications2 = repo2.getNotifications().first()
         val restoredNotify = notifications2.find { it.id == "notify_101" }

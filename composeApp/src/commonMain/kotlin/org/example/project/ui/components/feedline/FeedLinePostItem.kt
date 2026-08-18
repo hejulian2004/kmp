@@ -1,9 +1,9 @@
-/**
+﻿/**
  * @File: FeedLinePostItem.kt
  * @Package: org.example.project.ui.components.feedline
  * @Description: 朋友圈单条动态帖子卡片核心组件（支持KMP跨平台视频与图片展示）
  * @Author: 何聚敛
- * @Date: 2026-07-22
+ * @Date: 2026-08-11
  */
 package org.example.project.ui.components.feedline
 
@@ -82,7 +82,8 @@ fun FeedPostItem(
     onDeletePostClick: (FeedLinePost) -> Unit, //删除帖子按钮
     onPostAvatarClick: () -> Unit,
     onLikedAvatarClick: (FeedLineUser) -> Unit,
-    currentTime: Long
+    currentTime: Long,
+    onMediaPreview: (postId: String, mediaUrl: String, isVideo: Boolean) -> Unit = { _, _, _ -> }
 ) {
     Row(
         modifier = modifier
@@ -137,7 +138,11 @@ fun FeedPostItem(
 
             if (validMediaList.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
-                PostMediaGrid(mediaList = validMediaList)
+                PostMediaGrid(
+                    postId = post.id,
+                    mediaList = validMediaList,
+                    onMediaPreview = onMediaPreview
+                )
             }
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -305,8 +310,10 @@ fun ImagePreviewDialog(
 
 @Composable
 fun PostMediaGrid(
+    postId: String = "",
     mediaList: List<FeedLineMedia>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onMediaPreview: (postId: String, mediaUrl: String, isVideo: Boolean) -> Unit = { _, _, _ -> }
 ) {
     if (mediaList.isEmpty()) return
 
@@ -341,8 +348,10 @@ fun PostMediaGrid(
                 .clickable {
                     if (media is FeedLineMedia.Video) {
                         activeVideoUrl = media.videoUrl
+                        onMediaPreview(postId, media.videoUrl, true)
                     } else if (media is FeedLineMedia.Image) {
                         activeImageUrl = media.url
+                        onMediaPreview(postId, media.url, false)
                     }
                 }
         ) {
@@ -408,8 +417,10 @@ fun PostMediaGrid(
                                     .clickable {
                                         if (media is FeedLineMedia.Video) {
                                             activeVideoUrl = media.videoUrl
+                                            onMediaPreview(postId, media.videoUrl, true)
                                         } else if (media is FeedLineMedia.Image) {
                                             activeImageUrl = media.url
+                                            onMediaPreview(postId, media.url, false)
                                         }
                                     }
                             ) {

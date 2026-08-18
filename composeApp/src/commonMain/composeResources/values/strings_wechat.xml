@@ -1,0 +1,19 @@
+<resources>
+    <string name="wechat_mp_title">Official Accounts</string>
+    <string name="wechat_mp_frequently_read">Frequently Read</string>
+    <string name="wechat_mp_more_messages">More Messages</string>
+    <string name="wechat_mp_look_around">Discover</string>
+    <string name="wechat_mp_followed_tag">Followed</string>
+    <string name="wechat_mp_search_hint">Search official accounts and articles</string>
+    <string name="wechat_mp_dislike_title">Feedback &amp; Dislike</string>
+    <string name="wechat_mp_dislike_account">Not interested in this account</string>
+    <string name="wechat_mp_dislike_topic">Reduce similar content recommendations</string>
+    <string name="wechat_mp_dislike_report">Report this article</string>
+    <string name="wechat_mp_cancel">Cancel</string>
+    <string name="wechat_mp_confirm">Confirm</string>
+    <string name="wechat_mp_no_content">No more articles</string>
+    <string name="wechat_mp_refresh_success">Feed updated</string>
+    <string name="wechat_mp_loading_more">Loading more articles...</string>
+    <string name="wechat_mp_article_clicked">Opened article: %1$s</string>
+    <string name="wechat_mp_dislike_success">Reduced recommendations for similar content</string>
+</resources>

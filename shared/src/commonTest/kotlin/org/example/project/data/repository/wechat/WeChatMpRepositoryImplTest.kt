@@ -1,0 +1,140 @@
+/**
+ * @File: WeChatMpRepositoryImplTest.kt
+ * @Package: org.example.project.data.repository.wechat
+ * @Description: WeChatMpRepositoryImpl微信公众号数据仓库与持久化同步单元测试
+ * @Author: 何聚敛
+ * @Date: 2026-08-18
+ */
+package org.example.project.data.repository.wechat
+
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runTest
+import org.example.project.core.database.FakeWeChatMpDao
+import org.example.project.core.storage.api.StorageArea
+import org.example.project.core.storage.api.StoragePath
+import org.example.project.core.storage.internal.DefaultFileStorage
+import org.example.project.core.storage.testing.TestStorageDirectories
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+
+class WeChatMpRepositoryImplTest {
+
+    private lateinit var dao: FakeWeChatMpDao
+    private lateinit var repository: WeChatMpRepositoryImpl
+
+    @BeforeTest
+    fun setUp() = runTest {
+        dao = FakeWeChatMpDao()
+        dao.clearAll()
+        repository = WeChatMpRepositoryImpl(weChatMpDao = dao)
+    }
+
+    @Test
+    fun testInitialDataSeedingOnEmptyDatabase() = runTest {
+        val accounts = repository.observeFrequentlyReadAccounts().first()
+        val featured = repository.observeFeaturedArticle().first()
+        val waterfall = repository.observeWaterfallArticles().first()
+
+        assertNotNull(featured)
+        assertEquals("art_featured_01", featured.id)
+        assertTrue(featured.isTopSticky)
+        assertTrue(accounts.isNotEmpty())
+        assertTrue(waterfall.isNotEmpty())
+
+        val daoWaterfall = dao.observeWaterfallArticles().first()
+        assertTrue(daoWaterfall.isNotEmpty())
+    }
+
+    @Test
+    fun testRefreshDataUpdatesArticles() = runTest {
+        val result = repository.refreshData()
+        assertTrue(result.isSuccess)
+
+        val featured = repository.observeFeaturedArticle().first()
+        assertNotNull(featured)
+
+        val waterfall = repository.observeWaterfallArticles().first()
+        assertTrue(waterfall.isNotEmpty())
+    }
+
+    @Test
+    fun testLoadMoreArticlesAppendsToList() = runTest {
+        val initialList = repository.observeWaterfallArticles().first()
+        val initialSize = initialList.size
+
+        val loadResult = repository.loadMoreArticles()
+        assertTrue(loadResult.isSuccess)
+        val newItems = loadResult.getOrNull()
+        assertNotNull(newItems)
+        assertEquals(2, newItems.size)
+
+        val updatedList = repository.observeWaterfallArticles().first()
+        assertEquals(initialSize + 2, updatedList.size)
+    }
+
+    @Test
+    fun testDislikeArticleRemovesFromListAndDao() = runTest {
+        val initialList = repository.observeWaterfallArticles().first()
+        assertTrue(initialList.isNotEmpty())
+        val targetId = initialList.first().id
+
+        val dislikeResult = repository.dislikeArticle(targetId, "广告软文")
+        assertTrue(dislikeResult.isSuccess)
+
+        val updatedList = repository.observeWaterfallArticles().first()
+        assertFalse(updatedList.any { it.id == targetId })
+
+        val daoList = dao.observeWaterfallArticles().first()
+        assertFalse(daoList.any { it.id == targetId })
+    }
+
+    @Test
+    fun testMarkAccountAsRead() = runTest {
+        val accounts = repository.observeFrequentlyReadAccounts().first()
+        assertTrue(accounts.isNotEmpty())
+        val targetAccount = accounts.first { it.hasUnread }
+
+        val markResult = repository.markAccountAsRead(targetAccount.id)
+        assertTrue(markResult.isSuccess)
+
+        val updatedAccounts = repository.observeFrequentlyReadAccounts().first()
+        val updated = updatedAccounts.find { it.id == targetAccount.id }
+        assertNotNull(updated)
+        assertFalse(updated.hasUnread)
+    }
+
+    @Test
+    fun testToggleFollowAccount() = runTest {
+        val accounts = repository.observeFrequentlyReadAccounts().first()
+        assertTrue(accounts.isNotEmpty())
+        val target = accounts.first()
+        val initialFollowed = target.isFollowed
+
+        val toggleResult = repository.toggleFollowAccount(target.id)
+        assertTrue(toggleResult.isSuccess)
+        assertEquals(!initialFollowed, toggleResult.getOrNull())
+
+        val updatedAccounts = repository.observeFrequentlyReadAccounts().first()
+        val updated = updatedAccounts.find { it.id == target.id }
+        assertNotNull(updated)
+        assertEquals(!initialFollowed, updated.isFollowed)
+    }
+
+    @Test
+    fun testFileStorageCacheSnapshotPersistence() = runTest {
+        val testDirs = TestStorageDirectories()
+        val fileStorage = DefaultFileStorage(directories = testDirs)
+        val fileRepo = WeChatMpRepositoryImpl(weChatMpDao = dao, fileStorage = fileStorage)
+
+        val refreshResult = fileRepo.refreshData()
+        assertTrue(refreshResult.isSuccess)
+
+        val cacheBytes = fileStorage.read(StorageArea.CACHE, StoragePath("wechat_mp/articles_cache.json"))
+        assertNotNull(cacheBytes)
+        assertTrue(cacheBytes.isNotEmpty())
+    }
+}

@@ -21,18 +21,18 @@ import kotlinx.coroutines.launch
 import org.example.project.core.network.client.NetworkContainer
 import org.example.project.core.network.config.ApiEndpoints
 import org.example.project.data.database.dao.instagram.InstagramDao
-import org.example.project.data.database.dao.instagram.InstagramDaoImpl
 import org.example.project.data.database.entity.instagram.InstagramPostEntity
 import org.example.project.domain.model.instagram.InstagramComment
 import org.example.project.domain.model.instagram.InstagramMedia
 import org.example.project.domain.model.instagram.InstagramPost
+import org.example.project.core.database.FakeInstagramDao
 import org.example.project.domain.model.instagram.ProfileUser
 import org.example.project.domain.repository.instagram.InstagramHomeRepository
 import org.example.project.platform.currentTimeMillis
 import kotlin.random.Random
 
 class InstagramHomeRepositoryImpl(
-    private val instagramDao: InstagramDao = InstagramDaoImpl(),
+    private val instagramDao: InstagramDao = FakeInstagramDao(),
     private val networkContainer: NetworkContainer? = null
 ) : InstagramHomeRepository {
 
@@ -62,13 +62,25 @@ class InstagramHomeRepositoryImpl(
 
     override fun getHomePosts(): Flow<List<InstagramPost>> {
         return instagramDao.observePosts().map { entities ->
-            entities.map { it.toDomainModel() }
+            if (entities.isEmpty()) {
+                val initialPosts = createFakeInstagramPosts()
+                instagramDao.insertPosts(initialPosts.map { InstagramPostEntity.fromDomainModel(it, isStory = false) })
+                initialPosts
+            } else {
+                entities.map { it.toDomainModel() }
+            }
         }
     }
 
     override fun getStories(): Flow<List<InstagramPost>> {
         return instagramDao.observeStories().map { entities ->
-            entities.map { it.toDomainModel() }
+            if (entities.isEmpty()) {
+                val initialStories = createFakeInstagramStories()
+                instagramDao.insertPosts(initialStories.map { InstagramPostEntity.fromDomainModel(it, isStory = true) })
+                initialStories
+            } else {
+                entities.map { it.toDomainModel() }
+            }
         }
     }
 
@@ -85,35 +97,34 @@ class InstagramHomeRepositoryImpl(
                 }
             }.onFailure {
                 delay(600)
+                var updatedPosts: List<InstagramPost> = emptyList()
                 postsFlow.update { current ->
-                    val updated = current.map { post ->
+                    updatedPosts = current.map { post ->
                         if (Random.nextBoolean()) {
                             post.copy(unreadNotificationCount = (0..3).random())
                         } else post
                     }
-                    scope.launch {
-                        instagramDao.insertPosts(updated.map { InstagramPostEntity.fromDomainModel(it, isStory = false) })
-                    }
-                    updated
+                    updatedPosts
                 }
+                instagramDao.insertPosts(updatedPosts.map { InstagramPostEntity.fromDomainModel(it, isStory = false) })
             }
         } else {
             delay(600)
+            var updatedPosts: List<InstagramPost> = emptyList()
             postsFlow.update { current ->
-                val updated = current.map { post ->
+                updatedPosts = current.map { post ->
                     if (Random.nextBoolean()) {
                         post.copy(unreadNotificationCount = (0..3).random())
                     } else post
                 }
-                scope.launch {
-                    instagramDao.insertPosts(updated.map { InstagramPostEntity.fromDomainModel(it, isStory = false) })
-                }
-                updated
+                updatedPosts
             }
+            instagramDao.insertPosts(updatedPosts.map { InstagramPostEntity.fromDomainModel(it, isStory = false) })
         }
     }
 
     override suspend fun likePost(postId: String, currentUser: ProfileUser) {
+        var updatedPost: InstagramPost? = null
         postsFlow.update { current ->
             current.map { post ->
                 if (post.id == postId) {
@@ -121,55 +132,62 @@ class InstagramHomeRepositoryImpl(
                         post.likedUsers + currentUser
                     } else post.likedUsers
                     val updated = post.copy(isLiked = true, likedUsers = newLikedUsers)
-                    scope.launch {
-                        instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(updated, isStory = false)))
-                    }
+                    updatedPost = updated
                     updated
                 } else post
             }
         }
+        updatedPost?.let {
+            instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(it, isStory = false)))
+        }
     }
 
     override suspend fun unlikePost(postId: String, currentUser: ProfileUser) {
+        var updatedPost: InstagramPost? = null
         postsFlow.update { current ->
             current.map { post ->
                 if (post.id == postId) {
                     val newLikedUsers = post.likedUsers.filterNot { it.userId == currentUser.userId }
                     val updated = post.copy(isLiked = false, likedUsers = newLikedUsers)
-                    scope.launch {
-                        instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(updated, isStory = false)))
-                    }
+                    updatedPost = updated
                     updated
                 } else post
             }
+        }
+        updatedPost?.let {
+            instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(it, isStory = false)))
         }
     }
 
     override suspend fun savePost(postId: String) {
+        var updatedPost: InstagramPost? = null
         postsFlow.update { current ->
             current.map { post ->
                 if (post.id == postId) {
                     val updated = post.copy(isSaved = true)
-                    scope.launch {
-                        instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(updated, isStory = false)))
-                    }
+                    updatedPost = updated
                     updated
                 } else post
             }
         }
+        updatedPost?.let {
+            instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(it, isStory = false)))
+        }
     }
 
     override suspend fun unsavePost(postId: String) {
+        var updatedPost: InstagramPost? = null
         postsFlow.update { current ->
             current.map { post ->
                 if (post.id == postId) {
                     val updated = post.copy(isSaved = false)
-                    scope.launch {
-                        instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(updated, isStory = false)))
-                    }
+                    updatedPost = updated
                     updated
                 } else post
             }
+        }
+        updatedPost?.let {
+            instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(it, isStory = false)))
         }
     }
 
@@ -181,30 +199,34 @@ class InstagramHomeRepositoryImpl(
             content = content,
             createTime = currentTimeMillis()
         )
+        var updatedPost: InstagramPost? = null
         postsFlow.update { current ->
             current.map { post ->
                 if (post.id == postId) {
                     val updated = post.copy(commentsList = post.commentsList + newComment)
-                    scope.launch {
-                        instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(updated, isStory = false)))
-                    }
+                    updatedPost = updated
                     updated
                 } else post
             }
         }
+        updatedPost?.let {
+            instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(it, isStory = false)))
+        }
     }
 
     override suspend fun deleteComment(postId: String, commentId: String) {
+        var updatedPost: InstagramPost? = null
         postsFlow.update { current ->
             current.map { post ->
                 if (post.id == postId) {
                     val updated = post.copy(commentsList = post.commentsList.filterNot { it.id == commentId })
-                    scope.launch {
-                        instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(updated, isStory = false)))
-                    }
+                    updatedPost = updated
                     updated
                 } else post
             }
+        }
+        updatedPost?.let {
+            instagramDao.insertPosts(listOf(InstagramPostEntity.fromDomainModel(it, isStory = false)))
         }
     }
 

@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.example.project.core.database.AppDatabaseInitializer
 import org.example.project.core.network.client.AppNetworkInitializer
 import org.example.project.data.repository.instagram.InstagramHomeRepositoryImpl
 import org.example.project.domain.model.instagram.InstagramMedia
@@ -42,6 +43,7 @@ import org.example.project.presentation.state.instagram.InstagramHomeUiState
  */
 class InstagramHomeViewModel(
     private val repository: InstagramHomeRepository = InstagramHomeRepositoryImpl(
+        instagramDao = AppDatabaseInitializer.database.instagramDao(),
         networkContainer = AppNetworkInitializer.container
     ),
     currentUser: ProfileUser? = null

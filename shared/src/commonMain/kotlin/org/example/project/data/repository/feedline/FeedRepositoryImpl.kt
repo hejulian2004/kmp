@@ -18,15 +18,17 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.example.project.core.database.FakeFeedLineDao
 import org.example.project.core.network.client.NetworkContainer
 import org.example.project.core.network.config.ApiEndpoints
 import org.example.project.core.network.config.createFakeFeedPosts
 import org.example.project.data.database.dao.feedline.FeedLineDao
-import org.example.project.data.database.dao.feedline.FeedLineDaoImpl
 import org.example.project.data.database.entity.feedline.FeedLineNotificationEntity
 import org.example.project.data.database.entity.feedline.FeedLinePostEntity
 import org.example.project.domain.model.feedline.FeedLineComment
 import org.example.project.domain.model.feedline.FeedLineMedia
+import org.example.project.core.config.AppMockConfig
+import org.example.project.core.config.MockModule
 import org.example.project.domain.model.feedline.FeedLineNotification
 import org.example.project.domain.model.feedline.FeedLinePost
 import org.example.project.domain.model.feedline.FeedLineUser
@@ -41,8 +43,8 @@ fun generateUUID(): String {
 }
 
 class FeedRepositoryImpl(
+    private val feedLineDao: FeedLineDao = FakeFeedLineDao(),
     private val networkContainer: NetworkContainer? = null,
-    private val feedLineDao: FeedLineDao = FeedLineDaoImpl(),
 ) : FeedLineRepository {
 
     private val scope = CoroutineScope(Dispatchers.Default)
@@ -52,7 +54,7 @@ class FeedRepositoryImpl(
     init {
         scope.launch {
             val dbEntities = feedLineDao.observePosts().first()
-            if (dbEntities.isEmpty()) {
+            if (dbEntities.isEmpty() && AppMockConfig.isMockActiveFor(MockModule.FEEDLINE)) {
                 val initialPosts = createFakeFeedPosts()
                 _feedPosts.value = initialPosts
                 feedLineDao.insertPosts(initialPosts.map { FeedLinePostEntity.fromDomainModel(it) })
@@ -78,30 +80,21 @@ class FeedRepositoryImpl(
 
     override suspend fun refreshFeed() {
         val container = networkContainer
-        if (container != null) {
+        val isMock = AppMockConfig.isMockActiveFor(MockModule.FEEDLINE)
+        if (container != null && !isMock) {
             runCatching {
                 val remotePosts = container.authorizedClient
                     .get(ApiEndpoints.FeedLine.GET_POSTS)
                     .body<List<FeedLinePost>>()
-                val targetPosts = if (remotePosts.isNotEmpty()) remotePosts else createFakeFeedPosts()
                 val userCreatedPosts = _feedPosts.value.filterNot { post ->
-                    targetPosts.any { it.id == post.id } || post.id.startsWith("feed_post_")
+                    remotePosts.any { it.id == post.id } || post.id.startsWith("feed_post_")
                 }
-                val mergedPosts = userCreatedPosts + targetPosts
-                _feedPosts.value = mergedPosts
-                feedLineDao.insertPosts(mergedPosts.map { FeedLinePostEntity.fromDomainModel(it) })
-            }.onFailure {
-                delay(500.milliseconds)
-                val mockPosts = createFakeFeedPosts()
-                val userCreatedPosts = _feedPosts.value.filterNot { post ->
-                    mockPosts.any { it.id == post.id } || post.id.startsWith("feed_post_")
-                }
-                val mergedPosts = userCreatedPosts + mockPosts
+                val mergedPosts = userCreatedPosts + remotePosts
                 _feedPosts.value = mergedPosts
                 feedLineDao.insertPosts(mergedPosts.map { FeedLinePostEntity.fromDomainModel(it) })
             }
         } else {
-            delay(500.milliseconds)
+            delay(AppMockConfig.mockNetworkDelayMs.milliseconds)
             val mockPosts = createFakeFeedPosts()
             val userCreatedPosts = _feedPosts.value.filterNot { post ->
                 mockPosts.any { it.id == post.id } || post.id.startsWith("feed_post_")
@@ -113,14 +106,18 @@ class FeedRepositoryImpl(
     }
 
     override suspend fun likePost(postId: String, user: FeedLineUser): String {
+        var updatedPost: FeedLinePost? = null
         _feedPosts.update { posts ->
             posts.map { post ->
                 if (post.id == postId) {
                     val updated = post.copy(isLiked = true, likedUsers = post.likedUsers + user)
-                    scope.launch { feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(updated))) }
+                    updatedPost = updated
                     updated
                 } else post
             }
+        }
+        updatedPost?.let {
+            feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(it)))
         }
         return "点赞成功"
     }
@@ -131,6 +128,7 @@ class FeedRepositoryImpl(
     }
 
     override suspend fun unlikePost(postId: String, user: FeedLineUser): String {
+        var updatedPost: FeedLinePost? = null
         _feedPosts.update { posts ->
             posts.map { post ->
                 if (post.id == postId) {
@@ -138,10 +136,13 @@ class FeedRepositoryImpl(
                         isLiked = false,
                         likedUsers = post.likedUsers.filterNot { it.id == user.id }
                     )
-                    scope.launch { feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(updated))) }
+                    updatedPost = updated
                     updated
                 } else post
             }
+        }
+        updatedPost?.let {
+            feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(it)))
         }
         return "取消点赞成功"
     }
@@ -153,14 +154,18 @@ class FeedRepositoryImpl(
             commentUser = commentUser,
             content = content
         )
+        var updatedPost: FeedLinePost? = null
         _feedPosts.update { posts ->
             posts.map { post ->
                 if (post.id == postId) {
                     val updated = post.copy(commentsList = post.commentsList + newComment)
-                    scope.launch { feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(updated))) }
+                    updatedPost = updated
                     updated
                 } else post
             }
+        }
+        updatedPost?.let {
+            feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(it)))
         }
         return "评论发布成功"
     }
@@ -170,14 +175,18 @@ class FeedRepositoryImpl(
     }
 
     override suspend fun deleteComment(comment: FeedLineComment): String {
+        var updatedPost: FeedLinePost? = null
         _feedPosts.update { posts ->
             posts.map { post ->
                 if (post.id == comment.postId) {
                     val updated = post.copy(commentsList = post.commentsList.filter { it.id != comment.id })
-                    scope.launch { feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(updated))) }
+                    updatedPost = updated
                     updated
                 } else post
             }
+        }
+        updatedPost?.let {
+            feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(it)))
         }
         return "评论删除成功"
     }
@@ -199,14 +208,18 @@ class FeedRepositoryImpl(
     }
 
     override suspend fun updatePost(postId: String, content: String, mediaList: List<FeedLineMedia>) {
+        var updatedPost: FeedLinePost? = null
         _feedPosts.update { posts ->
             posts.map { post ->
                 if (post.id == postId) {
                     val updated = post.copy(content = content, mediaList = mediaList)
-                    scope.launch { feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(updated))) }
+                    updatedPost = updated
                     updated
                 } else post
             }
+        }
+        updatedPost?.let {
+            feedLineDao.insertPosts(listOf(FeedLinePostEntity.fromDomainModel(it)))
         }
     }
 
@@ -219,14 +232,18 @@ class FeedRepositoryImpl(
     }
 
     override suspend fun deleteCommentNotification(feedNotification: FeedLineNotification) {
+        var updatedNotification: FeedLineNotification? = null
         _feedNotifications.update { notifications ->
             notifications.map { notification ->
                 if (notification.id == feedNotification.id) {
                     val updated = notification.copy(isDelete = true)
-                    scope.launch { feedLineDao.insertNotifications(listOf(FeedLineNotificationEntity.fromDomainModel(updated))) }
+                    updatedNotification = updated
                     updated
                 } else notification
             }
+        }
+        updatedNotification?.let {
+            feedLineDao.insertNotifications(listOf(FeedLineNotificationEntity.fromDomainModel(it)))
         }
     }
 
@@ -249,10 +266,11 @@ class FeedRepositoryImpl(
     }
 
     override suspend fun markAllNotificationsAsRead() {
+        var readList: List<FeedLineNotification> = emptyList()
         _feedNotifications.update { notifications ->
-            val readList = notifications.map { it.copy(isRead = true) }
-            scope.launch { feedLineDao.insertNotifications(readList.map { FeedLineNotificationEntity.fromDomainModel(it) }) }
+            readList = notifications.map { it.copy(isRead = true) }
             readList
         }
+        feedLineDao.insertNotifications(readList.map { FeedLineNotificationEntity.fromDomainModel(it) })
     }
 }

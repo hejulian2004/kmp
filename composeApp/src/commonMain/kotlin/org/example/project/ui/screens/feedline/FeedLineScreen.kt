@@ -1,9 +1,9 @@
-/**
+﻿/**
  * @File: FeedLineScreen.kt
  * @Package: org.example.project.ui.screens.feedline
  * @Description: 朋友圈动态主界面的Compose视图入口（基于FileKit跨平台适配）
  * @Author: 何聚敛
- * @Date: 2026-07-22
+ * @Date: 2026-08-11
  */
 package org.example.project.ui.screens.feedline
 
@@ -32,6 +32,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -98,6 +99,7 @@ fun FeedScreen(
 
     LaunchedEffect(Unit) {
         org.example.project.ui.core.sdui.registry.registerFeedLineSduiComponents()
+        viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Feed))
     }
 
     val snackbarHostState = remember {
@@ -144,6 +146,7 @@ fun FeedScreen(
                 }
                 publishMediaList = media
                 isPublishTextOnly = false
+                viewModel.handleIntent(FeedIntent.SelectMedia(sourceType = "gallery", mediaCount = media.size))
                 viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Publish))
             }
         }
@@ -156,6 +159,7 @@ fun FeedScreen(
                 val filePath = it.path
                 publishMediaList = listOf(FeedLineMedia.Image(url = filePath))
                 isPublishTextOnly = false
+                viewModel.handleIntent(FeedIntent.SelectMedia(sourceType = "camera_photo", mediaCount = 1))
                 viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Publish))
             }
         }
@@ -168,6 +172,7 @@ fun FeedScreen(
                 val filePath = it.path
                 publishMediaList = listOf(FeedLineMedia.Video(coverUrl = filePath, videoUrl = filePath))
                 isPublishTextOnly = false
+                viewModel.handleIntent(FeedIntent.SelectMedia(sourceType = "camera_video", mediaCount = 1))
                 viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Publish))
             }
         }
@@ -186,6 +191,24 @@ fun FeedScreen(
     }
 
     val lazyListState = rememberLazyListState()
+
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val totalItems = lazyListState.layoutInfo.totalItemsCount
+            val lastVisibleItemIndex = lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            totalItems > 0 && lastVisibleItemIndex >= totalItems - 2
+        }
+    }
+    var hasReportedLoadMore by remember { mutableStateOf(false) }
+
+    LaunchedEffect(shouldLoadMore) {
+        if (shouldLoadMore && !hasReportedLoadMore) {
+            hasReportedLoadMore = true
+            viewModel.handleIntent(FeedIntent.LoadMore)
+        } else if (!shouldLoadMore) {
+            hasReportedLoadMore = false
+        }
+    }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -227,7 +250,7 @@ fun FeedScreen(
             initialMediaList = publishMediaList,
             isTextOnly = isPublishTextOnly,
             onCancelClick = {
-                viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Feed))
+                viewModel.handleIntent(FeedIntent.CancelPublish(hasContent = publishMediaList.isNotEmpty()))
             },
             onPostClick = { textContent, mediaList ->
                 viewModel.handleIntent(
@@ -251,7 +274,7 @@ fun FeedScreen(
                     onLongClickCreatePost = {
                         publishMediaList = emptyList()
                         isPublishTextOnly = true
-                        viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Publish))
+                        viewModel.handleIntent(FeedIntent.LongClickCreatePostTextOnly)
                     }
                 )
             },
@@ -296,7 +319,7 @@ fun FeedScreen(
                                         unreadCount = uiState.unreadNotificationCount,
                                         latestNotificationUserAvatar = latestNotification?.user?.avatarUrl,
                                         onClick = {
-                                            viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Notification))
+                                            viewModel.handleIntent(FeedIntent.ClickNotificationBar(uiState.unreadNotificationCount))
                                         }
                                     )
                                 }
@@ -323,7 +346,9 @@ fun FeedScreen(
                                     onClick = { post ->
                                         viewModel.handleIntent(FeedIntent.ShowMessage("postId:${post.id}"))
                                     },
-                                    onNameClick = { viewModel.handleIntent(FeedIntent.ShowMessage(post.postUser.name)) },
+                                    onNameClick = {
+                                        viewModel.handleIntent(FeedIntent.ViewUserProfile(post.postUser.id, "post_name"))
+                                    },
                                     onLikeClick = {
                                         if (!post.isLiked) {
                                             viewModel.handleIntent(
@@ -356,18 +381,21 @@ fun FeedScreen(
                                         pendingDeletePostId = post.id
                                     },
                                     onPostAvatarClick = {
-                                        viewModel.handleIntent(FeedIntent.ShowMessage(post.postUser.toString()))
+                                        viewModel.handleIntent(FeedIntent.ViewUserProfile(post.postUser.id, "post_avatar"))
                                     },
                                     onLikedAvatarClick = { user ->
-                                        viewModel.handleIntent(FeedIntent.ShowMessage(user.toString()))
+                                        viewModel.handleIntent(FeedIntent.ViewUserProfile(user.id, "like_avatar"))
                                     },
                                     currentTime = currentTime,
                                     onCommentClick = { comment ->
                                         viewModel.handleIntent(FeedIntent.ShowMessage(comment.toString()))
                                     },
                                     onCommentUserClick = { user ->
-                                        viewModel.handleIntent(FeedIntent.ShowMessage(user.toString()))
+                                        viewModel.handleIntent(FeedIntent.ViewUserProfile(user.id, "comment_name"))
                                     },
+                                    onMediaPreview = { postId, mediaUrl, isVideo ->
+                                        viewModel.handleIntent(FeedIntent.PreviewMedia(postId, mediaUrl, isVideo))
+                                    }
                                 )
                                 HorizontalDivider(
                                     thickness = 0.5.dp,

@@ -1,9 +1,9 @@
-/**
+﻿/**
  * @File: FeedLineSduiRegistry.kt
  * @Package: org.example.project.ui.core.sdui.registry
  * @Description: FeedLine朋友圈模块全量SDUI动态组件适配与集中注册入口
  * @Author: 何聚敛
- * @Date: 2026-08-05
+ * @Date: 2026-08-11
  */
 package org.example.project.ui.core.sdui.registry
 
@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.example.project.core.network.config.createFakeData
+import org.example.project.core.network.config.createFakePost
 import org.example.project.domain.model.feedline.FeedLineUser
 import org.example.project.ui.components.feedline.Avatar
 import org.example.project.ui.components.feedline.BottomSheet
@@ -32,7 +33,7 @@ import org.example.project.ui.core.sdui.SduiComponentRegistry
 fun registerFeedLineSduiComponents() {
     val defaultUser = FeedLineUser(id = "default", name = "当前用户", avatarUrl = "")
     val fakePosts = createFakeData()
-    val samplePost = fakePosts.firstOrNull() ?: org.example.project.core.network.config.createFakePost()
+    val samplePost = fakePosts.firstOrNull() ?: createFakePost()
 
     // 1. 顶部导航栏 (FeedLineTopBar)
     SduiComponentRegistry.register("FeedLineTopBar") { node, onAction ->

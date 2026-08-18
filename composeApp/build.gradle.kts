@@ -51,6 +51,7 @@ kotlin {
             implementation(libs.coil.network.ktor3)
             implementation(libs.ktor.client.cio)
             implementation(project(":shared"))
+            implementation(libs.androidx.room.runtime)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.google.accompanist.systemuicontroller)
             implementation(libs.androidx.core.ktx.v1120)

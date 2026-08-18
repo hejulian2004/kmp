@@ -1,9 +1,9 @@
-/**
+﻿/**
  * @File: FeedLineViewModel.kt
  * @Package: org.example.project.presentation.viewmodel.feedline
  * @Description: 朋友圈/动态模块的MVI核心视图模型，负责状态管理与事件处理
  * @Author: 何聚敛
- * @Date: 2026-08-10
+ * @Date: 2026-08-11
  */
 package org.example.project.presentation.viewmodel.feedline
 
@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.project.core.analytics.AnalyticsEvents
+import org.example.project.core.analytics.AnalyticsModules
 import org.example.project.core.analytics.AnalyticsParams
 import org.example.project.core.analytics.AnalyticsTracker
 import org.example.project.core.analytics.AppAnalyticsManager
@@ -42,6 +43,7 @@ import org.example.project.domain.usecase.feedline.MarkNotificationsAsReadUseCas
 import org.example.project.domain.usecase.feedline.RefreshFeedUseCase
 import org.example.project.domain.usecase.feedline.UnlikePostUseCase
 import org.example.project.domain.usecase.feedline.UpdatePostUseCase
+import org.example.project.platform.currentTimeMillis
 import org.example.project.presentation.effect.feedline.FeedLineEffect
 import org.example.project.presentation.intent.feedline.FeedIntent
 import org.example.project.presentation.state.RefreshState
@@ -87,27 +89,56 @@ class FeedLineViewModel(
     private val _effect = Channel<FeedLineEffect>(Channel.BUFFERED)
     val effect: Flow<FeedLineEffect> = _effect.receiveAsFlow()
 
+    private var currentScreenStartTime = currentTimeMillis()
+
     init {
+        AppAnalyticsManager.setUserContext(currentUser.id)
         observeFeeds()
         observeNotifications()
         refreshFeed(showSuccessMessage = false)
         analyticsTracker.trackEvent(
             AnalyticsEvents.OPEN_FEED,
-            mapOf(AnalyticsParams.USER_ID to currentUser.id)
+            mapOf(
+                AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                AnalyticsParams.USER_ID to currentUser.id
+            )
         )
     }
 
     fun handleIntent(feedIntent: FeedIntent) {
         when (feedIntent) {
             FeedIntent.Refresh -> {
-                analyticsTracker.trackEvent(AnalyticsEvents.REFRESH_FEED)
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.REFRESH_FEED,
+                    mapOf(AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE)
+                )
                 refreshFeed(showSuccessMessage = true)
+            }
+
+            FeedIntent.LoadMore -> {
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.FEED_LOAD_MORE,
+                    mapOf(AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE)
+                )
+            }
+
+            is FeedIntent.PreviewMedia -> {
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.MEDIA_PREVIEW,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.POST_ID to feedIntent.postId,
+                        "media_url" to feedIntent.mediaUrl,
+                        "media_type" to if (feedIntent.isVideo) "video" else "image"
+                    )
+                )
             }
 
             is FeedIntent.CreatePost -> {
                 analyticsTracker.trackEvent(
                     AnalyticsEvents.CREATE_POST,
                     mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
                         AnalyticsParams.USER_ID to feedIntent.user.id,
                         AnalyticsParams.MEDIA_COUNT to feedIntent.mediaList.size,
                         AnalyticsParams.HAS_TEXT to feedIntent.content.isNotBlank()
@@ -132,6 +163,7 @@ class FeedLineViewModel(
                 analyticsTracker.trackEvent(
                     AnalyticsEvents.DELETE_POST,
                     mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
                         AnalyticsParams.POST_ID to feedIntent.postId,
                         AnalyticsParams.USER_ID to uiState.value.currentUser.id
                     )
@@ -143,6 +175,7 @@ class FeedLineViewModel(
                 analyticsTracker.trackEvent(
                     AnalyticsEvents.ADD_COMMENT,
                     mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
                         AnalyticsParams.POST_ID to feedIntent.postId,
                         AnalyticsParams.USER_ID to feedIntent.user.id
                     )
@@ -158,6 +191,7 @@ class FeedLineViewModel(
                 analyticsTracker.trackEvent(
                     AnalyticsEvents.DELETE_COMMENT,
                     mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
                         AnalyticsParams.COMMENT_ID to feedIntent.comment.id,
                         AnalyticsParams.USER_ID to uiState.value.currentUser.id
                     )
@@ -171,6 +205,7 @@ class FeedLineViewModel(
                 analyticsTracker.trackEvent(
                     AnalyticsEvents.LIKE_POST,
                     mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
                         AnalyticsParams.POST_ID to feedIntent.postId,
                         AnalyticsParams.USER_ID to feedIntent.user.id
                     )
@@ -185,6 +220,7 @@ class FeedLineViewModel(
                 analyticsTracker.trackEvent(
                     AnalyticsEvents.UNLIKE_POST,
                     mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
                         AnalyticsParams.POST_ID to feedIntent.postId,
                         AnalyticsParams.USER_ID to feedIntent.user.id
                     )
@@ -212,13 +248,87 @@ class FeedLineViewModel(
             }
 
             FeedIntent.ClearAllNotifications -> {
+                val currentCount = (uiState.value.notificationsState as? UiState.Success)?.data?.count { !it.isDelete } ?: 0
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.NOTIFICATION_CLEAR,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.CLEARED_COUNT to currentCount
+                    )
+                )
                 clearAllNotifications()
             }
 
+            is FeedIntent.ViewUserProfile -> {
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.USER_PROFILE_VIEW,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.TARGET_USER_ID to feedIntent.targetUserId,
+                        AnalyticsParams.CLICK_SOURCE to feedIntent.clickSource
+                    )
+                )
+            }
+
+            is FeedIntent.ClickNotificationBar -> {
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.NOTIFICATION_BAR_CLICK,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.UNREAD_COUNT to feedIntent.unreadCount
+                    )
+                )
+                handleIntent(FeedIntent.NavigateTo(Screen.Notification))
+            }
+
+            is FeedIntent.SelectMedia -> {
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.MEDIA_SELECT,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.SOURCE_TYPE to feedIntent.sourceType,
+                        AnalyticsParams.MEDIA_COUNT to feedIntent.mediaCount
+                    )
+                )
+            }
+
+            is FeedIntent.CancelPublish -> {
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.POST_CANCEL,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.HAS_CONTENT to feedIntent.hasContent
+                    )
+                )
+                handleIntent(FeedIntent.NavigateTo(Screen.Feed))
+            }
+
+            FeedIntent.LongClickCreatePostTextOnly -> {
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.POST_TEXT_ONLY_ENTER,
+                    mapOf(AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE)
+                )
+                handleIntent(FeedIntent.NavigateTo(Screen.Publish))
+            }
+
             is FeedIntent.NavigateTo -> {
+                val now = currentTimeMillis()
+                val duration = now - currentScreenStartTime
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.LEAVE_SCREEN,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.SCREEN_NAME to uiState.value.currentScreen.name,
+                        AnalyticsParams.DURATION_MS to duration
+                    )
+                )
+                currentScreenStartTime = now
                 analyticsTracker.trackEvent(
                     AnalyticsEvents.ENTER_SCREEN,
-                    mapOf(AnalyticsParams.SCREEN_NAME to feedIntent.screen.name)
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.SCREEN_NAME to feedIntent.screen.name
+                    )
                 )
                 _uiState.update {
                     it.copy(currentScreen = feedIntent.screen)
@@ -234,6 +344,13 @@ class FeedLineViewModel(
         viewModelScope.launch {
             getFeedPostsUseCase()
                 .catch { e ->
+                    analyticsTracker.trackEvent(
+                        AnalyticsEvents.NETWORK_ERROR,
+                        mapOf(
+                            AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                            AnalyticsParams.ERROR_MSG to (e.message ?: "加载动态失败")
+                        )
+                    )
                     _uiState.update { it.copy(feedState = UiState.Error(e.message ?: "未知错误")) }
                     _effect.send(FeedLineEffect.ShowMessage("加载动态失败: ${e.message ?: "未知错误"}"))
                 }
@@ -252,6 +369,13 @@ class FeedLineViewModel(
             _uiState.update { it.copy(notificationsState = UiState.Loading) }
             getNotificationsUseCase()
                 .catch { e ->
+                    analyticsTracker.trackEvent(
+                        AnalyticsEvents.NETWORK_ERROR,
+                        mapOf(
+                            AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                            AnalyticsParams.ERROR_MSG to (e.message ?: "加载通知失败")
+                        )
+                    )
                     _uiState.update { it.copy(notificationsState = UiState.Error(e.message ?: "未知错误")) }
                     _effect.send(FeedLineEffect.ShowMessage("加载通知失败: ${e.message ?: "未知错误"}"))
                 }
@@ -298,69 +422,211 @@ class FeedLineViewModel(
 
     private fun createPost(postUser: FeedLineUser, content: String, mediaList: List<FeedLineMedia>, scrollToIndex: Int = 0) {
         viewModelScope.launch {
-            createPostUseCase(
-                user = postUser,
-                content = content,
-                mediaList = mediaList
-            )
-            _effect.send(FeedLineEffect.ShowMessage("发布成功"))
-            _effect.send(FeedLineEffect.ScrollToIndex(scrollToIndex))
+            try {
+                createPostUseCase(
+                    user = postUser,
+                    content = content,
+                    mediaList = mediaList
+                )
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.CREATE_POST,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.USER_ID to postUser.id,
+                        AnalyticsParams.MEDIA_COUNT to mediaList.size,
+                        AnalyticsParams.HAS_TEXT to content.isNotBlank(),
+                        AnalyticsParams.IS_SUCCESS to true
+                    )
+                )
+                _effect.send(FeedLineEffect.ShowMessage("发布成功"))
+                _effect.send(FeedLineEffect.ScrollToIndex(scrollToIndex))
+            } catch (e: Exception) {
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.CREATE_POST,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.USER_ID to postUser.id,
+                        AnalyticsParams.MEDIA_COUNT to mediaList.size,
+                        AnalyticsParams.HAS_TEXT to content.isNotBlank(),
+                        AnalyticsParams.IS_SUCCESS to false,
+                        AnalyticsParams.ERROR_MSG to (e.message ?: "发布失败")
+                    )
+                )
+                _effect.send(FeedLineEffect.ShowMessage("发布失败: ${e.message ?: "未知错误"}"))
+            }
         }
     }
 
     private fun updatePost(postId: String, content: String, mediaList: List<FeedLineMedia>) {
         viewModelScope.launch {
-            updatePostUseCase(
-                postId = postId,
-                content = content,
-                mediaList = mediaList
-            )
-            _effect.send(FeedLineEffect.ShowMessage("修改成功"))
+            try {
+                updatePostUseCase(
+                    postId = postId,
+                    content = content,
+                    mediaList = mediaList
+                )
+                _effect.send(FeedLineEffect.ShowMessage("修改成功"))
+            } catch (e: Exception) {
+                _effect.send(FeedLineEffect.ShowMessage("修改失败: ${e.message ?: "未知错误"}"))
+            }
         }
     }
 
     private fun deletePost(postId: String) {
         viewModelScope.launch {
-            deletePostUseCase(postId = postId)
-            _effect.send(FeedLineEffect.ShowMessage("删除成功"))
+            try {
+                deletePostUseCase(postId = postId)
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.DELETE_POST,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.POST_ID to postId,
+                        AnalyticsParams.USER_ID to uiState.value.currentUser.id,
+                        AnalyticsParams.IS_SUCCESS to true
+                    )
+                )
+                _effect.send(FeedLineEffect.ShowMessage("删除成功"))
+            } catch (e: Exception) {
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.DELETE_POST,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.POST_ID to postId,
+                        AnalyticsParams.USER_ID to uiState.value.currentUser.id,
+                        AnalyticsParams.IS_SUCCESS to false,
+                        AnalyticsParams.ERROR_MSG to (e.message ?: "删除失败")
+                    )
+                )
+                _effect.send(FeedLineEffect.ShowMessage("删除失败: ${e.message ?: "未知错误"}"))
+            }
         }
     }
 
     private fun likePost(postId: String, user: FeedLineUser) {
         viewModelScope.launch {
-            likePostUseCase(
-                postId = postId,
-                user = user,
-                currentUserId = uiState.value.currentUser.id
-            )
+            try {
+                likePostUseCase(
+                    postId = postId,
+                    user = user,
+                    currentUserId = uiState.value.currentUser.id
+                )
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.LIKE_POST,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.POST_ID to postId,
+                        AnalyticsParams.USER_ID to user.id,
+                        AnalyticsParams.IS_SUCCESS to true
+                    )
+                )
+            } catch (e: Exception) {
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.LIKE_POST,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.POST_ID to postId,
+                        AnalyticsParams.USER_ID to user.id,
+                        AnalyticsParams.IS_SUCCESS to false,
+                        AnalyticsParams.ERROR_MSG to (e.message ?: "点赞失败")
+                    )
+                )
+            }
         }
     }
 
     private fun unlikePost(postId: String, user: FeedLineUser) {
         viewModelScope.launch {
-            unlikePostUseCase(
-                postId = postId,
-                user = user
-            )
+            try {
+                unlikePostUseCase(
+                    postId = postId,
+                    user = user
+                )
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.UNLIKE_POST,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.POST_ID to postId,
+                        AnalyticsParams.USER_ID to user.id,
+                        AnalyticsParams.IS_SUCCESS to true
+                    )
+                )
+            } catch (e: Exception) {
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.UNLIKE_POST,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.POST_ID to postId,
+                        AnalyticsParams.USER_ID to user.id,
+                        AnalyticsParams.IS_SUCCESS to false,
+                        AnalyticsParams.ERROR_MSG to (e.message ?: "取消点赞失败")
+                    )
+                )
+            }
         }
     }
 
     private fun addComment(postId: String, user: FeedLineUser, content: String) {
         viewModelScope.launch {
-            addCommentUseCase(
-                postId = postId,
-                user = user,
-                content = content,
-                currentUserId = uiState.value.currentUser.id
-            )
-            _effect.send(FeedLineEffect.ShowMessage("评论成功"))
+            try {
+                addCommentUseCase(
+                    postId = postId,
+                    user = user,
+                    content = content,
+                    currentUserId = uiState.value.currentUser.id
+                )
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.ADD_COMMENT,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.POST_ID to postId,
+                        AnalyticsParams.USER_ID to user.id,
+                        AnalyticsParams.IS_SUCCESS to true
+                    )
+                )
+                _effect.send(FeedLineEffect.ShowMessage("评论成功"))
+            } catch (e: Exception) {
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.ADD_COMMENT,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.POST_ID to postId,
+                        AnalyticsParams.USER_ID to user.id,
+                        AnalyticsParams.IS_SUCCESS to false,
+                        AnalyticsParams.ERROR_MSG to (e.message ?: "评论失败")
+                    )
+                )
+                _effect.send(FeedLineEffect.ShowMessage("评论失败: ${e.message ?: "未知错误"}"))
+            }
         }
     }
 
     private fun deleteComment(comment: FeedLineComment) {
         viewModelScope.launch {
-            deleteCommentUseCase(comment = comment)
-            _effect.send(FeedLineEffect.ShowMessage("删除评论成功"))
+            try {
+                deleteCommentUseCase(comment = comment)
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.DELETE_COMMENT,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.COMMENT_ID to comment.id,
+                        AnalyticsParams.USER_ID to uiState.value.currentUser.id,
+                        AnalyticsParams.IS_SUCCESS to true
+                    )
+                )
+                _effect.send(FeedLineEffect.ShowMessage("删除评论成功"))
+            } catch (e: Exception) {
+                analyticsTracker.trackEvent(
+                    AnalyticsEvents.DELETE_COMMENT,
+                    mapOf(
+                        AnalyticsParams.MODULE_NAME to AnalyticsModules.FEEDLINE,
+                        AnalyticsParams.COMMENT_ID to comment.id,
+                        AnalyticsParams.USER_ID to uiState.value.currentUser.id,
+                        AnalyticsParams.IS_SUCCESS to false,
+                        AnalyticsParams.ERROR_MSG to (e.message ?: "删除评论失败")
+                    )
+                )
+                _effect.send(FeedLineEffect.ShowMessage("删除评论失败: ${e.message ?: "未知错误"}"))
+            }
         }
     }
 

@@ -48,4 +48,13 @@ object ApiEndpoints {
         const val GET_REVIEWS = "/api/v1/airbnb/reviews"
         const val GET_GUIDES = "/api/v1/airbnb/guides"
     }
+
+    /** 微信公众号(WeChatMp)模块接口路径 */
+    object WeChatMp {
+        const val GET_ACCOUNTS = "/api/v1/wechat/accounts"
+        const val GET_FEATURED = "/api/v1/wechat/featured"
+        const val GET_WATERFALL = "/api/v1/wechat/waterfall"
+        const val DISLIKE = "/api/v1/wechat/dislike"
+        const val TOGGLE_FOLLOW = "/api/v1/wechat/follow"
+    }
 }

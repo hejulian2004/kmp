@@ -3,7 +3,7 @@
  * @Package: org.example.project.core.sdui.config
  * @Description: SDUI大组件与小组件版本号集中统一配置文件
  * @Author: 何聚敛
- * @Date: 2026-08-05
+ * @Date: 2026-08-11
  */
 package org.example.project.core.sdui.config
 
@@ -48,4 +48,37 @@ object SduiVersionConfig {
     const val INSTAGRAM_USER_CARD_VERSION = "v1.0.0"
     const val INSTAGRAM_COMMENT_BAR_VERSION = "v1.0.0"
     const val INSTAGRAM_CONFIRM_DIALOG_VERSION = "v1.0.0"
+
+    // ==========================================
+    // 4. Airbnb模块下属子组件版本号 (Airbnb Sub-Components)
+    // ==========================================
+    const val MODULE_AIRBNB_VERSION = "v1.0.0"
+    const val AIRBNB_TOPBAR_VERSION = "v1.0.0"
+    const val AIRBNB_HOST_SELECTOR_VERSION = "v1.0.0"
+    const val AIRBNB_HERO_CARD_VERSION = "v1.0.0"
+    const val AIRBNB_SECTION_CARD_VERSION = "v1.0.0"
+    const val AIRBNB_DETAIL_LINE_VERSION = "v1.0.0"
+    const val AIRBNB_SECTION_TITLE_VERSION = "v1.0.0"
+    const val AIRBNB_HOBBIES_SECTION_VERSION = "v1.0.0"
+    const val AIRBNB_PLACES_SECTION_VERSION = "v1.0.0"
+    const val AIRBNB_DESTINATION_STAMP_VERSION = "v1.0.0"
+    const val AIRBNB_REVIEW_CARD_VERSION = "v1.0.0"
+    const val AIRBNB_LISTING_CARD_VERSION = "v1.0.0"
+    const val AIRBNB_ACTION_ITEM_VERSION = "v1.0.0"
+    const val AIRBNB_ABOUT_ME_SECTION_VERSION = "v1.0.0"
+    const val AIRBNB_AVATAR_SECTION_VERSION = "v1.0.0"
+    const val AIRBNB_PROFILE_FIELD_ITEM_VERSION = "v1.0.0"
+    const val AIRBNB_TOGGLE_ITEM_VERSION = "v1.0.0"
+
+    // ==========================================
+    // 5. WeChatMp微信公众号模块下属子组件版本号 (WeChatMp Sub-Components)
+    // ==========================================
+    const val MODULE_WECHAT_MP_VERSION = "v1.0.0"
+    const val WECHAT_MP_TOPBAR_VERSION = "v1.0.0"
+    const val WECHAT_MP_FREQUENTLY_READ_VERSION = "v1.0.0"
+    const val WECHAT_MP_FEATURED_BANNER_VERSION = "v1.0.0"
+    const val WECHAT_MP_HORIZONTAL_CARD_VERSION = "v1.0.0"
+    const val WECHAT_MP_WATERFALL_CARD_VERSION = "v1.0.0"
+    const val WECHAT_MP_DISLIKE_SHEET_VERSION = "v1.0.0"
 }
+
