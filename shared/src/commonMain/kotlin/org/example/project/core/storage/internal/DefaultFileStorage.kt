@@ -1,7 +1,7 @@
 ﻿/**
  * @File: DefaultFileStorage.kt
  * @Package: org.example.project.core.storage.internal
- * @Description: 应用统一文件存储 Core 核心实现类
+ * @Description: 应用统一文件存储 Core 核心实现类 (Storage V1 Area-Level 并发模型)
  * @Author: 何聚敛
  * @Date: 2026-08-18
  */
@@ -24,13 +24,13 @@ import org.example.project.core.storage.api.WriteMode
 import org.example.project.core.storage.platform.StorageDirectories
 
 /**
- * 应用统一文件存储核心实现类。
+ * 应用统一文件存储核心实现类 (Storage V1 区域级互斥并发模型)。
  * 
  * 职责：
  * 1. 隔离底层平台物理文件系统差异。
  * 2. 防范目录穿越与路径逃逸。
  * 3. 强制在 Dispatchers.IO 调度器下执行。
- * 4. 实现基于路径粒度的并发锁 (Path-based Mutex Lock)。
+ * 4. 统一在 StorageArea 区域 Mutex 互斥下控制并发操作。
  * 5. 实现基于临时写与重命名的原子写 (Atomic Write)。
  * 
  * @param directories 平台存储物理根目录映射
@@ -42,7 +42,7 @@ class DefaultFileStorage internal constructor(
 ) : FileStorage {
 
     private val resolver = StoragePathResolver(directories)
-    private val lockRegistry = PathLockRegistry()
+    private val areaMutexes = StorageArea.entries.associateWith { Mutex() }
 
     override suspend fun write(
         area: StorageArea,
@@ -51,14 +51,10 @@ class DefaultFileStorage internal constructor(
         mode: WriteMode
     ): Unit = withContext(Dispatchers.IO) {
         val targetPath = resolver.resolve(area, path, allowEmpty = false)
-        val canonicalPathKey = targetPath.toString()
-
-        lockRegistry.withAreaLock(area) {
-            lockRegistry.withPathLock(canonicalPathKey) {
-                when (mode) {
-                    WriteMode.ATOMIC -> executeAtomicWrite(targetPath, data)
-                    WriteMode.OVERWRITE, WriteMode.APPEND -> driver.write(targetPath, data, mode)
-                }
+        areaMutexes.getValue(area).withLock {
+            when (mode) {
+                WriteMode.ATOMIC -> executeAtomicWrite(targetPath, data)
+                WriteMode.OVERWRITE, WriteMode.APPEND -> driver.write(targetPath, data, mode)
             }
         }
     }
@@ -68,12 +64,8 @@ class DefaultFileStorage internal constructor(
         path: StoragePath
     ): ByteArray = withContext(Dispatchers.IO) {
         val targetPath = resolver.resolve(area, path, allowEmpty = false)
-        val canonicalPathKey = targetPath.toString()
-
-        lockRegistry.withAreaLock(area) {
-            lockRegistry.withPathLock(canonicalPathKey) {
-                driver.read(targetPath)
-            }
+        areaMutexes.getValue(area).withLock {
+            driver.read(targetPath)
         }
     }
 
@@ -82,7 +74,9 @@ class DefaultFileStorage internal constructor(
         path: StoragePath
     ): Boolean = withContext(Dispatchers.IO) {
         val targetPath = resolver.resolve(area, path, allowEmpty = false)
-        driver.exists(targetPath)
+        areaMutexes.getValue(area).withLock {
+            driver.exists(targetPath)
+        }
     }
 
     override suspend fun delete(
@@ -90,12 +84,8 @@ class DefaultFileStorage internal constructor(
         path: StoragePath
     ): Boolean = withContext(Dispatchers.IO) {
         val targetPath = resolver.resolve(area, path, allowEmpty = false)
-        val canonicalPathKey = targetPath.toString()
-
-        lockRegistry.withAreaLock(area) {
-            lockRegistry.withPathLock(canonicalPathKey) {
-                driver.delete(targetPath)
-            }
+        areaMutexes.getValue(area).withLock {
+            driver.delete(targetPath)
         }
     }
 
@@ -104,7 +94,9 @@ class DefaultFileStorage internal constructor(
         path: StoragePath
     ): StorageMetadata? = withContext(Dispatchers.IO) {
         val targetPath = resolver.resolve(area, path, allowEmpty = false)
-        driver.metadata(targetPath)
+        areaMutexes.getValue(area).withLock {
+            driver.metadata(targetPath)
+        }
     }
 
     override suspend fun list(
@@ -113,42 +105,37 @@ class DefaultFileStorage internal constructor(
     ): List<StorageFile> = withContext(Dispatchers.IO) {
         val dirPath = resolver.resolve(area, directory, allowEmpty = true)
         val areaRootPathStr = resolver.resolveAreaRoot(area).toString()
-        val childPaths = driver.list(dirPath)
-
-        childPaths.mapNotNull { childPath ->
-            val childPathStr = childPath.toString()
-            val relativeStr = if (childPathStr.startsWith(areaRootPathStr)) {
-                childPathStr.removePrefix(areaRootPathStr).trimStart('/', '\\')
-            } else {
-                childPath.name
+        areaMutexes.getValue(area).withLock {
+            val childPaths = driver.list(dirPath)
+            childPaths.mapNotNull { childPath ->
+                val childPathStr = childPath.toString()
+                val relativeStr = if (childPathStr.startsWith(areaRootPathStr)) {
+                    childPathStr.removePrefix(areaRootPathStr).trimStart('/', '\\')
+                } else {
+                    childPath.name
+                }
+                val meta = driver.metadata(childPath) ?: return@mapNotNull null
+                StorageFile(
+                    path = StoragePath(relativeStr),
+                    metadata = meta
+                )
             }
-            val meta = driver.metadata(childPath) ?: return@mapNotNull null
-            StorageFile(
-                path = StoragePath(relativeStr),
-                metadata = meta
-            )
         }
     }
 
     override suspend fun clear(
         area: StorageArea
     ): Unit = withContext(Dispatchers.IO) {
-        lockRegistry.withAreaLock(area) {
+        areaMutexes.getValue(area).withLock {
             val rootPath = resolver.resolveAreaRoot(area)
             val childPaths = driver.list(rootPath)
             childPaths.forEach { child ->
-                val canonicalKey = child.toString()
-                lockRegistry.withPathLock(canonicalKey) {
-                    driver.delete(child)
-                }
+                driver.delete(child)
             }
         }
     }
 
-    /**
-     * 获取当前注册表中活跃的 Path Lock 数量 (供单元测试验证内存释放)。
-     */
-    internal suspend fun activeLockCount(): Int = lockRegistry.activeLockCount()
+    internal suspend fun activeLockCount(): Int = 0
 
     /**
      * 执行原子写逻辑：
@@ -163,7 +150,6 @@ class DefaultFileStorage internal constructor(
             driver.write(tempPath, data, WriteMode.OVERWRITE)
             driver.atomicMove(tempPath, targetPath)
         } catch (e: Exception) {
-            // 清理写一半残留的临时文件
             if (driver.exists(tempPath)) {
                 driver.delete(tempPath)
             }
@@ -173,49 +159,5 @@ class DefaultFileStorage internal constructor(
                 throw StorageException(StorageError.IoError("Atomic write failed: ${e.message}"), cause = e)
             }
         }
-    }
-}
-
-/**
- * 路径与区域级并发锁注册表实现类。
- * 包含引用计数清理机制，防止 Map 无界增长。
- */
-internal class PathLockRegistry {
-    private class LockEntry {
-        val mutex = Mutex()
-        var refCount = 0
-    }
-
-    private val locks = mutableMapOf<String, LockEntry>()
-    private val registryMutex = Mutex()
-    private val areaMutexes = StorageArea.entries.associateWith { Mutex() }
-
-    suspend fun <T> withPathLock(key: String, action: suspend () -> T): T {
-        val entry = registryMutex.withLock {
-            locks.getOrPut(key) { LockEntry() }.also { it.refCount++ }
-        }
-        try {
-            return entry.mutex.withLock {
-                action()
-            }
-        } finally {
-            registryMutex.withLock {
-                entry.refCount--
-                if (entry.refCount == 0) {
-                    locks.remove(key)
-                }
-            }
-        }
-    }
-
-    suspend fun <T> withAreaLock(area: StorageArea, action: suspend () -> T): T {
-        val areaMutex = areaMutexes.getValue(area)
-        return areaMutex.withLock {
-            action()
-        }
-    }
-
-    suspend fun activeLockCount(): Int {
-        return registryMutex.withLock { locks.size }
     }
 }
