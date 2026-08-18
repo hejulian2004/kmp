@@ -20,6 +20,8 @@ import coil3.request.crossfade
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import io.github.vinceglb.filekit.dialogs.init
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import org.example.project.core.init.AppInitParams
 import org.example.project.core.init.AppInitializer
 
@@ -29,14 +31,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         requestHighRefreshRate()
         FileKit.init(this)
-        AppInitializer.init(
-            AppInitParams(
-                context = applicationContext,
-                platformName = "Android",
-                appVersion = "1.0.0",
-                deviceId = Build.MODEL
+        lifecycleScope.launch {
+            AppInitializer.init(
+                AppInitParams(
+                    context = applicationContext,
+                    platformName = "Android",
+                    appVersion = "1.0.0",
+                    deviceId = Build.MODEL
+                )
             )
-        )
+        }
         SingletonImageLoader.setSafe { context ->
             ImageLoader.Builder(context)
                 .components {
