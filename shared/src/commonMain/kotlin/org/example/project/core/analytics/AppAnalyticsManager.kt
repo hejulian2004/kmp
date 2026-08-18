@@ -19,7 +19,10 @@ private inline fun <T> synchronized(lock: Any, block: () -> T): T = block()
  * 全局应用数据埋点单例管理器 (App Singleton)
  */
 object AppAnalyticsManager : AnalyticsTracker {
-    private var isInitialized = false
+    private var _isInitialized = false
+    val isInitialized: Boolean
+        get() = _isInitialized
+
     private var config: AnalyticsConfig? = null
     private val trackers = mutableListOf<AnalyticsTracker>()
     private val globalParams = mutableMapOf<String, Any>()
@@ -33,7 +36,7 @@ object AppAnalyticsManager : AnalyticsTracker {
      */
     fun init(config: AnalyticsConfig) {
         synchronized(this) {
-            check(!isInitialized) {
+            check(!_isInitialized) {
                 "AppAnalyticsManager 已经初始化过，严禁重复初始化！"
             }
             this.config = config
@@ -49,7 +52,7 @@ object AppAnalyticsManager : AnalyticsTracker {
                 trackers.addAll(config.trackers)
             }
 
-            isInitialized = true
+            _isInitialized = true
         }
     }
 
@@ -58,7 +61,7 @@ object AppAnalyticsManager : AnalyticsTracker {
      */
     internal fun resetForTest() {
         synchronized(this) {
-            isInitialized = false
+            _isInitialized = false
             config = null
             synchronized(globalParams) {
                 globalParams.clear()
@@ -73,7 +76,7 @@ object AppAnalyticsManager : AnalyticsTracker {
      * 检查单例初始化状态，未初始化时直接抛出 IllegalStateException 报错
      */
     private fun checkInitialized() {
-        check(isInitialized) {
+        check(_isInitialized) {
             "AppAnalyticsManager 尚未初始化！必须首先在应用入口（如 AppInitializer.init()）中显式调用 AppAnalyticsManager.init(...) 方法完成初始化！"
         }
     }
