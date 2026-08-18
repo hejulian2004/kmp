@@ -65,6 +65,12 @@ import org.example.project.ui.theme.wechat.WeChatTextPrimary
 import org.example.project.ui.theme.wechat.WeChatTheme
 import org.jetbrains.compose.resources.stringResource
 
+import org.example.project.ui.core.sdui.registry.registerWeChatMpSduiComponents
+import org.example.project.core.analytics.AnalyticsModules
+import org.example.project.core.analytics.AnalyticsEvents
+import org.example.project.core.analytics.AnalyticsParams
+import org.example.project.core.analytics.AppAnalyticsManager
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeChatMpScreen(
@@ -82,6 +88,14 @@ fun WeChatMpScreen(
     val maxContentWidth = getMaxAdaptiveContentWidth(windowSizeClass)
 
     LaunchedEffect(Unit) {
+        registerWeChatMpSduiComponents()
+        AppAnalyticsManager.trackEvent(
+            AnalyticsEvents.ENTER_SCREEN,
+            mapOf(
+                AnalyticsParams.SCREEN_NAME to "wechat_mp_screen",
+                AnalyticsParams.MODULE_NAME to AnalyticsModules.WECHAT_MP
+            )
+        )
         viewModel.effect.collect { effect ->
             when (effect) {
                 is WeChatMpEffect.ShowToast -> {
@@ -117,7 +131,16 @@ fun WeChatMpScreen(
         containerColor = WeChatBackgroundGray,
         topBar = {
             WeChatMpTopBar(
-                onBackClick = onBackClick,
+                onBackClick = {
+                    AppAnalyticsManager.trackEvent(
+                        AnalyticsEvents.LEAVE_SCREEN,
+                        mapOf(
+                            AnalyticsParams.SCREEN_NAME to "wechat_mp_screen",
+                            AnalyticsParams.MODULE_NAME to AnalyticsModules.WECHAT_MP
+                        )
+                    )
+                    onBackClick()
+                },
                 onSearchClick = { viewModel.handleIntent(WeChatMpIntent.ClickSearch) },
                 onProfileClick = { viewModel.handleIntent(WeChatMpIntent.ClickProfile) }
             )
