@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File: FeedLineScreen.kt
  * @Package: org.example.project.ui.screens.feedline
  * @Description: 朋友圈动态主界面的Compose视图入口（基于FileKit跨平台适配）
@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -127,27 +128,20 @@ fun FeedScreen(
     var publishMediaList by remember { mutableStateOf<List<FeedLineMedia>>(emptyList()) }
     var isPublishTextOnly by remember { mutableStateOf(false) }
 
+    val coroutineScope = rememberCoroutineScope()
+
     val photoPickerLauncher = rememberFilePickerLauncher(
         type = FileKitType.ImageAndVideo,
         mode = FileKitMode.Multiple(maxItems = 9),
         onResult = { files ->
             files?.let { list ->
-                val media = list.map { file ->
-                    val filePath = file.path
-                    val fileName = file.name
-                    val isVideo = fileName.endsWith(".mp4", ignoreCase = true) ||
-                            fileName.endsWith(".mov", ignoreCase = true) ||
-                            fileName.endsWith(".mkv", ignoreCase = true)
-                    if (isVideo) {
-                        FeedLineMedia.Video(coverUrl = filePath, videoUrl = filePath)
-                    } else {
-                        FeedLineMedia.Image(url = filePath)
-                    }
+                coroutineScope.launch {
+                    val media = list.map { file -> org.example.project.ui.utils.persistPickedMedia(file) }
+                    publishMediaList = media
+                    isPublishTextOnly = false
+                    viewModel.handleIntent(FeedIntent.SelectMedia(sourceType = "gallery", mediaCount = media.size))
+                    viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Publish))
                 }
-                publishMediaList = media
-                isPublishTextOnly = false
-                viewModel.handleIntent(FeedIntent.SelectMedia(sourceType = "gallery", mediaCount = media.size))
-                viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Publish))
             }
         }
     )
@@ -156,11 +150,13 @@ fun FeedScreen(
         type = CameraMediaType.Photo,
         onResult = { file ->
             file?.let {
-                val filePath = it.path
-                publishMediaList = listOf(FeedLineMedia.Image(url = filePath))
-                isPublishTextOnly = false
-                viewModel.handleIntent(FeedIntent.SelectMedia(sourceType = "camera_photo", mediaCount = 1))
-                viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Publish))
+                coroutineScope.launch {
+                    val media = listOf(org.example.project.ui.utils.persistPickedMedia(it))
+                    publishMediaList = media
+                    isPublishTextOnly = false
+                    viewModel.handleIntent(FeedIntent.SelectMedia(sourceType = "camera_photo", mediaCount = 1))
+                    viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Publish))
+                }
             }
         }
     )
@@ -169,11 +165,13 @@ fun FeedScreen(
         type = CameraMediaType.Video,
         onResult = { file ->
             file?.let {
-                val filePath = it.path
-                publishMediaList = listOf(FeedLineMedia.Video(coverUrl = filePath, videoUrl = filePath))
-                isPublishTextOnly = false
-                viewModel.handleIntent(FeedIntent.SelectMedia(sourceType = "camera_video", mediaCount = 1))
-                viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Publish))
+                coroutineScope.launch {
+                    val media = listOf(org.example.project.ui.utils.persistPickedMedia(it))
+                    publishMediaList = media
+                    isPublishTextOnly = false
+                    viewModel.handleIntent(FeedIntent.SelectMedia(sourceType = "camera_video", mediaCount = 1))
+                    viewModel.handleIntent(FeedIntent.NavigateTo(Screen.Publish))
+                }
             }
         }
     )
@@ -553,12 +551,8 @@ fun FeedScreenPreview() {
         name = "何聚敛",
         avatarUrl = "https://i.pravatar.cc/300"
     )
-
-    val repository = object : FeedLineRepository by FeedRepositoryImpl() {
-        override fun getFeedPosts() = flowOf(
-            createFakeData()
-        )
-    }
+    val db = org.example.project.core.database.RealSqliteAppDatabase(org.example.project.core.database.getTestDatabasePath("preview_feed"))
+    val repository = FeedRepositoryImpl(feedLineDao = db.feedLineDao())
 
     FeedScreen(
         viewModel = FeedLineViewModel(

@@ -1,9 +1,9 @@
 /**
  * @File: DatabaseBuilder.android.kt
  * @Package: org.example.project.core.database
- * @Description: Android平台Room KMP数据库构建实现
+ * @Description: Android平台Room KMP/SQLite数据库构建实现
  * @Author: 何聚敛
- * @Date: 2026-08-11
+ * @Date: 2026-08-18
  */
 package org.example.project.core.database
 
@@ -20,25 +20,34 @@ private class TestContext : ContextWrapper(null) {
         file.parentFile?.mkdirs()
         return file
     }
+    override fun getSystemService(name: String): Any? = null
+    override fun getSystemServiceName(serviceClass: Class<*>): String? = null
 }
 
 fun getAndroidDatabaseBuilder(context: Context): RoomDatabase.Builder<AppDatabase> {
     val appContext = context.applicationContext
     val dbFile = appContext.getDatabasePath("app_database.db")
+    dbFile.parentFile?.mkdirs()
     return Room.databaseBuilder<AppDatabase>(
         context = appContext,
-        name = dbFile.absolutePath,
-        factory = { AndroidAppDatabase() }
+        name = dbFile.absolutePath
     )
 }
 
 actual fun getRoomDatabase(context: Any?): AppDatabase {
     val androidContext = context as? Context
-    return if (androidContext != null) {
-        getRoomDatabase(getAndroidDatabaseBuilder(androidContext))
-    } else {
-        AndroidAppDatabase()
-    }
+        ?: try {
+            val activityThreadClass = Class.forName("android.app.ActivityThread")
+            val method = activityThreadClass.getMethod("currentApplication")
+            method.invoke(null) as? Context
+        } catch (_: Throwable) {
+            null
+        }
+        ?: TestContext()
+
+    val dbFile = androidContext.getDatabasePath("app_database.db")
+    dbFile.parentFile?.mkdirs()
+    return RealSqliteAppDatabase(dbFile.absolutePath)
 }
 
 actual fun getTestDatabasePath(dbName: String): String {
@@ -47,17 +56,8 @@ actual fun getTestDatabasePath(dbName: String): String {
 }
 
 actual fun getTestDatabaseBuilder(dbPath: String): RoomDatabase.Builder<AppDatabase> {
-    val context = try {
-        val activityThreadClass = Class.forName("android.app.ActivityThread")
-        val method = activityThreadClass.getMethod("currentApplication")
-        (method.invoke(null) as? Context)
-    } catch (_: Throwable) {
-        null
-    } ?: TestContext()
-
     return Room.databaseBuilder<AppDatabase>(
-        context = context,
-        name = dbPath,
-        factory = { AndroidAppDatabase() }
+        context = TestContext(),
+        name = dbPath
     )
 }

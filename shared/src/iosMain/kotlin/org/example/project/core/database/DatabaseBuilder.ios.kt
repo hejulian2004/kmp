@@ -1,9 +1,9 @@
 /**
  * @File: DatabaseBuilder.ios.kt
  * @Package: org.example.project.core.database
- * @Description: iOS平台Room KMP数据库构建实现
+ * @Description: iOS平台Room KMP/SQLite数据库构建实现
  * @Author: 何聚敛
- * @Date: 2026-08-11
+ * @Date: 2026-08-18
  */
 package org.example.project.core.database
 
@@ -14,10 +14,6 @@ import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSUserDomainMask
-
-open class IosAppDatabase : BaseDefaultAppDatabase()
-
-actual fun createDefaultAppDatabase(): AppDatabase = IosAppDatabase()
 
 @OptIn(ExperimentalForeignApi::class)
 fun getIosDatabaseBuilder(): RoomDatabase.Builder<AppDatabase> {
@@ -30,13 +26,21 @@ fun getIosDatabaseBuilder(): RoomDatabase.Builder<AppDatabase> {
     )
     val dbFilePath = requireNotNull(documentDirectory?.path) + "/app_database.db"
     return Room.databaseBuilder<AppDatabase>(
-        name = dbFilePath,
-        factory = { IosAppDatabase() }
+        name = dbFilePath
     )
 }
 
+@OptIn(ExperimentalForeignApi::class)
 actual fun getRoomDatabase(context: Any?): AppDatabase {
-    return getRoomDatabase(getIosDatabaseBuilder())
+    val documentDirectory = NSFileManager.defaultManager.URLForDirectory(
+        directory = NSDocumentDirectory,
+        inDomain = NSUserDomainMask,
+        appropriateForURL = null,
+        create = true,
+        error = null
+    )
+    val dbFilePath = requireNotNull(documentDirectory?.path) + "/app_database.db"
+    return RealSqliteAppDatabase(dbFilePath)
 }
 
 actual fun getTestDatabasePath(dbName: String): String {
@@ -46,7 +50,6 @@ actual fun getTestDatabasePath(dbName: String): String {
 
 actual fun getTestDatabaseBuilder(dbPath: String): RoomDatabase.Builder<AppDatabase> {
     return Room.databaseBuilder<AppDatabase>(
-        name = dbPath,
-        factory = { IosAppDatabase() }
+        name = dbPath
     )
 }

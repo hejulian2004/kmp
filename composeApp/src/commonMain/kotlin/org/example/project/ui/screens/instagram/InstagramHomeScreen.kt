@@ -469,7 +469,8 @@ fun InstagramHomeScreen(
 @Composable
 fun InstagramHomeScreenPreview() {
     InstagramTheme {
-        val mockRepo = object : InstagramHomeRepository by InstagramHomeRepositoryImpl() {
+        val db = org.example.project.core.database.RealSqliteAppDatabase(org.example.project.core.database.getTestDatabasePath("preview_insta"))
+        val mockRepo = object : InstagramHomeRepository by InstagramHomeRepositoryImpl(instagramDao = db.instagramDao()) {
             override fun getHomePosts() = flowOf(createFakeInstagramPosts())
             override fun getStories() = flowOf(createFakeInstagramStories())
         }

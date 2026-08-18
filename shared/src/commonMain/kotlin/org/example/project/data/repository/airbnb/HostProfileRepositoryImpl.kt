@@ -12,7 +12,6 @@ import io.ktor.client.request.get
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import org.example.project.core.database.FakeHostProfileDao
 import org.example.project.core.data.ResourceState
 import org.example.project.core.data.networkBoundResource
 import org.example.project.core.network.client.NetworkContainer
@@ -29,7 +28,7 @@ import org.example.project.domain.model.airbnb.TravelGuide
 import org.example.project.domain.repository.airbnb.HostProfileRepository
 
 class HostProfileRepositoryImpl(
-    private val dao: HostProfileDao = FakeHostProfileDao(),
+    private val dao: HostProfileDao,
     private val networkContainer: NetworkContainer? = null,
 ) : HostProfileRepository {
 

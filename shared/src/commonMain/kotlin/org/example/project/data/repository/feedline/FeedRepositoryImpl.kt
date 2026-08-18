@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.example.project.core.database.FakeFeedLineDao
 import org.example.project.core.network.client.NetworkContainer
 import org.example.project.core.network.config.ApiEndpoints
 import org.example.project.core.network.config.createFakeFeedPosts
@@ -43,7 +42,7 @@ fun generateUUID(): String {
 }
 
 class FeedRepositoryImpl(
-    private val feedLineDao: FeedLineDao = FakeFeedLineDao(),
+    private val feedLineDao: FeedLineDao,
     private val networkContainer: NetworkContainer? = null,
 ) : FeedLineRepository {
 
