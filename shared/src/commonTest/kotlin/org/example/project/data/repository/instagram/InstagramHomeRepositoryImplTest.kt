@@ -9,7 +9,7 @@ package org.example.project.data.repository.instagram
 
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import org.example.project.data.database.dao.instagram.InstagramDaoImpl
+import org.example.project.core.database.FakeInstagramDao
 import org.example.project.domain.model.instagram.InstagramMedia
 import org.example.project.domain.model.instagram.ProfileUser
 import kotlin.test.Test
@@ -21,7 +21,7 @@ class InstagramHomeRepositoryImplTest {
 
     @Test
     fun testCreatePostAndPersistenceAcrossRestarts() = runTest {
-        val dao1 = InstagramDaoImpl()
+        val dao1 = FakeInstagramDao()
         val repository1 = InstagramHomeRepositoryImpl(instagramDao = dao1)
 
         val user = ProfileUser("u_insta", "insta_user", "https://example.com/avatar.jpg", "Bio", "10", "100", "50")
@@ -54,7 +54,7 @@ class InstagramHomeRepositoryImplTest {
 
     @Test
     fun testLikeAndSavePostPersistence() = runTest {
-        val dao1 = InstagramDaoImpl()
+        val dao1 = FakeInstagramDao()
         val repository1 = InstagramHomeRepositoryImpl(instagramDao = dao1)
 
         val posts = repository1.getHomePosts().first()

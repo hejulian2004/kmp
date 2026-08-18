@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File: SduiCoreTest.kt
  * @Package: org.example.project.core.sdui
  * @Description: SDUI核心数据模型、Kotlin DSL Builder与热更新降级仓库单元测试
@@ -11,6 +11,10 @@ import kotlinx.coroutines.test.runTest
 import org.example.project.core.sdui.builder.sduiLayout
 import org.example.project.core.sdui.builder.toJson
 import org.example.project.core.sdui.repository.SduiLayoutRepositoryImpl
+import org.example.project.core.analytics.AnalyticsConfig
+import org.example.project.core.analytics.AppAnalyticsManager
+import org.example.project.core.analytics.LogAnalyticsTracker
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -18,6 +22,20 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SduiCoreTest {
+
+    @BeforeTest
+    fun setUp() {
+        if (!AppAnalyticsManager.isInitialized) {
+            AppAnalyticsManager.init(
+                AnalyticsConfig(
+                    platformName = "Test",
+                    appVersion = "1.0.0",
+                    deviceId = "test_device",
+                    trackers = listOf(LogAnalyticsTracker())
+                )
+            )
+        }
+    }
 
     @Test
     fun testSduiLayoutBuilderToJson() {

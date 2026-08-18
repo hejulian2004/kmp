@@ -9,7 +9,7 @@ package org.example.project.data.database.dao
 
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import org.example.project.data.database.dao.airbnb.HostProfileDaoImpl
+import org.example.project.core.database.FakeHostProfileDao
 import org.example.project.data.database.entity.airbnb.HostEntity
 import org.example.project.data.database.entity.airbnb.PropertyListingEntity
 import kotlin.test.BeforeTest
@@ -19,19 +19,16 @@ import kotlin.test.assertTrue
 
 class HostProfileDaoTest {
 
-    private lateinit var dao: HostProfileDaoImpl
+    private lateinit var dao: FakeHostProfileDao
 
     @BeforeTest
-    fun setUp() = runTest {
-        dao = HostProfileDaoImpl()
-        dao.clearHosts()
-        dao.clearProperties()
-        dao.clearReviews()
-        dao.clearGuides()
+    fun setUp() {
+        dao = FakeHostProfileDao()
     }
 
     @Test
     fun testInsertAndObserveHosts() = runTest {
+        dao.clearHosts()
         val host = HostEntity(
             id = "host_1",
             name = "John Doe",
@@ -62,6 +59,7 @@ class HostProfileDaoTest {
 
     @Test
     fun testInsertAndObserveProperties() = runTest {
+        dao.clearProperties()
         val prop = PropertyListingEntity(
             id = "prop_1",
             hostId = "host_1",
@@ -82,6 +80,7 @@ class HostProfileDaoTest {
 
     @Test
     fun testClearHostsAndProperties() = runTest {
+        dao.clearHosts()
         val host = HostEntity(
             id = "host_clear",
             name = "Clear Host",

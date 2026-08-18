@@ -9,7 +9,7 @@ package org.example.project.data.database.dao
 
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import org.example.project.data.database.dao.feedline.FeedLineDaoImpl
+import org.example.project.core.database.FakeFeedLineDao
 import org.example.project.data.database.entity.feedline.FeedLineNotificationEntity
 import org.example.project.data.database.entity.feedline.FeedLinePostEntity
 import kotlin.test.BeforeTest
@@ -19,11 +19,11 @@ import kotlin.test.assertTrue
 
 class FeedLineDaoTest {
 
-    private lateinit var dao: FeedLineDaoImpl
+    private lateinit var dao: FakeFeedLineDao
 
     @BeforeTest
     fun setUp() = runTest {
-        dao = FeedLineDaoImpl()
+        dao = FakeFeedLineDao()
         dao.clearPosts()
         dao.clearNotifications()
     }

@@ -14,10 +14,14 @@ class AppDatabaseTest {
 
     @Test
     fun testAppDatabaseDaoInstancesNotNull() {
-        val database = AppDatabase()
+        val hostProfileDao = FakeHostProfileDao()
+        val feedLineDao = FakeFeedLineDao()
+        val instagramDao = FakeInstagramDao()
+        val weChatMpDao = FakeWeChatMpDao()
 
-        assertNotNull(database.hostProfileDao(), "HostProfileDao 实例不应为空")
-        assertNotNull(database.feedLineDao(), "FeedLineDao 实例不应为空")
-        assertNotNull(database.instagramDao(), "InstagramDao 实例不应为空")
+        assertNotNull(hostProfileDao, "HostProfileDao 实例不应为空")
+        assertNotNull(feedLineDao, "FeedLineDao 实例不应为空")
+        assertNotNull(instagramDao, "InstagramDao 实例不应为空")
+        assertNotNull(weChatMpDao, "WeChatMpDao 实例不应为空")
     }
 }

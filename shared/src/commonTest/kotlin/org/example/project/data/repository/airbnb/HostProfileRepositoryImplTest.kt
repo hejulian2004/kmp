@@ -9,7 +9,7 @@ package org.example.project.data.repository.airbnb
 
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import org.example.project.data.database.dao.airbnb.HostProfileDaoImpl
+import org.example.project.core.database.FakeHostProfileDao
 import org.example.project.domain.model.airbnb.Host
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -19,7 +19,7 @@ class HostProfileRepositoryImplTest {
 
     @Test
     fun testHostProfilePersistenceAndRecovery() = runTest {
-        val dao1 = HostProfileDaoImpl()
+        val dao1 = FakeHostProfileDao()
         val repository1 = HostProfileRepositoryImpl(dao = dao1)
 
         val hosts1 = repository1.getHosts()
@@ -27,7 +27,7 @@ class HostProfileRepositoryImplTest {
         assertEquals(2, hosts1.size)
 
         // 模拟重启（新建 DAO 与 Repository 实例）
-        val dao2 = HostProfileDaoImpl()
+        val dao2 = FakeHostProfileDao()
         val repository2 = HostProfileRepositoryImpl(dao = dao2)
 
         val hosts2 = repository2.getHosts()
@@ -38,7 +38,7 @@ class HostProfileRepositoryImplTest {
 
     @Test
     fun testPropertiesAndReviewsPersistence() = runTest {
-        val dao1 = HostProfileDaoImpl()
+        val dao1 = FakeHostProfileDao()
         val repository1 = HostProfileRepositoryImpl(dao = dao1)
 
         val properties1 = repository1.getProperties()
@@ -50,7 +50,7 @@ class HostProfileRepositoryImplTest {
         assertEquals(2, guides1.size)
 
         // 模拟重启恢复验证房源与评价持久化
-        val dao2 = HostProfileDaoImpl()
+        val dao2 = FakeHostProfileDao()
         val repository2 = HostProfileRepositoryImpl(dao = dao2)
 
         val properties2 = repository2.getProperties()
