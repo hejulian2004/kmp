@@ -73,6 +73,8 @@ class WeChatMpRepositoryImpl(
     private val dislikesMutex = Mutex()
     private val dislikedArticleIds = mutableSetOf<String>()
 
+    private var nextPage: Int = 1
+
     private val accountsFlow = MutableStateFlow<List<WeChatAccount>>(
         if (isMockActive) createMockWeChatAccounts() else emptyList()
     )
@@ -246,6 +248,7 @@ class WeChatMpRepositoryImpl(
                 weChatMpDao.insertArticles(entities)
 
                 saveToDiskCache(refreshedAccounts, newFeatured, currentWaterfall)
+                nextPage = 2
             } else {
                 val client = networkContainer?.authorizedClient ?: error("NetworkContainer 尚未配置，无法发起真实网络请求")
                 val accounts: List<WeChatAccount> = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_ACCOUNTS}").body()
@@ -266,12 +269,14 @@ class WeChatMpRepositoryImpl(
                 }
                 weChatMpDao.insertArticles(entities)
                 saveToDiskCache(accounts, featured, waterfall)
+                nextPage = 2
             }
         }
     }
 
     override suspend fun loadMoreArticles(): Result<List<WeChatArticle>> {
         return runCatching {
+            val requestPage = nextPage
             if (isMockActive) {
                 delay(AppMockConfig.mockNetworkDelayMs)
                 val now = currentTimeMillis()
@@ -316,16 +321,17 @@ class WeChatMpRepositoryImpl(
                 weChatMpDao.insertArticles(moreArticles.map { WeChatArticleEntity.fromDomainModel(it) })
 
                 saveToDiskCache(accountsFlow.value, featuredFlow.value, waterfallFlow.value)
+                nextPage = requestPage + 1
                 moreArticles
             } else {
                 val client = networkContainer?.authorizedClient ?: error("NetworkContainer 尚未配置")
-                val page = (waterfallFlow.value.size / 10) + 1
-                val rawMoreArticles: List<WeChatArticle> = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_WATERFALL}?page=$page").body()
+                val rawMoreArticles: List<WeChatArticle> = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_WATERFALL}?page=$requestPage").body()
                 val moreArticles = rawMoreArticles.filterNot { isDisliked(it.id) }
 
                 waterfallFlow.update { it + moreArticles }
                 weChatMpDao.insertArticles(moreArticles.map { WeChatArticleEntity.fromDomainModel(it) })
                 saveToDiskCache(accountsFlow.value, featuredFlow.value, waterfallFlow.value)
+                nextPage = requestPage + 1
                 moreArticles
             }
         }
