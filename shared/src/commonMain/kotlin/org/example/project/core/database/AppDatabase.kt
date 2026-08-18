@@ -15,6 +15,7 @@ import org.example.project.data.database.converter.StringListConverter
 import org.example.project.data.database.dao.airbnb.HostProfileDao
 import org.example.project.data.database.dao.feedline.FeedLineDao
 import org.example.project.data.database.dao.instagram.InstagramDao
+import org.example.project.data.database.dao.wechat.WeChatMpDao
 import org.example.project.data.database.entity.airbnb.HostEntity
 import org.example.project.data.database.entity.airbnb.HostReviewEntity
 import org.example.project.data.database.entity.airbnb.PropertyListingEntity
@@ -22,6 +23,7 @@ import org.example.project.data.database.entity.airbnb.TravelGuideEntity
 import org.example.project.data.database.entity.feedline.FeedLineNotificationEntity
 import org.example.project.data.database.entity.feedline.FeedLinePostEntity
 import org.example.project.data.database.entity.instagram.InstagramPostEntity
+import org.example.project.data.database.entity.wechat.WeChatArticleEntity
 
 /**
  * 全局 Room KMP 数据库抽象类。
@@ -34,7 +36,8 @@ import org.example.project.data.database.entity.instagram.InstagramPostEntity
         HostEntity::class,
         PropertyListingEntity::class,
         HostReviewEntity::class,
-        TravelGuideEntity::class
+        TravelGuideEntity::class,
+        WeChatArticleEntity::class
     ],
     version = 1,
     exportSchema = true
@@ -44,6 +47,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun feedLineDao(): FeedLineDao
     abstract fun instagramDao(): InstagramDao
     abstract fun hostProfileDao(): HostProfileDao
+    abstract fun weChatMpDao(): WeChatMpDao
 
     override fun createInvalidationTracker(): InvalidationTracker {
         return InvalidationTracker(
@@ -56,7 +60,8 @@ abstract class AppDatabase : RoomDatabase() {
             "HostEntity",
             "PropertyListingEntity",
             "HostReviewEntity",
-            "TravelGuideEntity"
+            "TravelGuideEntity",
+            "WeChatArticleEntity"
         )
     }
 }
@@ -64,6 +69,7 @@ abstract class AppDatabase : RoomDatabase() {
 private val sharedFeedLineDao by lazy { FakeFeedLineDao() }
 private val sharedInstagramDao by lazy { FakeInstagramDao() }
 private val sharedHostProfileDao by lazy { FakeHostProfileDao() }
+private val sharedWeChatMpDao by lazy { FakeWeChatMpDao() }
 
 /**
  * AppDatabase 默认数据访问派生实现。
@@ -72,6 +78,7 @@ abstract class BaseDefaultAppDatabase : AppDatabase() {
     override fun feedLineDao(): FeedLineDao = sharedFeedLineDao
     override fun instagramDao(): InstagramDao = sharedInstagramDao
     override fun hostProfileDao(): HostProfileDao = sharedHostProfileDao
+    override fun weChatMpDao(): WeChatMpDao = sharedWeChatMpDao
 }
 
 /**
