@@ -28,11 +28,10 @@ import org.example.project.core.analytics.AnalyticsEvents
 import org.example.project.core.analytics.AnalyticsModules
 import org.example.project.core.analytics.AnalyticsParams
 import org.example.project.core.analytics.AppAnalyticsManager
-import org.example.project.core.database.getRoomDatabase
+import org.example.project.core.database.AppDatabaseInitializer
 import org.example.project.core.init.AppInitParams
 import org.example.project.core.init.AppInitializer
 import org.example.project.core.network.client.AppNetworkInitializer
-import org.example.project.data.database.dao.feedline.FeedLineDaoImpl
 import org.example.project.data.repository.feedline.FeedRepositoryImpl
 import org.example.project.data.repository.feedline.generateUUID
 import org.example.project.domain.model.feedline.FeedLineUser
@@ -105,10 +104,9 @@ fun App() {
                         name = "何聚敛",
                         avatarUrl = "https://i.pravatar.cc/300"
                     )
-                    val database = runCatching { getRoomDatabase() }.getOrNull()
                     val feedRepository = FeedRepositoryImpl(
                         networkContainer = AppNetworkInitializer.container,
-                        feedLineDao = database?.feedLineDao() ?: FeedLineDaoImpl()
+                        feedLineDao = AppDatabaseInitializer.database.feedLineDao()
                     )
                     FeedLineViewModel(
                         feedRepository = feedRepository,

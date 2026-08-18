@@ -3,7 +3,7 @@
  * @Package: org.example.project.ui.screens.airbnb
  * @Description: Airbnb业务模块主Screen容器（整合Room本地DB、HostProfile聚合页面、编辑页与设置页导航状态）
  * @Author: 何聚敛
- * @Date: 2026-08-11
+ * @Date: 2026-08-18
  */
 package org.example.project.ui.screens.airbnb
 
@@ -14,7 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
-import org.example.project.core.database.getRoomDatabase
+import org.example.project.core.database.AppDatabaseInitializer
 import org.example.project.core.network.client.AppNetworkInitializer
 import org.example.project.data.repository.airbnb.HostProfileRepositoryImpl
 import org.example.project.presentation.intent.airbnb.ProfileEditIntent
@@ -30,11 +30,9 @@ enum class AirbnbSubScreen {
 }
 
 @Composable
-fun AirbnbMainScreen(
-    context: Any? = null,
-) {
+fun AirbnbMainScreen() {
     val database = remember {
-        getRoomDatabase(context)
+        AppDatabaseInitializer.database
     }
 
     val repository = remember {
