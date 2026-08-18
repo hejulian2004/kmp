@@ -11,6 +11,7 @@ import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
+import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
@@ -72,10 +73,11 @@ object AndroidVideoCache {
      */
     fun createCacheDataSourceFactory(context: Context): CacheDataSource.Factory {
         val cache = getCache(context)
-        val upstreamFactory = DefaultHttpDataSource.Factory()
+        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
             .setAllowCrossProtocolRedirects(true)
             .setConnectTimeoutMs(15000)
             .setReadTimeoutMs(15000)
+        val upstreamFactory = DefaultDataSource.Factory(context, httpDataSourceFactory)
 
         return CacheDataSource.Factory()
             .setCache(cache)
