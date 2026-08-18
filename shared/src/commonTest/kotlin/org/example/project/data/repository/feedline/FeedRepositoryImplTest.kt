@@ -1,9 +1,9 @@
-/**
+﻿/**
  * @File: FeedRepositoryImplTest.kt
  * @Package: org.example.project.data.repository.feedline
  * @Description: FeedRepositoryImpl发布动态、通知与互动持久化逻辑单元测试
  * @Author: 何聚敛
- * @Date: 2026-08-04
+ * @Date: 2026-08-18
  */
 package org.example.project.data.repository.feedline
 
@@ -62,6 +62,7 @@ class FeedRepositoryImplTest {
     fun testPostsPersistAcrossAppRestarts() = runTest {
         val daoInstance1 = FeedLineDaoImpl()
         val repository1 = FeedRepositoryImpl(feedLineDao = daoInstance1)
+        Thread.sleep(100)
 
         val testUser = FeedLineUser(id = "u_restart", name = "重启测试用户", avatarUrl = "")
         val testContent = "重启持久化验证内容"
@@ -71,6 +72,7 @@ class FeedRepositoryImplTest {
         // 模拟应用重新启动（创建全新的 DAO 和 Repository 实例）
         val daoInstance2 = FeedLineDaoImpl()
         val repository2 = FeedRepositoryImpl(feedLineDao = daoInstance2)
+        Thread.sleep(100)
 
         val postsAfterRestart = repository2.getFeedPosts().first()
         val restoredPost = postsAfterRestart.find { it.content == testContent }
