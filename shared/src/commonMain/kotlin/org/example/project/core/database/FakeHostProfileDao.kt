@@ -1,24 +1,23 @@
 ﻿/**
- * @File: HostProfileDaoImpl.kt
- * @Package: org.example.project.data.database.dao.airbnb
- * @Description: Airbnb房东与房源本地数据库DAO实现类（响应式Flow表驱动与磁盘文件持久化存储）
+ * @File: FakeHostProfileDao.kt
+ * @Package: org.example.project.core.database
+ * @Description: Airbnb Host Profile DAO 离线内存与响应式 Flow 持久化实现
  * @Author: 何聚敛
  * @Date: 2026-08-18
  */
-package org.example.project.data.database.dao.airbnb
+package org.example.project.core.database
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import org.example.project.data.database.dao.airbnb.HostProfileDao
 import org.example.project.data.database.entity.airbnb.HostEntity
 import org.example.project.data.database.entity.airbnb.HostReviewEntity
 import org.example.project.data.database.entity.airbnb.PropertyListingEntity
 import org.example.project.data.database.entity.airbnb.TravelGuideEntity
 
-class HostProfileDaoImpl : HostProfileDao {
+class FakeHostProfileDao : HostProfileDao {
 
     private val hostsTable = MutableStateFlow<List<HostEntity>>(emptyList())
     private val propertiesTable = MutableStateFlow<List<PropertyListingEntity>>(emptyList())

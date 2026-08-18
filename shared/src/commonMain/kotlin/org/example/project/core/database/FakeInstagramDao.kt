@@ -1,22 +1,20 @@
 ﻿/**
- * @File: InstagramDaoImpl.kt
- * @Package: org.example.project.data.database.dao.instagram
- * @Description: Instagram DAO响应式表状态与本地磁盘持久化实现类
+ * @File: FakeInstagramDao.kt
+ * @Package: org.example.project.core.database
+ * @Description: Instagram DAO 离线内存与响应式 Flow 持久化实现
  * @Author: 何聚敛
  * @Date: 2026-08-18
  */
-package org.example.project.data.database.dao.instagram
+package org.example.project.core.database
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import org.example.project.data.database.dao.instagram.InstagramDao
 import org.example.project.data.database.entity.instagram.InstagramPostEntity
 
-class InstagramDaoImpl : InstagramDao {
+class FakeInstagramDao : InstagramDao {
     private val postsTable = MutableStateFlow<List<InstagramPostEntity>>(emptyList())
 
     override fun observePosts(): Flow<List<InstagramPostEntity>> {

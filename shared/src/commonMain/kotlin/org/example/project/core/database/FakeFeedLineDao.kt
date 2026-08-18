@@ -1,22 +1,21 @@
 ﻿/**
- * @File: FeedLineDaoImpl.kt
- * @Package: org.example.project.data.database.dao.feedline
- * @Description: 朋友圈DAO响应式表状态与本地磁盘持久化实现类
+ * @File: FakeFeedLineDao.kt
+ * @Package: org.example.project.core.database
+ * @Description: 朋友圈 DAO 离线内存与响应式 Flow 持久化实现
  * @Author: 何聚敛
  * @Date: 2026-08-18
  */
-package org.example.project.data.database.dao.feedline
+package org.example.project.core.database
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import org.example.project.data.database.dao.feedline.FeedLineDao
 import org.example.project.data.database.entity.feedline.FeedLineNotificationEntity
 import org.example.project.data.database.entity.feedline.FeedLinePostEntity
 
-class FeedLineDaoImpl : FeedLineDao {
+class FakeFeedLineDao : FeedLineDao {
     private val postsTable = MutableStateFlow<List<FeedLinePostEntity>>(emptyList())
     private val notificationsTable = MutableStateFlow<List<FeedLineNotificationEntity>>(emptyList())
 
