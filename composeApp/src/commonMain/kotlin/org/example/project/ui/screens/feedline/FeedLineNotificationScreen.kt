@@ -312,7 +312,8 @@ private fun PostTextPreview(text: String) {
 @Preview(showBackground = true)
 @Composable
 fun NotificationScreenPreview() {
-    val fakeRepo = FeedRepositoryImpl()
+    val db = org.example.project.core.database.RealSqliteAppDatabase(org.example.project.core.database.getTestDatabasePath("preview_noti"))
+    val fakeRepo = FeedRepositoryImpl(feedLineDao = db.feedLineDao())
     val fakeUser = FeedLineUser(id = "1", name = "测试用户", avatarUrl = "")
     val fakeViewModel = FeedLineViewModel(fakeRepo, fakeUser)
     NotificationScreen(viewModel = fakeViewModel)
