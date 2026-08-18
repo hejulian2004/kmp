@@ -3,7 +3,7 @@
  * @Package: org.example.project.core.analytics
  * @Description: KMP全局数据埋点应用单例管理器，提供统一事件分发、全局属性注入与多渠道Tracker挂载能力
  * @Author: 何聚敛
- * @Date: 2026-08-12
+ * @Date: 2026-08-18
  */
 package org.example.project.core.analytics
 
@@ -50,6 +50,22 @@ object AppAnalyticsManager : AnalyticsTracker {
             }
 
             isInitialized = true
+        }
+    }
+
+    /**
+     * 重置单例内部状态（仅供单元测试隔离使用）
+     */
+    internal fun resetForTest() {
+        synchronized(this) {
+            isInitialized = false
+            config = null
+            synchronized(globalParams) {
+                globalParams.clear()
+            }
+            synchronized(trackers) {
+                trackers.clear()
+            }
         }
     }
 
