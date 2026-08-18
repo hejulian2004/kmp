@@ -7,43 +7,72 @@
  */
 package org.example.project.ui.components.feedline
 
-import android.widget.VideoView
+import android.net.Uri
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import org.example.project.ui.core.video.AppVideoCacheManager
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.ui.AspectRatioFrameLayout
+import androidx.media3.ui.PlayerView
+import org.example.project.ui.core.video.AndroidVideoCache
 
+@OptIn(UnstableApi::class)
 @Composable
 actual fun VideoPlayer(
     videoUrl: String,
     modifier: Modifier
 ) {
-    var resolvedUrl by remember(videoUrl) { mutableStateOf(videoUrl) }
+    val context = LocalContext.current
 
-    LaunchedEffect(videoUrl) {
-        resolvedUrl = AppVideoCacheManager.getPlayableVideoUrl(videoUrl)
+    val exoPlayer = remember(videoUrl) {
+        val cacheDataSourceFactory = AndroidVideoCache.createCacheDataSourceFactory(context)
+        val mediaSourceFactory = DefaultMediaSourceFactory(cacheDataSourceFactory)
+        
+        ExoPlayer.Builder(context)
+            .setMediaSourceFactory(mediaSourceFactory)
+            .build()
+            .apply {
+                val mediaItem = MediaItem.fromUri(Uri.parse(videoUrl))
+                setMediaItem(mediaItem)
+                repeatMode = Player.REPEAT_MODE_ALL
+                playWhenReady = true
+                prepare()
+            }
+    }
+
+    DisposableEffect(exoPlayer) {
+        onDispose {
+            exoPlayer.stop()
+            exoPlayer.release()
+        }
     }
 
     AndroidView(
-        factory = { context ->
-            VideoView(context).apply {
-                val mediaController = android.widget.MediaController(context)
-                mediaController.setAnchorView(this)
-                setMediaController(mediaController)
-                setVideoPath(resolvedUrl)
-                setOnPreparedListener { mp ->
-                    mp.isLooping = true
-                    start()
-                }
+        factory = { ctx ->
+            PlayerView(ctx).apply {
+                player = exoPlayer
+                useController = false
+                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+                layoutParams = FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
             }
         },
-        update = { view ->
-            // 缓存就绪或视频更新
+        update = { playerView ->
+            if (playerView.player != exoPlayer) {
+                playerView.player = exoPlayer
+            }
         },
         modifier = modifier
     )
