@@ -3,7 +3,7 @@
  * @Package: org.example.project.core.storage.internal
  * @Description: 逻辑存储相对路径安全校验与规范化校验器
  * @Author: 何聚敛
- * @Date: 2026-08-12
+ * @Date: 2026-08-18
  */
 package org.example.project.core.storage.internal
 
@@ -22,11 +22,20 @@ object StoragePathValidator {
      * 校验并规范化逻辑相对路径。
      * 
      * @param path 待校验的逻辑相对路径
+     * @param allowEmpty 是否允许空路径 (仅 list 接口允许为 true，写/读/删必须为 false)
      * @return 规范化后的相对路径字符串 (统一以 "/" 分隔，去除前后余量空格)
      * @throws StorageException 若路径非法或存在越界逃逸风险抛出
      */
-    fun validateAndNormalize(path: StoragePath): String {
+    fun validateAndNormalize(path: StoragePath, allowEmpty: Boolean = false): String {
         val rawValue = path.value.trim()
+
+        if (rawValue.isEmpty()) {
+            if (allowEmpty) {
+                return ""
+            } else {
+                throw StorageException(StorageError.InvalidPath, "StoragePath 不能为空，且严格禁止对 StorageArea 根目录进行读/写/删操作。")
+            }
+        }
 
         // 包含空字符的路径直接判定为非法
         if (rawValue.contains('\u0000')) {
@@ -55,9 +64,9 @@ object StoragePathValidator {
     /**
      * 判断相对路径是否合法。
      */
-    fun isValid(path: StoragePath): Boolean {
+    fun isValid(path: StoragePath, allowEmpty: Boolean = false): Boolean {
         return try {
-            validateAndNormalize(path)
+            validateAndNormalize(path, allowEmpty = allowEmpty)
             true
         } catch (_: StorageException) {
             false
