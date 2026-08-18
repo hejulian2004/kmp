@@ -1,57 +1,20 @@
-﻿package org.example.project.platform
+﻿/**
+ * @File: Platform.ios.kt
+ * @Package: org.example.project.platform
+ * @Description: iOS 平台特定基础设施实现
+ * @Author: 何聚敛
+ * @Date: 2026-08-18
+ */
+package org.example.project.platform
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.runBlocking
-import org.example.project.core.storage.api.StorageArea
-import org.example.project.core.storage.api.StoragePath
-import org.example.project.core.storage.api.WriteMode
-import org.example.project.core.storage.client.AppStorageInitializer
 import platform.Foundation.NSDate
 import platform.Foundation.timeIntervalSince1970
 import platform.UIKit.UIDevice
-
-/**
- * @File: Platform.ios.kt
- * @Description: iOS平台特定实现
- * @Date: 2026-08-18
- */
 
 actual fun getPlatformName(): String {
     return UIDevice.currentDevice.systemName() + " " + UIDevice.currentDevice.systemVersion
 }
 
-//获取系统时间
 actual fun currentTimeMillis(): Long {
     return (NSDate().timeIntervalSince1970 * 1000).toLong()
-}
-
-actual fun readStorageFile(fileName: String): String? {
-    return try {
-        val storage = AppStorageInitializer.container.fileStorage
-        val path = StoragePath(fileName)
-        runBlocking(Dispatchers.IO) {
-            if (storage.exists(StorageArea.PERSISTENT, path)) {
-                storage.read(StorageArea.PERSISTENT, path).decodeToString()
-            } else null
-        }
-    } catch (_: Exception) {
-        null
-    }
-}
-
-actual fun writeStorageFile(fileName: String, content: String) {
-    try {
-        val storage = AppStorageInitializer.container.fileStorage
-        val path = StoragePath(fileName)
-        runBlocking(Dispatchers.IO) {
-            if (content.isEmpty()) {
-                storage.delete(StorageArea.PERSISTENT, path)
-            } else {
-                storage.write(StorageArea.PERSISTENT, path, content.encodeToByteArray(), WriteMode.ATOMIC)
-            }
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
 }
