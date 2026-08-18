@@ -51,7 +51,10 @@ class WeChatMpViewModelTest {
             )
         }
         dao = FakeWeChatMpDao()
-        repository = WeChatMpRepositoryImpl(weChatMpDao = dao)
+        repository = WeChatMpRepositoryImpl(
+            weChatMpDao = dao,
+            coroutineDispatcher = testDispatcher
+        )
         viewModel = WeChatMpViewModel(repository = repository)
     }
 

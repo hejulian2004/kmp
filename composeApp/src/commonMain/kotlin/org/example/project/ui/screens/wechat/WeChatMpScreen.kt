@@ -43,8 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinproject.composeapp.generated.resources.Res
 import kotlinproject.composeapp.generated.resources.wechat_mp_look_around
-import org.example.project.core.database.FakeWeChatMpDao
-import org.example.project.data.repository.wechat.WeChatMpRepositoryImpl
+import org.jetbrains.compose.resources.stringResource
 import org.example.project.domain.model.wechat.WeChatCardType
 import org.example.project.presentation.effect.wechat.WeChatMpEffect
 import org.example.project.presentation.intent.wechat.WeChatMpIntent
@@ -276,9 +275,18 @@ fun WeChatMpScreen(
 @Preview(showBackground = true)
 @Composable
 fun WeChatMpScreenPreview() {
-    WeChatTheme {
-        val fakeRepo = WeChatMpRepositoryImpl(weChatMpDao = FakeWeChatMpDao())
-        val fakeViewModel = WeChatMpViewModel(repository = fakeRepo)
+    org.example.project.ui.theme.wechat.WeChatTheme {
+        val mockRepo = object : org.example.project.domain.repository.wechat.WeChatMpRepository {
+            override fun observeFrequentlyReadAccounts() = kotlinx.coroutines.flow.flowOf(emptyList<org.example.project.domain.model.wechat.WeChatAccount>())
+            override fun observeFeaturedArticle() = kotlinx.coroutines.flow.flowOf(null)
+            override fun observeWaterfallArticles() = kotlinx.coroutines.flow.flowOf(emptyList<org.example.project.domain.model.wechat.WeChatArticle>())
+            override suspend fun refreshData() = Result.success(Unit)
+            override suspend fun loadMoreArticles() = Result.success(emptyList<org.example.project.domain.model.wechat.WeChatArticle>())
+            override suspend fun dislikeArticle(articleId: String, reason: String) = Result.success(Unit)
+            override suspend fun markAccountAsRead(accountId: String) = Result.success(Unit)
+            override suspend fun toggleFollowAccount(accountId: String) = Result.success(true)
+        }
+        val fakeViewModel = WeChatMpViewModel(repository = mockRepo)
         WeChatMpScreen(viewModel = fakeViewModel)
     }
 }
