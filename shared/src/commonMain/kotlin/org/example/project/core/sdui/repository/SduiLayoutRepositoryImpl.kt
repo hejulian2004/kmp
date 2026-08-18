@@ -3,7 +3,7 @@
  * @Package: org.example.project.core.sdui.repository
  * @Description: SDUI动态布局配置契约与本地磁盘缓存/服务端热更新仓库实现 (使用 FileStorage 存储架构)
  * @Author: 何聚敛
- * @Date: 2026-08-12
+ * @Date: 2026-08-18
  */
 package org.example.project.core.sdui.repository
 
@@ -88,13 +88,7 @@ class SduiLayoutRepositoryImpl(
     }
 
     private val activeFileStorage: FileStorage
-        get() {
-            if (fileStorage != null) return fileStorage
-            if (!AppStorageInitializer.isInitialized) {
-                AppStorageInitializer.init()
-            }
-            return AppStorageInitializer.container.fileStorage
-        }
+        get() = fileStorage ?: AppStorageInitializer.container.fileStorage
 
     private val activeNetworkContainer: NetworkContainer
         get() = networkContainer ?: AppNetworkInitializer.container

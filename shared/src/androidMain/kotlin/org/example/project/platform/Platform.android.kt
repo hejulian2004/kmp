@@ -12,7 +12,7 @@ import org.example.project.core.storage.client.AppStorageInitializer
 /**
  * @File: Platform.android.kt
  * @Description: Android平台特定实现
- * @Date: 2026-08-12
+ * @Date: 2026-08-18
  */
 
 actual fun getPlatformName(): String = "Android ${Build.VERSION.SDK_INT}"
@@ -24,9 +24,6 @@ actual fun currentTimeMillis(): Long {
 
 actual fun readStorageFile(fileName: String): String? {
     return try {
-        if (!AppStorageInitializer.isInitialized) {
-            AppStorageInitializer.init()
-        }
         val storage = AppStorageInitializer.container.fileStorage
         val path = StoragePath(fileName)
         runBlocking(Dispatchers.IO) {
@@ -41,9 +38,6 @@ actual fun readStorageFile(fileName: String): String? {
 
 actual fun writeStorageFile(fileName: String, content: String) {
     try {
-        if (!AppStorageInitializer.isInitialized) {
-            AppStorageInitializer.init()
-        }
         val storage = AppStorageInitializer.container.fileStorage
         val path = StoragePath(fileName)
         runBlocking(Dispatchers.IO) {

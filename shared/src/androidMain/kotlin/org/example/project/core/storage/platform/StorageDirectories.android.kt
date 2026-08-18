@@ -3,7 +3,7 @@
  * @Package: org.example.project.core.storage.platform
  * @Description: Android 平台存储物理目录映射特定实现
  * @Author: 何聚敛
- * @Date: 2026-08-12
+ * @Date: 2026-08-18
  */
 package org.example.project.core.storage.platform
 
@@ -42,11 +42,12 @@ private class FallbackAndroidStorageDirectories : StorageDirectories {
 }
 
 actual fun createPlatformStorageDirectories(context: Any?): StorageDirectories {
+    if (context is StorageDirectories) return context
     val androidContext = context as? Context
-    val appContext = androidContext?.applicationContext
+    val appContext = androidContext?.applicationContext ?: (context as? Context)
     return if (appContext != null) {
         AndroidStorageDirectories(appContext)
     } else {
-        FallbackAndroidStorageDirectories()
+        throw IllegalStateException("Android Context 必须非空才能初始化 Storage！在测试环境中请使用 TestStorageDirectories 或 FakeFileStorage。")
     }
 }
