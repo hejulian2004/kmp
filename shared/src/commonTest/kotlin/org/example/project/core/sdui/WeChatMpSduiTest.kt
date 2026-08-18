@@ -12,6 +12,8 @@ import org.example.project.core.sdui.builder.sduiLayout
 import org.example.project.core.sdui.builder.toJson
 import org.example.project.core.sdui.config.SduiVersionConfig
 import org.example.project.core.sdui.repository.SduiLayoutRepositoryImpl
+import org.example.project.core.storage.internal.DefaultFileStorage
+import org.example.project.core.storage.testing.TestStorageDirectories
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -57,12 +59,14 @@ class WeChatMpSduiTest {
     }
 
     @Test
-    fun testWeChatMpSduiNativeFallbackWhenNoHotUpdate() {
-        val repository = SduiLayoutRepositoryImpl()
+    fun testWeChatMpSduiNativeFallbackWhenNoHotUpdate() = runTest {
+        val testDirs = TestStorageDirectories()
+        val fileStorage = DefaultFileStorage(directories = testDirs)
+        val repository = SduiLayoutRepositoryImpl(fileStorage = fileStorage)
         repository.clearDiskCache("wechat_mp")
 
         // 1. 无本地热更时，默认返回 null（回退至原生 Compose UI）
-        val nativeLayout = repository.getLayout("wechat_mp")
+        val nativeLayout = repository.loadDiskCache("wechat_mp")
         assertNull(nativeLayout)
 
         // 2. 保存模拟的热更 JSON
@@ -78,7 +82,7 @@ class WeChatMpSduiTest {
         repository.saveDiskCache("wechat_mp", hotUpdateJson)
 
         // 3. 读取本地已保存的热更布局
-        val cachedLayout = repository.getLayout("wechat_mp")
+        val cachedLayout = repository.loadDiskCache("wechat_mp")
         assertNotNull(cachedLayout)
         assertEquals("LazyVerticalStaggeredGrid", cachedLayout.componentType)
         assertEquals("v1.1.0", cachedLayout.properties["version"])
@@ -86,7 +90,9 @@ class WeChatMpSduiTest {
 
     @Test
     fun testWeChatMpSduiNetworkFetchFallback() = runTest {
-        val repository = SduiLayoutRepositoryImpl()
+        val testDirs = TestStorageDirectories()
+        val fileStorage = DefaultFileStorage(directories = testDirs)
+        val repository = SduiLayoutRepositoryImpl(fileStorage = fileStorage)
         repository.clearDiskCache("wechat_mp")
 
         // 首次无网络无缓存 -> 返回 null

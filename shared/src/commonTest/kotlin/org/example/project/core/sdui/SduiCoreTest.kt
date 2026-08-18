@@ -3,17 +3,20 @@
  * @Package: org.example.project.core.sdui
  * @Description: SDUI核心数据模型、Kotlin DSL Builder与热更新降级仓库单元测试
  * @Author: 何聚敛
- * @Date: 2026-08-11
+ * @Date: 2026-08-18
  */
 package org.example.project.core.sdui
 
 import kotlinx.coroutines.test.runTest
-import org.example.project.core.sdui.builder.sduiLayout
-import org.example.project.core.sdui.builder.toJson
-import org.example.project.core.sdui.repository.SduiLayoutRepositoryImpl
 import org.example.project.core.analytics.AnalyticsConfig
 import org.example.project.core.analytics.AppAnalyticsManager
 import org.example.project.core.analytics.LogAnalyticsTracker
+import org.example.project.core.sdui.builder.sduiLayout
+import org.example.project.core.sdui.builder.toJson
+import org.example.project.core.sdui.repository.SduiLayoutRepositoryImpl
+import org.example.project.core.storage.client.AppStorageInitializer
+import org.example.project.core.storage.internal.DefaultFileStorage
+import org.example.project.core.storage.testing.TestStorageDirectories
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -58,13 +61,16 @@ class SduiCoreTest {
     }
 
     @Test
-    fun testSduiLayoutRepositoryNativeFallbackWhenNoHotUpdate() {
-        val repository = SduiLayoutRepositoryImpl()
+    fun testSduiLayoutRepositoryNativeFallbackWhenNoHotUpdate() = runTest {
+        val testDirs = TestStorageDirectories()
+        val fileStorage = DefaultFileStorage(directories = testDirs)
+        val repository = SduiLayoutRepositoryImpl(fileStorage = fileStorage)
         repository.clearDiskCache("feedline")
 
         // 1. 无本地热更JSON时，默认返回 null（UI层自动降级使用全量原生 Compose UI）
-        val nativeNode = repository.getLayout("feedline")
+        val nativeNode = repository.loadDiskCache("feedline")
         assertNull(nativeNode)
+        assertNull(repository.getCachedLayout("feedline"))
 
         // 2. 模拟从服务端成功下载并保存热更JSON至本地磁盘
         val hotUpdateServerJson = """
@@ -75,16 +81,19 @@ class SduiCoreTest {
         """.trimIndent()
         repository.saveDiskCache("feedline", hotUpdateServerJson)
 
-        // 3. 验证后续默认使用本地已保存的热更JSON
-        val cachedNode = repository.getLayout("feedline")
+        // 3. 验证后续读取本地已保存的热更JSON
+        val cachedNode = repository.loadDiskCache("feedline")
         assertNotNull(cachedNode)
         assertEquals("Card", cachedNode.componentType)
         assertEquals("服务端热更下发标题", cachedNode.properties["title"])
+        assertEquals("Card", repository.getCachedLayout("feedline")?.componentType)
     }
 
     @Test
     fun testSduiLayoutRepositoryNetworkFailureFallback() = runTest {
-        val repository = SduiLayoutRepositoryImpl()
+        val testDirs = TestStorageDirectories()
+        val fileStorage = DefaultFileStorage(directories = testDirs)
+        val repository = SduiLayoutRepositoryImpl(fileStorage = fileStorage)
         repository.clearDiskCache("feedline")
 
         // 1. 首次检查网络（默认网络失败且无本地热更缓存） -> 返回 null
@@ -109,11 +118,13 @@ class SduiCoreTest {
 
     @Test
     fun testAirbnbSduiLayoutNativeFallback() = runTest {
-        val repository = SduiLayoutRepositoryImpl()
+        val testDirs = TestStorageDirectories()
+        val fileStorage = DefaultFileStorage(directories = testDirs)
+        val repository = SduiLayoutRepositoryImpl(fileStorage = fileStorage)
         repository.clearDiskCache("airbnb")
 
         // 无热更JSON时直接返回 null，由 Airbnb 主页面直接绘制全量 Compose 原生UI
-        val node = repository.getLayout("airbnb")
+        val node = repository.loadDiskCache("airbnb")
         assertNull(node)
     }
 }

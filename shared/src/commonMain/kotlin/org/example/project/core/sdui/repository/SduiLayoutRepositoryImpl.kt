@@ -1,17 +1,16 @@
-﻿/**
+/**
  * @File: SduiLayoutRepositoryImpl.kt
  * @Package: org.example.project.core.sdui.repository
- * @Description: SDUI动态布局配置契约与本地磁盘缓存/服务端热更新仓库实现 (使用 FileStorage 存储架构)
+ * @Description: SDUI动态布局配置契约与本地磁盘缓存/服务端热更新仓库实现 (基于 FileStorage 与非阻塞协程并发防护)
  * @Author: 何聚敛
- * @Date: 2026-08-12
+ * @Date: 2026-08-18
  */
 package org.example.project.core.sdui.repository
 
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import org.example.project.core.network.client.AppNetworkInitializer
 import org.example.project.core.network.client.NetworkContainer
@@ -28,47 +27,55 @@ import org.example.project.core.storage.client.AppStorageInitializer
  */
 interface SduiLayoutRepository {
     /**
-     * 获取指定模块的SDUI热更节点树。
-     * 若存在已下载的服务端热更JSON（内存/本地磁盘），返回解析完成的SduiNode；
-     * 若无热更JSON，返回null（UI层接收到null时直接使用APK打包的原生Compose UI）。
+     * 同步获取内存中已缓存的 SDUI 节点树（零 I/O，只读内存）。
      *
-     * @param module 模块标识（如 "airbnb", "feedline", "instagram"）
-     * @return 解析完成的SduiNode根节点，或无热更时返回null
+     * @param module 模块标识（如 "airbnb", "feedline", "instagram", "wechat_mp"）
+     * @return 解析完成的 SduiNode 根节点，或无内存缓存时返回 null
      */
-    fun getLayout(module: String): SduiNode?
+    fun getCachedLayout(module: String): SduiNode?
 
     /**
-     * 从网络层检查并下载服务端热更JSON（异步非阻塞执行）。
-     * 若服务端有热更：下载JSON并保存至本地磁盘与内存缓存；
-     * 若网络失败或无热更：安全降级使用本地磁盘已有的热更缓存（若有），若本地亦无热更则返回null。
+     * 异步从本地磁盘加载热更 JSON 节点树并写入内存缓存。
      *
-     * @param module 模块标识（如 "airbnb", "feedline", "instagram"）
-     * @return 解析完成的SduiNode根节点，或无热更时返回null
+     * @param module 模块标识
+     * @return 解析完成的 SduiNode 根节点，或无磁盘缓存时返回 null
+     */
+    suspend fun loadDiskCache(module: String): SduiNode?
+
+    /**
+     * 异步从网络层检查并下载服务端热更 JSON。
+     * 若服务端有热更：下载 JSON 并持久化保存至本地磁盘与内存缓存；
+     * 若网络失败或无热更：安全降级读取本地磁盘已有的热更缓存（若有），若本地亦无热更则返回 null。
+     *
+     * @param module 模块标识
+     * @return 解析完成的 SduiNode 根节点，或无热更时返回 null
      */
     suspend fun fetchLayoutFromNetwork(module: String): SduiNode?
 
     /**
-     * 写入/更新本地磁盘DSL缓存（保存服务端下载的热更JSON）
+     * 异步写入/更新本地磁盘 DSL 缓存（保存服务端下载的热更 JSON）并刷新内存缓存。
      *
      * @param module 模块标识
-     * @param jsonContent 服务端热更JSON字符串
+     * @param jsonContent 服务端热更 JSON 字符串
      */
-    fun saveDiskCache(module: String, jsonContent: String)
+    suspend fun saveDiskCache(module: String, jsonContent: String)
 
     /**
-     * 清空指定模块的本地磁盘缓存
+     * 异步清空指定模块的本地磁盘缓存与内存缓存。
      */
-    fun clearDiskCache(module: String)
+    suspend fun clearDiskCache(module: String)
+
+    /**
+     * 同步清空所有模块的内存缓存（供测试与重置使用）。
+     */
+    fun clearMemoryCache()
 }
 
 /**
  * 本地缓存与服务端热更新降级仓库实现
- * 加载逻辑：
- * 1. 优先查找内存缓存/本地磁盘热更JSON（若此前已成功下载并保存服务端热更）
- * 2. 若无热更JSON，返回null，供UI层直接渲染APK打包的原生Compose UI
  *
- * @param fileStorage 文件存储实例（若为null则自动获取全局AppStorageInitializer单例）
- * @param networkContainer 网络依赖容器（若为null则自动获取全局AppNetworkInitializer单例）
+ * @param fileStorage 文件存储实例（若为 null 则使用全局 AppStorageInitializer 单例）
+ * @param networkContainer 网络依赖容器（若为 null 则使用全局 AppNetworkInitializer 单例）
  */
 class SduiLayoutRepositoryImpl(
     private val fileStorage: FileStorage? = null,
@@ -80,7 +87,8 @@ class SduiLayoutRepositoryImpl(
         val Instance: SduiLayoutRepository by lazy { SduiLayoutRepositoryImpl() }
     }
 
-    private val memoryCache = mutableMapOf<String, SduiNode>()
+    private val cacheMutex = Mutex()
+    private var memoryCache: Map<String, SduiNode> = emptyMap()
 
     private val jsonFormatter = Json {
         ignoreUnknownKeys = true
@@ -95,31 +103,30 @@ class SduiLayoutRepositoryImpl(
 
     private fun getSduiPath(module: String) = StoragePath("sdui/$module/layout.json")
 
-    override fun getLayout(module: String): SduiNode? {
-        // 1. 优先查找内存缓存
-        memoryCache[module]?.let { return it }
+    override fun getCachedLayout(module: String): SduiNode? {
+        return memoryCache[module]
+    }
 
-        // 2. 查找本地磁盘持久化缓存（此前从服务端下载并保存的热更JSON）
+    override suspend fun loadDiskCache(module: String): SduiNode? {
         val path = getSduiPath(module)
         val diskJson = runCatching {
-            runBlocking(Dispatchers.IO) {
-                if (activeFileStorage.exists(StorageArea.PERSISTENT, path)) {
-                    activeFileStorage.read(StorageArea.PERSISTENT, path).decodeToString()
-                } else null
-            }
+            if (activeFileStorage.exists(StorageArea.PERSISTENT, path)) {
+                activeFileStorage.read(StorageArea.PERSISTENT, path).decodeToString()
+            } else null
         }.getOrNull()
 
         if (!diskJson.isNullOrBlank()) {
             try {
                 val node = jsonFormatter.decodeFromString<SduiNode>(diskJson)
-                memoryCache[module] = node
+                cacheMutex.withLock {
+                    memoryCache = memoryCache + (module to node)
+                }
                 return node
             } catch (_: Exception) {
-                // 磁盘缓存解析失败忽略
+                // 磁盘缓存损坏时忽略
             }
         }
 
-        // 3. 无热更JSON时返回null，直接使用APK打包的原生Compose UI
         return null
     }
 
@@ -128,46 +135,50 @@ class SduiLayoutRepositoryImpl(
             val client = activeNetworkContainer.publicClient
             val responseText = client.get("${ApiEndpoints.Sdui.GET_LAYOUT}/$module").body<String>()
             if (responseText.isBlank()) {
-                return getLayout(module)
+                return loadDiskCache(module)
             }
             val node = jsonFormatter.decodeFromString<SduiNode>(responseText)
-            
-            // 服务端有热更，下载成功后保存到本地磁盘与内存缓存
+
+            // 服务端热更下载成功后异步持久化至本地磁盘与内存
             saveDiskCache(module, responseText)
             node
         } catch (_: Exception) {
-            // 网络请求失败或无热更时，安全降级使用本地磁盘已有的热更缓存（若有），若无则返回null
-            getLayout(module)
+            // 网络异常时安全降级至本地磁盘缓存
+            loadDiskCache(module)
         }
     }
 
-    override fun saveDiskCache(module: String, jsonContent: String) {
+    override suspend fun saveDiskCache(module: String, jsonContent: String) {
         try {
             val node = jsonFormatter.decodeFromString<SduiNode>(jsonContent)
-            memoryCache[module] = node
+            cacheMutex.withLock {
+                memoryCache = memoryCache + (module to node)
+            }
             val path = getSduiPath(module)
             runCatching {
-                runBlocking(Dispatchers.IO) {
-                    activeFileStorage.write(
-                        area = StorageArea.PERSISTENT,
-                        path = path,
-                        data = jsonContent.encodeToByteArray(),
-                        mode = WriteMode.ATOMIC
-                    )
-                }
+                activeFileStorage.write(
+                    area = StorageArea.PERSISTENT,
+                    path = path,
+                    data = jsonContent.encodeToByteArray(),
+                    mode = WriteMode.ATOMIC
+                )
             }
         } catch (_: Exception) {
-            // 写入非法JSON自动忽略
+            // 非法 JSON 格式忽略
         }
     }
 
-    override fun clearDiskCache(module: String) {
-        memoryCache.remove(module)
+    override suspend fun clearDiskCache(module: String) {
+        cacheMutex.withLock {
+            memoryCache = memoryCache - module
+        }
         val path = getSduiPath(module)
         runCatching {
-            runBlocking(Dispatchers.IO) {
-                activeFileStorage.delete(StorageArea.PERSISTENT, path)
-            }
+            activeFileStorage.delete(StorageArea.PERSISTENT, path)
         }
+    }
+
+    override fun clearMemoryCache() {
+        memoryCache = emptyMap()
     }
 }
