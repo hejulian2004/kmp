@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @File: AnalyticsConstants.kt
  * @Package: org.example.project.core.analytics
  * @Description: 全局数据埋点事件与参数统一定义文件，包含所有业务模块的事件常量与参数键名
@@ -15,6 +15,26 @@ object AnalyticsModules {
     const val FEEDLINE = FeedLine.ID
     const val INSTAGRAM = Instagram.ID
     const val AIRBNB = Airbnb.ID
+    const val WECHAT_MP = WeChatMp.ID
+
+    /**
+     * WeChatMp (微信公众号) 模块埋点常量组
+     */
+    object WeChatMp {
+        const val ID = "wechat_mp"
+
+        object Events {
+            const val MP_OPEN = "wechat_mp_open"
+            const val MP_REFRESH = "wechat_mp_refresh"
+            const val MP_LOAD_MORE = "wechat_mp_load_more"
+            const val ARTICLE_CLICK = "wechat_article_click"
+            const val ACCOUNT_CLICK = "wechat_account_click"
+            const val DISLIKE_CLICK = "wechat_dislike_click"
+            const val DISLIKE_SUBMIT = "wechat_dislike_submit"
+            const val SEARCH_CLICK = "wechat_search_click"
+            const val PROFILE_CLICK = "wechat_profile_click"
+        }
+    }
 
     /**
      * FeedLine (朋友圈) 模块埋点常量组
@@ -139,7 +159,20 @@ object AnalyticsEvents {
     const val AIRBNB_BOOKING_SUBMIT = AnalyticsModules.Airbnb.Events.BOOKING_SUBMIT
 
     // ==========================================
-    // 5. 系统性能与网络监控事件
+    // 5. WeChatMp (微信公众号) 模块事件
+    // ==========================================
+    const val WECHAT_MP_OPEN = AnalyticsModules.WeChatMp.Events.MP_OPEN
+    const val WECHAT_MP_REFRESH = AnalyticsModules.WeChatMp.Events.MP_REFRESH
+    const val WECHAT_MP_LOAD_MORE = AnalyticsModules.WeChatMp.Events.MP_LOAD_MORE
+    const val WECHAT_ARTICLE_CLICK = AnalyticsModules.WeChatMp.Events.ARTICLE_CLICK
+    const val WECHAT_ACCOUNT_CLICK = AnalyticsModules.WeChatMp.Events.ACCOUNT_CLICK
+    const val WECHAT_DISLIKE_CLICK = AnalyticsModules.WeChatMp.Events.DISLIKE_CLICK
+    const val WECHAT_DISLIKE_SUBMIT = AnalyticsModules.WeChatMp.Events.DISLIKE_SUBMIT
+    const val WECHAT_SEARCH_CLICK = AnalyticsModules.WeChatMp.Events.SEARCH_CLICK
+    const val WECHAT_PROFILE_CLICK = AnalyticsModules.WeChatMp.Events.PROFILE_CLICK
+
+    // ==========================================
+    // 6. 系统性能与网络监控事件
     // ==========================================
     const val NETWORK_ERROR = "network_error"           // API 网络请求失败
     const val SDUI_RENDER_ERROR = "sdui_render_error"   // SDUI 动态组件渲染失败
@@ -162,6 +195,9 @@ object AnalyticsParams {
 
     // 内容与业务实体参数
     const val POST_ID = "post_id"                       // 动态/帖文ID
+    const val ARTICLE_ID = "article_id"                 // 公众号文章ID
+    const val ACCOUNT_ID = "account_id"                 // 公众号ID
+    const val DISLIKE_REASON = "dislike_reason"         // 不感兴趣原因
     const val COMMENT_ID = "comment_id"                 // 评论ID
     const val LISTING_ID = "listing_id"                 // 房源ID
     const val MEDIA_COUNT = "media_count"               // 包含媒体(图片/视频)数量

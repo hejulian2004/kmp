@@ -1,0 +1,19 @@
+<resources>
+    <string name="wechat_mp_title">公众号</string>
+    <string name="wechat_mp_frequently_read">常读</string>
+    <string name="wechat_mp_more_messages">更多消息</string>
+    <string name="wechat_mp_look_around">看一看</string>
+    <string name="wechat_mp_followed_tag">关注的号</string>
+    <string name="wechat_mp_search_hint">搜索公众号与文章</string>
+    <string name="wechat_mp_dislike_title">内容反馈与屏蔽</string>
+    <string name="wechat_mp_dislike_account">对此公众号不感兴趣</string>
+    <string name="wechat_mp_dislike_topic">减少此类内容推荐</string>
+    <string name="wechat_mp_dislike_report">投诉该文章</string>
+    <string name="wechat_mp_cancel">取消</string>
+    <string name="wechat_mp_confirm">确认</string>
+    <string name="wechat_mp_no_content">没有更多文章了</string>
+    <string name="wechat_mp_refresh_success">已更新信息流</string>
+    <string name="wechat_mp_loading_more">正在加载更多文章...</string>
+    <string name="wechat_mp_article_clicked">已打开文章：%1$s</string>
+    <string name="wechat_mp_dislike_success">已减少此类内容推荐</string>
+</resources>
