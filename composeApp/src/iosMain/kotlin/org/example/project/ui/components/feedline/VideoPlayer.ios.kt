@@ -1,7 +1,7 @@
 /**
  * @File: VideoPlayer.ios.kt
  * @Package: org.example.project.ui.components.feedline
- * @Description: iOS平台视频播放组件实现（适配Compose Multiplatform最新UIKitViewController与UIKitInteropProperties）
+ * @Description: iOS平台AVPlayer视频播放组件实现（本轮不启用自动持久视频预加载）
  * @Author: 何聚敛
  * @Date: 2026-07-22
  */
@@ -35,7 +35,6 @@ actual fun VideoPlayer(
 
     LaunchedEffect(videoUrl) {
         resolvedUrl = AppVideoCacheManager.getPlayableVideoUrl(videoUrl)
-        AppVideoCacheManager.preloadVideo(videoUrl)
     }
 
     val player = remember(resolvedUrl) {

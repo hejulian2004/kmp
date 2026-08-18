@@ -7,13 +7,30 @@
  */
 package org.example.project.data.repository.wechat
 
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.headersOf
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import org.example.project.core.config.AppMockConfig
 import org.example.project.core.database.FakeWeChatMpDao
+import org.example.project.core.network.auth.InMemorySecureStorage
+import org.example.project.core.network.auth.TokenRefresher
+import org.example.project.core.network.auth.TokenStore
+import org.example.project.core.network.client.DefaultNetworkContainer
+import org.example.project.core.network.client.NetworkClientFactoryImpl
 import org.example.project.core.storage.api.StorageArea
 import org.example.project.core.storage.api.StoragePath
 import org.example.project.core.storage.internal.DefaultFileStorage
 import org.example.project.core.storage.testing.TestStorageDirectories
+import org.example.project.domain.model.wechat.WeChatAccount
+import org.example.project.domain.model.wechat.WeChatArticle
+import org.example.project.domain.model.wechat.WeChatCardType
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,6 +48,11 @@ class WeChatMpRepositoryImplTest {
         dao = FakeWeChatMpDao()
         dao.clearAll()
         repository = WeChatMpRepositoryImpl(weChatMpDao = dao)
+    }
+
+    @AfterTest
+    fun tearDown() {
+        AppMockConfig.resetToDefaults()
     }
 
     @Test
@@ -100,6 +122,92 @@ class WeChatMpRepositoryImplTest {
     }
 
     @Test
+    fun testRefreshFailurePreservesCursorAfterRepositoryRecreation() = runTest {
+        val testDirs = TestStorageDirectories()
+        val fileStorage = DefaultFileStorage(directories = testDirs)
+        val repo1 = WeChatMpRepositoryImpl(weChatMpDao = dao, fileStorage = fileStorage)
+
+        assertTrue(repo1.refreshData().isSuccess)
+        assertTrue(repo1.loadMoreArticles().isSuccess)
+        assertEquals(
+            "{\"nextPage\":3}",
+            fileStorage.read(
+                StorageArea.PERSISTENT,
+                StoragePath("wechat_mp/pagination.json")
+            ).decodeToString()
+        )
+
+        val pageThreeArticle = WeChatArticle(
+            id = "art_page_3",
+            account = WeChatAccount(
+                id = "acc_page_3",
+                name = "分页测试号",
+                avatarUrl = "https://example.com/avatar.png"
+            ),
+            title = "第三页文章",
+            coverUrl = "https://example.com/cover.png",
+            cardType = WeChatCardType.WATERFALL_GRID
+        )
+        val pageThreeResponse = Json.encodeToString(listOf(pageThreeArticle))
+        val requestedPages = mutableListOf<Int?>()
+        val mockEngine = MockEngine { request ->
+            val page = request.url.parameters["page"]?.toIntOrNull()
+            requestedPages += page
+            if (page == 3) {
+                respond(
+                    content = pageThreeResponse,
+                    status = HttpStatusCode.OK,
+                    headers = headersOf(HttpHeaders.ContentType, "application/json")
+                )
+            } else {
+                respond(
+                    content = "{\"error\":\"refresh failed\"}",
+                    status = HttpStatusCode.InternalServerError,
+                    headers = headersOf(HttpHeaders.ContentType, "application/json")
+                )
+            }
+        }
+        val tokenStore = TokenStore(InMemorySecureStorage())
+        val networkContainer = DefaultNetworkContainer(
+            NetworkClientFactoryImpl(
+                tokenStore = tokenStore,
+                tokenRefresher = TokenRefresher(tokenStore),
+                customEngine = mockEngine
+            )
+        )
+
+        AppMockConfig.isWeChatMpMockEnabled = false
+        val repo2 = WeChatMpRepositoryImpl(
+            weChatMpDao = dao,
+            networkContainer = networkContainer,
+            fileStorage = fileStorage
+        )
+
+        try {
+            assertTrue(repo2.refreshData().isFailure)
+            assertEquals(
+                "{\"nextPage\":3}",
+                fileStorage.read(
+                    StorageArea.PERSISTENT,
+                    StoragePath("wechat_mp/pagination.json")
+                ).decodeToString()
+            )
+
+            assertTrue(repo2.loadMoreArticles().isSuccess)
+            assertEquals(3, requestedPages.last())
+            assertEquals(
+                "{\"nextPage\":4}",
+                fileStorage.read(
+                    StorageArea.PERSISTENT,
+                    StoragePath("wechat_mp/pagination.json")
+                ).decodeToString()
+            )
+        } finally {
+            networkContainer.close()
+        }
+    }
+
+    @Test
     fun testDislikeArticleRemovesFromListAndDao() = runTest {
         val initialList = repository.observeWaterfallArticles().first()
         assertTrue(initialList.isNotEmpty())
@@ -113,6 +221,42 @@ class WeChatMpRepositoryImplTest {
 
         val daoList = dao.observeWaterfallArticles().first()
         assertFalse(daoList.any { it.id == targetId })
+    }
+
+    @Test
+    fun testDislikeArticleDoesNotAdvancePaginationCursor() = runTest {
+        val testDirs = TestStorageDirectories()
+        val fileStorage = DefaultFileStorage(directories = testDirs)
+        val repo = WeChatMpRepositoryImpl(weChatMpDao = dao, fileStorage = fileStorage)
+
+        assertTrue(repo.refreshData().isSuccess)
+        assertTrue(repo.loadMoreArticles().isSuccess)
+        assertEquals(
+            "{\"nextPage\":3}",
+            fileStorage.read(
+                StorageArea.PERSISTENT,
+                StoragePath("wechat_mp/pagination.json")
+            ).decodeToString()
+        )
+
+        val targetId = repo.observeWaterfallArticles().first().first().id
+        assertTrue(repo.dislikeArticle(targetId, "不感兴趣").isSuccess)
+        assertEquals(
+            "{\"nextPage\":3}",
+            fileStorage.read(
+                StorageArea.PERSISTENT,
+                StoragePath("wechat_mp/pagination.json")
+            ).decodeToString()
+        )
+
+        assertTrue(repo.loadMoreArticles().isSuccess)
+        assertEquals(
+            "{\"nextPage\":4}",
+            fileStorage.read(
+                StorageArea.PERSISTENT,
+                StoragePath("wechat_mp/pagination.json")
+            ).decodeToString()
+        )
     }
 
     @Test

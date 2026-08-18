@@ -60,6 +60,7 @@ suspend fun persistPickedMedia(file: PlatformFile): FeedLineMedia {
         return FeedLineMedia.Video(coverUrl = fallbackPath, videoUrl = fallbackPath)
     }
 
+    // 图片才允许使用小文件字节回退；视频路径禁止进入readBytes()。
     return try {
         val bytes = file.readBytes()
         if (bytes.isNotEmpty()) {
@@ -68,25 +69,13 @@ suspend fun persistPickedMedia(file: PlatformFile): FeedLineMedia {
                 path = relativePath,
                 data = bytes
             )
-            if (isVideo) {
-                FeedLineMedia.Video(coverUrl = persistentPath, videoUrl = persistentPath)
-            } else {
-                FeedLineMedia.Image(url = persistentPath)
-            }
+            FeedLineMedia.Image(url = persistentPath)
         } else {
             val fallbackPath = file.path
-            if (isVideo) {
-                FeedLineMedia.Video(coverUrl = fallbackPath, videoUrl = fallbackPath)
-            } else {
-                FeedLineMedia.Image(url = fallbackPath)
-            }
+            FeedLineMedia.Image(url = fallbackPath)
         }
     } catch (_: Throwable) {
         val fallbackPath = file.path
-        if (isVideo) {
-            FeedLineMedia.Video(coverUrl = fallbackPath, videoUrl = fallbackPath)
-        } else {
-            FeedLineMedia.Image(url = fallbackPath)
-        }
+        FeedLineMedia.Image(url = fallbackPath)
     }
 }

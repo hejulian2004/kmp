@@ -25,6 +25,19 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import org.example.project.ui.core.video.AndroidVideoCache
+import java.io.File
+
+/**
+ * 将视频播放地址转换为Media3可读取的Uri，兼容应用持久化的绝对文件路径和平台Uri。
+ */
+internal fun videoUriForPlayback(videoUrl: String): Uri {
+    val uri = Uri.parse(videoUrl)
+    return if (!videoUrl.contains("://") && File(videoUrl).isAbsolute) {
+        Uri.fromFile(File(videoUrl))
+    } else {
+        uri
+    }
+}
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -42,7 +55,7 @@ actual fun VideoPlayer(
             .setMediaSourceFactory(mediaSourceFactory)
             .build()
             .apply {
-                val mediaItem = MediaItem.fromUri(Uri.parse(videoUrl))
+                val mediaItem = MediaItem.fromUri(videoUriForPlayback(videoUrl))
                 setMediaItem(mediaItem)
                 repeatMode = Player.REPEAT_MODE_ALL
                 playWhenReady = true
