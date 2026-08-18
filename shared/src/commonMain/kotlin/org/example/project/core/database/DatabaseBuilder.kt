@@ -11,20 +11,15 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import org.example.project.platform.currentTimeMillis
-
-/**
- * 跨平台根据文件路径获取真实物理 SQLite AppDatabase 实例。
- */
-fun getRoomDatabase(dbPath: String): AppDatabase {
-    return RealSqliteAppDatabase(dbPath)
-}
 
 /**
  * 跨平台统一通过 RoomDatabase.Builder 获取 AppDatabase 实例。
  */
 fun getRoomDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase {
-    return RealSqliteAppDatabase(getTestDatabasePath("room_${currentTimeMillis()}"))
+    return builder
+        .setDriver(BundledSQLiteDriver())
+        .setQueryCoroutineContext(Dispatchers.IO)
+        .build()
 }
 
 /**

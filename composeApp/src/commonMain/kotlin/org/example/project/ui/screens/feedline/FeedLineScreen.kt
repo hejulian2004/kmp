@@ -551,8 +551,25 @@ fun FeedScreenPreview() {
         name = "何聚敛",
         avatarUrl = "https://i.pravatar.cc/300"
     )
-    val db = org.example.project.core.database.RealSqliteAppDatabase(org.example.project.core.database.getTestDatabasePath("preview_feed"))
-    val repository = FeedRepositoryImpl(feedLineDao = db.feedLineDao())
+    val repository = object : org.example.project.domain.repository.feedline.FeedLineRepository {
+        override fun getFeedPosts() = kotlinx.coroutines.flow.flowOf(emptyList<org.example.project.domain.model.feedline.FeedLinePost>())
+        override fun getFeedPost(postId: String) = kotlinx.coroutines.flow.flowOf(null)
+        override suspend fun refreshFeed() {}
+        override suspend fun likePost(postId: String, user: FeedLineUser) = ""
+        override suspend fun getLikedUsers(postId: String) = emptyList<FeedLineUser>()
+        override suspend fun unlikePost(postId: String, user: FeedLineUser) = ""
+        override suspend fun addComment(postId: String, commentUser: FeedLineUser, content: String) = ""
+        override suspend fun getComments(postId: String) = emptyList<org.example.project.domain.model.feedline.FeedLineComment>()
+        override suspend fun deleteComment(comment: org.example.project.domain.model.feedline.FeedLineComment) = ""
+        override suspend fun createPost(user: FeedLineUser, content: String, mediaList: List<org.example.project.domain.model.feedline.FeedLineMedia>) {}
+        override suspend fun deletePost(postId: String) {}
+        override suspend fun updatePost(postId: String, content: String, mediaList: List<org.example.project.domain.model.feedline.FeedLineMedia>) {}
+        override suspend fun addNotification(feedNotification: org.example.project.domain.model.feedline.FeedLineNotification) {}
+        override suspend fun deleteCommentNotification(feedNotification: org.example.project.domain.model.feedline.FeedLineNotification) {}
+        override suspend fun deleteLikeNotification(feedNotification: org.example.project.domain.model.feedline.FeedLineNotification) {}
+        override fun getNotifications() = kotlinx.coroutines.flow.flowOf(emptyList<org.example.project.domain.model.feedline.FeedLineNotification>())
+        override suspend fun markAllNotificationsAsRead() {}
+    }
 
     FeedScreen(
         viewModel = FeedLineViewModel(

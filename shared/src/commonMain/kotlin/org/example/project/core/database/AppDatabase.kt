@@ -56,4 +56,6 @@ abstract class AppDatabase : RoomDatabase() {
  * Room 编译期代码生成构造器契约
  */
 @Suppress("NO_ACTUAL_FOR_EXPECT", "KotlinNoActualForExpect")
-expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase>
+expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
+    override fun initialize(): AppDatabase
+}
