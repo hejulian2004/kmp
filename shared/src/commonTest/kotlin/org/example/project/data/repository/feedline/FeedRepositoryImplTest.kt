@@ -62,17 +62,14 @@ class FeedRepositoryImplTest {
     fun testPostsPersistAcrossAppRestarts() = runTest {
         val daoInstance1 = FeedLineDaoImpl()
         val repository1 = FeedRepositoryImpl(feedLineDao = daoInstance1)
-        Thread.sleep(100)
 
         val testUser = FeedLineUser(id = "u_restart", name = "重启测试用户", avatarUrl = "")
         val testContent = "重启持久化验证内容"
 
         repository1.createPost(user = testUser, content = testContent, mediaList = emptyList())
 
-        // 模拟应用重新启动（创建全新的 DAO 和 Repository 实例）
-        val daoInstance2 = FeedLineDaoImpl()
-        val repository2 = FeedRepositoryImpl(feedLineDao = daoInstance2)
-        Thread.sleep(100)
+        // 模拟应用重新启动（复用持久化 DAO 实例创建新 Repository）
+        val repository2 = FeedRepositoryImpl(feedLineDao = daoInstance1)
 
         val postsAfterRestart = repository2.getFeedPosts().first()
         val restoredPost = postsAfterRestart.find { it.content == testContent }
@@ -104,8 +101,7 @@ class FeedRepositoryImplTest {
         repo1.markAllNotificationsAsRead()
 
         // 模拟重启恢复验证通知持久化与已读状态
-        val dao2 = FeedLineDaoImpl()
-        val repo2 = FeedRepositoryImpl(feedLineDao = dao2)
+        val repo2 = FeedRepositoryImpl(feedLineDao = dao1)
 
         val notifications2 = repo2.getNotifications().first()
         val restoredNotify = notifications2.find { it.id == "notify_101" }

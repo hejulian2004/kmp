@@ -79,6 +79,14 @@ class AppAnalyticsManagerTest {
         }
     }
 
+    private fun waitUntilTrackerEvent(tracker: FakeAnalyticsTracker, timeoutMs: Long = 1000L) {
+        val start = kotlin.time.TimeSource.Monotonic.markNow()
+        while (tracker.events.isEmpty() && start.elapsedNow().inWholeMilliseconds < timeoutMs) {
+            // 短暂停顿轮询事件
+            runCatching { Thread.sleep(5) }
+        }
+    }
+
     @Test
     fun testTrackEventWithGlobalParams() = runTest {
         val fakeTracker = FakeAnalyticsTracker()
@@ -93,9 +101,7 @@ class AppAnalyticsManagerTest {
         AppAnalyticsManager.setUserContext(userId = "user_888", userRole = "vip")
 
         AppAnalyticsManager.trackEvent("button_click", mapOf("btn_id" to "submit_post"))
-
-        // 等待协程异步分发完成
-        Thread.sleep(100)
+        waitUntilTrackerEvent(fakeTracker)
 
         assertEquals(1, fakeTracker.events.size)
         val (eventName, params) = fakeTracker.events.first()
@@ -121,8 +127,7 @@ class AppAnalyticsManagerTest {
 
         AppAnalyticsManager.init(config)
         AppAnalyticsManager.trackScreenView("FeedLineScreen", mapOf("tab" to "friends"))
-
-        Thread.sleep(100)
+        waitUntilTrackerEvent(fakeTracker)
 
         assertEquals(1, fakeTracker.events.size)
         val (eventName, params) = fakeTracker.events.first()
@@ -146,7 +151,7 @@ class AppAnalyticsManagerTest {
         AppAnalyticsManager.setUserContext(null) // 清除上下文
 
         AppAnalyticsManager.trackEvent("logout_event")
-        Thread.sleep(100)
+        waitUntilTrackerEvent(fakeTracker)
 
         val (_, params) = fakeTracker.events.first()
         assertTrue(!params.containsKey(AnalyticsParams.USER_ID))
@@ -167,8 +172,7 @@ class AppAnalyticsManagerTest {
 
         AppAnalyticsManager.init(config)
         AppAnalyticsManager.trackEvent("safe_event")
-
-        Thread.sleep(100)
+        waitUntilTrackerEvent(successTracker)
 
         // failingTracker 抛出异常不应卡死主流程，successTracker 仍然能接收到事件
         assertEquals(1, successTracker.events.size)
