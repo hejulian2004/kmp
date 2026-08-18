@@ -9,11 +9,16 @@ package org.example.project.ui.components.feedline
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitViewController
 import kotlinx.cinterop.ExperimentalForeignApi
+import org.example.project.ui.core.video.AppVideoCacheManager
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.pause
 import platform.AVFoundation.play
@@ -29,7 +34,8 @@ actual fun VideoPlayer(
     var resolvedUrl by remember(videoUrl) { mutableStateOf(videoUrl) }
 
     LaunchedEffect(videoUrl) {
-        resolvedUrl = org.example.project.ui.core.video.AppVideoCacheManager.getPlayableVideoUrl(videoUrl)
+        resolvedUrl = AppVideoCacheManager.getPlayableVideoUrl(videoUrl)
+        AppVideoCacheManager.preloadVideo(videoUrl)
     }
 
     val player = remember(resolvedUrl) {
