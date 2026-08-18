@@ -77,6 +77,29 @@ class WeChatMpRepositoryImplTest {
     }
 
     @Test
+    fun testPaginationCursorPersistsAcrossRepositoryRecreation() = runTest {
+        val testDirs = TestStorageDirectories()
+        val fileStorage = DefaultFileStorage(directories = testDirs)
+        val repo1 = WeChatMpRepositoryImpl(weChatMpDao = dao, fileStorage = fileStorage)
+
+        assertTrue(repo1.refreshData().isSuccess)
+        assertTrue(repo1.loadMoreArticles().isSuccess)
+
+        val cursorAfterFirstLoad = fileStorage
+            .read(StorageArea.PERSISTENT, StoragePath("wechat_mp/pagination.json"))
+            .decodeToString()
+        assertEquals("{\"nextPage\":3}", cursorAfterFirstLoad)
+
+        val repo2 = WeChatMpRepositoryImpl(weChatMpDao = dao, fileStorage = fileStorage)
+        assertTrue(repo2.loadMoreArticles().isSuccess)
+
+        val cursorAfterRecreatedLoad = fileStorage
+            .read(StorageArea.PERSISTENT, StoragePath("wechat_mp/pagination.json"))
+            .decodeToString()
+        assertEquals("{\"nextPage\":4}", cursorAfterRecreatedLoad)
+    }
+
+    @Test
     fun testDislikeArticleRemovesFromListAndDao() = runTest {
         val initialList = repository.observeWaterfallArticles().first()
         assertTrue(initialList.isNotEmpty())

@@ -9,6 +9,7 @@ package org.example.project.data.repository.wechat
 
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +56,11 @@ private data class WeChatMpCacheSnapshot(
     val waterfallArticles: List<WeChatArticle>
 )
 
+@Serializable
+private data class WeChatMpPagination(
+    val nextPage: Int
+)
+
 class WeChatMpRepositoryImpl(
     private val weChatMpDao: WeChatMpDao,
     private val networkContainer: NetworkContainer? = null,
@@ -68,9 +74,12 @@ class WeChatMpRepositoryImpl(
     private val json = Json { ignoreUnknownKeys = true; isLenient = true; prettyPrint = false }
     private val cachePath = StoragePath("wechat_mp/articles_cache.json")
     private val dislikesStoragePath = StoragePath("wechat_mp/dislikes.json")
+    private val paginationStoragePath = StoragePath("wechat_mp/pagination.json")
     private val scope = CoroutineScope(coroutineDispatcher)
+    private val initialization = CompletableDeferred<Unit>()
 
     private val dislikesMutex = Mutex()
+    private val paginationMutex = Mutex()
     private val dislikedArticleIds = mutableSetOf<String>()
 
     private var nextPage: Int = 1
@@ -87,55 +96,64 @@ class WeChatMpRepositoryImpl(
 
     init {
         scope.launch {
-            // 1. 优先加载已持久化的“不感兴趣”记录
-            loadDislikesFromStorage()
+            try {
+                // 1. 优先加载已持久化的“不感兴趣”记录与分页游标
+                loadDislikesFromStorage()
+                loadPaginationFromStorage()
 
-            val existingArticles = weChatMpDao.observeWaterfallArticles().first()
-                .map { it.toDomainModel() }
-                .filterNot { isDisliked(it.id) }
-            val existingFeatured = weChatMpDao.observeFeaturedArticle().first()
-                ?.toDomainModel()
-                ?.takeUnless { isDisliked(it.id) }
+                val existingArticles = weChatMpDao.observeWaterfallArticles().first()
+                    .map { it.toDomainModel() }
+                    .filterNot { isDisliked(it.id) }
+                val existingFeatured = weChatMpDao.observeFeaturedArticle().first()
+                    ?.toDomainModel()
+                    ?.takeUnless { isDisliked(it.id) }
 
-            if (existingArticles.isEmpty() && existingFeatured == null) {
-                // 优先尝试从 FileStorage 文件磁盘缓存中读取快照
-                val cachedSnapshot = loadFromDiskCache()
-                if (cachedSnapshot != null) {
-                    val filteredFeatured = cachedSnapshot.featuredArticle?.takeUnless { isDisliked(it.id) }
-                    val filteredWaterfall = cachedSnapshot.waterfallArticles.filterNot { isDisliked(it.id) }
+                if (existingArticles.isEmpty() && existingFeatured == null) {
+                    // 优先尝试从FileStorage文件磁盘缓存中读取快照
+                    val cachedSnapshot = loadFromDiskCache()
+                    if (cachedSnapshot != null) {
+                        val filteredFeatured = cachedSnapshot.featuredArticle?.takeUnless { isDisliked(it.id) }
+                        val filteredWaterfall = cachedSnapshot.waterfallArticles.filterNot { isDisliked(it.id) }
 
-                    accountsFlow.value = cachedSnapshot.accounts
-                    featuredFlow.value = filteredFeatured
-                    waterfallFlow.value = filteredWaterfall
+                        accountsFlow.value = cachedSnapshot.accounts
+                        featuredFlow.value = filteredFeatured
+                        waterfallFlow.value = filteredWaterfall
 
-                    val entities = buildList {
-                        filteredFeatured?.let { add(WeChatArticleEntity.fromDomainModel(it)) }
-                        addAll(filteredWaterfall.map { WeChatArticleEntity.fromDomainModel(it) })
+                        val entities = buildList {
+                            filteredFeatured?.let { add(WeChatArticleEntity.fromDomainModel(it)) }
+                            addAll(filteredWaterfall.map { WeChatArticleEntity.fromDomainModel(it) })
+                        }
+                        weChatMpDao.insertArticles(entities)
+                    } else if (isMockActive) {
+                        // 无本地文件缓存且处于Mock模式时采用预置Mock种子数据并落地写入文件缓存
+                        val currentFeatured = (featuredFlow.value ?: createMockFeaturedArticle()).takeUnless { isDisliked(it.id) }
+                        val currentWaterfall = (waterfallFlow.value.ifEmpty { createMockWaterfallArticles() }).filterNot { isDisliked(it.id) }
+                        featuredFlow.value = currentFeatured
+                        waterfallFlow.value = currentWaterfall
+
+                        val entities = buildList {
+                            currentFeatured?.let { add(WeChatArticleEntity.fromDomainModel(it)) }
+                            addAll(currentWaterfall.map { WeChatArticleEntity.fromDomainModel(it) })
+                        }
+                        weChatMpDao.insertArticles(entities)
+                        saveToDiskCache(accountsFlow.value, currentFeatured, currentWaterfall)
                     }
-                    weChatMpDao.insertArticles(entities)
-                } else if (isMockActive) {
-                    // 无本地文件缓存且处于 Mock 模式时采用预置 Mock 种子数据并落地写入文件缓存
-                    val currentFeatured = (featuredFlow.value ?: createMockFeaturedArticle()).takeUnless { isDisliked(it.id) }
-                    val currentWaterfall = (waterfallFlow.value.ifEmpty { createMockWaterfallArticles() }).filterNot { isDisliked(it.id) }
-                    featuredFlow.value = currentFeatured
-                    waterfallFlow.value = currentWaterfall
-
-                    val entities = buildList {
-                        currentFeatured?.let { add(WeChatArticleEntity.fromDomainModel(it)) }
-                        addAll(currentWaterfall.map { WeChatArticleEntity.fromDomainModel(it) })
+                } else {
+                    if (existingFeatured != null) {
+                        featuredFlow.value = existingFeatured
                     }
-                    weChatMpDao.insertArticles(entities)
-                    saveToDiskCache(accountsFlow.value, currentFeatured, currentWaterfall)
+                    if (existingArticles.isNotEmpty()) {
+                        waterfallFlow.value = existingArticles
+                    }
                 }
-            } else {
-                if (existingFeatured != null) {
-                    featuredFlow.value = existingFeatured
-                }
-                if (existingArticles.isNotEmpty()) {
-                    waterfallFlow.value = existingArticles
-                }
+            } finally {
+                initialization.complete(Unit)
             }
         }
+    }
+
+    private suspend fun awaitInitialization() {
+        initialization.await()
     }
 
     private suspend fun loadDislikesFromStorage() {
@@ -186,6 +204,28 @@ class WeChatMpRepositoryImpl(
         }.getOrNull()
     }
 
+    private suspend fun loadPaginationFromStorage() {
+        val storage = fileStorage ?: return
+        paginationMutex.withLock {
+            runCatching {
+                if (storage.exists(StorageArea.PERSISTENT, paginationStoragePath)) {
+                    val bytes = storage.read(StorageArea.PERSISTENT, paginationStoragePath)
+                    val pagination = json.decodeFromString<WeChatMpPagination>(bytes.decodeToString())
+                    nextPage = pagination.nextPage.coerceAtLeast(1)
+                }
+            }
+        }
+    }
+
+    private suspend fun savePaginationToStorage(page: Int) {
+        val storage = fileStorage ?: return
+        runCatching {
+            val pagination = WeChatMpPagination(nextPage = page.coerceAtLeast(1))
+            val bytes = json.encodeToString(pagination).encodeToByteArray()
+            storage.write(StorageArea.PERSISTENT, paginationStoragePath, bytes, WriteMode.ATOMIC)
+        }
+    }
+
     private suspend fun saveToDiskCache(
         accounts: List<WeChatAccount>,
         featured: WeChatArticle?,
@@ -220,119 +260,133 @@ class WeChatMpRepositoryImpl(
     }
 
     override suspend fun refreshData(): Result<Unit> {
-        return runCatching {
-            if (isMockActive) {
-                delay(AppMockConfig.mockNetworkDelayMs)
-                val refreshedAccounts = accountsFlow.value.map {
-                    it.copy(hasUnread = Random.nextBoolean())
+        awaitInitialization()
+        return paginationMutex.withLock {
+            // 刷新会重新从第一页开始，成功后游标推进到第二页。
+            nextPage = 1
+            savePaginationToStorage(nextPage)
+
+            runCatching {
+                if (isMockActive) {
+                    delay(AppMockConfig.mockNetworkDelayMs)
+                    val refreshedAccounts = accountsFlow.value.map {
+                        it.copy(hasUnread = Random.nextBoolean())
+                    }
+                    accountsFlow.value = refreshedAccounts
+
+                    val rawFeatured = createMockFeaturedArticle().copy(
+                        publishTimestamp = currentTimeMillis(),
+                        readCount = (30000..90000).random()
+                    )
+                    val newFeatured = rawFeatured.takeUnless { isDisliked(it.id) }
+                    featuredFlow.value = newFeatured
+
+                    val currentWaterfall = createMockWaterfallArticles()
+                        .shuffled()
+                        .filterNot { isDisliked(it.id) }
+                    waterfallFlow.value = currentWaterfall
+
+                    weChatMpDao.clearAll()
+                    val entities = buildList {
+                        newFeatured?.let { add(WeChatArticleEntity.fromDomainModel(it)) }
+                        addAll(currentWaterfall.map { WeChatArticleEntity.fromDomainModel(it) })
+                    }
+                    weChatMpDao.insertArticles(entities)
+
+                    saveToDiskCache(refreshedAccounts, newFeatured, currentWaterfall)
+                    nextPage = 2
+                } else {
+                    val client = networkContainer?.authorizedClient
+                        ?: error("NetworkContainer尚未配置，无法发起真实网络请求")
+                    val accounts: List<WeChatAccount> = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_ACCOUNTS}").body()
+                    val rawFeatured: WeChatArticle? = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_FEATURED}").body()
+                    val rawWaterfall: List<WeChatArticle> = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_WATERFALL}").body()
+
+                    val featured = rawFeatured?.takeUnless { isDisliked(it.id) }
+                    val waterfall = rawWaterfall.filterNot { isDisliked(it.id) }
+
+                    accountsFlow.value = accounts
+                    featuredFlow.value = featured
+                    waterfallFlow.value = waterfall
+
+                    weChatMpDao.clearAll()
+                    val entities = buildList {
+                        featured?.let { add(WeChatArticleEntity.fromDomainModel(it)) }
+                        addAll(waterfall.map { WeChatArticleEntity.fromDomainModel(it) })
+                    }
+                    weChatMpDao.insertArticles(entities)
+                    saveToDiskCache(accounts, featured, waterfall)
+                    nextPage = 2
                 }
-                accountsFlow.value = refreshedAccounts
-
-                val rawFeatured = createMockFeaturedArticle().copy(
-                    publishTimestamp = currentTimeMillis(),
-                    readCount = (30000..90000).random()
-                )
-                val newFeatured = rawFeatured.takeUnless { isDisliked(it.id) }
-                featuredFlow.value = newFeatured
-
-                val currentWaterfall = createMockWaterfallArticles()
-                    .shuffled()
-                    .filterNot { isDisliked(it.id) }
-                waterfallFlow.value = currentWaterfall
-
-                weChatMpDao.clearAll()
-                val entities = buildList {
-                    newFeatured?.let { add(WeChatArticleEntity.fromDomainModel(it)) }
-                    addAll(currentWaterfall.map { WeChatArticleEntity.fromDomainModel(it) })
-                }
-                weChatMpDao.insertArticles(entities)
-
-                saveToDiskCache(refreshedAccounts, newFeatured, currentWaterfall)
-                nextPage = 2
-            } else {
-                val client = networkContainer?.authorizedClient ?: error("NetworkContainer 尚未配置，无法发起真实网络请求")
-                val accounts: List<WeChatAccount> = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_ACCOUNTS}").body()
-                val rawFeatured: WeChatArticle? = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_FEATURED}").body()
-                val rawWaterfall: List<WeChatArticle> = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_WATERFALL}").body()
-
-                val featured = rawFeatured?.takeUnless { isDisliked(it.id) }
-                val waterfall = rawWaterfall.filterNot { isDisliked(it.id) }
-
-                accountsFlow.value = accounts
-                featuredFlow.value = featured
-                waterfallFlow.value = waterfall
-
-                weChatMpDao.clearAll()
-                val entities = buildList {
-                    featured?.let { add(WeChatArticleEntity.fromDomainModel(it)) }
-                    addAll(waterfall.map { WeChatArticleEntity.fromDomainModel(it) })
-                }
-                weChatMpDao.insertArticles(entities)
-                saveToDiskCache(accounts, featured, waterfall)
-                nextPage = 2
+                savePaginationToStorage(nextPage)
             }
         }
     }
 
     override suspend fun loadMoreArticles(): Result<List<WeChatArticle>> {
-        return runCatching {
-            val requestPage = nextPage
-            if (isMockActive) {
-                delay(AppMockConfig.mockNetworkDelayMs)
-                val now = currentTimeMillis()
-                val rawMoreArticles = listOf(
-                    WeChatArticle(
-                        id = "art_more_${Random.nextInt(1000, 9999)}",
-                        account = WeChatAccount(
-                            id = "acc_geek_${Random.nextInt(10, 99)}",
-                            name = "极客视界",
-                            avatarUrl = "https://picsum.photos/seed/geekview/120/120",
-                            isFollowed = true
+        awaitInitialization()
+        return paginationMutex.withLock {
+            runCatching {
+                val requestPage = nextPage
+                if (isMockActive) {
+                    delay(AppMockConfig.mockNetworkDelayMs)
+                    val now = currentTimeMillis()
+                    val rawMoreArticles = listOf(
+                        WeChatArticle(
+                            id = "art_more_${Random.nextInt(1000, 9999)}",
+                            account = WeChatAccount(
+                                id = "acc_geek_${Random.nextInt(10, 99)}",
+                                name = "极客视界",
+                                avatarUrl = "https://picsum.photos/seed/geekview/120/120",
+                                isFollowed = true
+                            ),
+                            title = "次世代AI智能体时代已来：深度解读跨平台技术革命",
+                            coverUrl = "https://picsum.photos/seed/more_ai/400/500",
+                            publishTimeText = "昨天",
+                            publishTimestamp = now - 86400_000,
+                            cardType = WeChatCardType.WATERFALL_GRID,
+                            isFollowedAccount = true,
+                            readCount = 28300,
+                            coverAspectRatio = 0.88f
                         ),
-                        title = "次世代AI智能体时代已来：深度解读跨平台技术革命",
-                        coverUrl = "https://picsum.photos/seed/more_ai/400/500",
-                        publishTimeText = "昨天",
-                        publishTimestamp = now - 86400_000,
-                        cardType = WeChatCardType.WATERFALL_GRID,
-                        isFollowedAccount = true,
-                        readCount = 28300,
-                        coverAspectRatio = 0.88f
-                    ),
-                    WeChatArticle(
-                        id = "art_more_${Random.nextInt(1000, 9999)}",
-                        account = WeChatAccount(
-                            id = "acc_36kr_${Random.nextInt(10, 99)}",
-                            name = "36氪",
-                            avatarUrl = "https://picsum.photos/seed/36kr/120/120",
-                            isFollowed = false
-                        ),
-                        title = "大模型落地应用最新观察：企业级方案如何降本增效？",
-                        coverUrl = "https://picsum.photos/seed/more_biz/300/300",
-                        publishTimeText = "昨天",
-                        publishTimestamp = now - 90000_000,
-                        cardType = WeChatCardType.HORIZONTAL_ROW,
-                        isFollowedAccount = false,
-                        readCount = 49100,
-                        coverAspectRatio = 1.0f
+                        WeChatArticle(
+                            id = "art_more_${Random.nextInt(1000, 9999)}",
+                            account = WeChatAccount(
+                                id = "acc_36kr_${Random.nextInt(10, 99)}",
+                                name = "36氪",
+                                avatarUrl = "https://picsum.photos/seed/36kr/120/120",
+                                isFollowed = false
+                            ),
+                            title = "大模型落地应用最新观察：企业级方案如何降本增效？",
+                            coverUrl = "https://picsum.photos/seed/more_biz/300/300",
+                            publishTimeText = "昨天",
+                            publishTimestamp = now - 90000_000,
+                            cardType = WeChatCardType.HORIZONTAL_ROW,
+                            isFollowedAccount = false,
+                            readCount = 49100,
+                            coverAspectRatio = 1.0f
+                        )
                     )
-                )
-                val moreArticles = rawMoreArticles.filterNot { isDisliked(it.id) }
-                waterfallFlow.update { it + moreArticles }
-                weChatMpDao.insertArticles(moreArticles.map { WeChatArticleEntity.fromDomainModel(it) })
+                    val moreArticles = rawMoreArticles.filterNot { isDisliked(it.id) }
+                    waterfallFlow.update { it + moreArticles }
+                    weChatMpDao.insertArticles(moreArticles.map { WeChatArticleEntity.fromDomainModel(it) })
 
-                saveToDiskCache(accountsFlow.value, featuredFlow.value, waterfallFlow.value)
-                nextPage = requestPage + 1
-                moreArticles
-            } else {
-                val client = networkContainer?.authorizedClient ?: error("NetworkContainer 尚未配置")
-                val rawMoreArticles: List<WeChatArticle> = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_WATERFALL}?page=$requestPage").body()
-                val moreArticles = rawMoreArticles.filterNot { isDisliked(it.id) }
+                    saveToDiskCache(accountsFlow.value, featuredFlow.value, waterfallFlow.value)
+                    nextPage = requestPage + 1
+                    savePaginationToStorage(nextPage)
+                    moreArticles
+                } else {
+                    val client = networkContainer?.authorizedClient ?: error("NetworkContainer尚未配置")
+                    val rawMoreArticles: List<WeChatArticle> = client.get("${ApiEndpoints.BASE_URL}${ApiEndpoints.WeChatMp.GET_WATERFALL}?page=$requestPage").body()
+                    val moreArticles = rawMoreArticles.filterNot { isDisliked(it.id) }
 
-                waterfallFlow.update { it + moreArticles }
-                weChatMpDao.insertArticles(moreArticles.map { WeChatArticleEntity.fromDomainModel(it) })
-                saveToDiskCache(accountsFlow.value, featuredFlow.value, waterfallFlow.value)
-                nextPage = requestPage + 1
-                moreArticles
+                    waterfallFlow.update { it + moreArticles }
+                    weChatMpDao.insertArticles(moreArticles.map { WeChatArticleEntity.fromDomainModel(it) })
+                    saveToDiskCache(accountsFlow.value, featuredFlow.value, waterfallFlow.value)
+                    nextPage = requestPage + 1
+                    savePaginationToStorage(nextPage)
+                    moreArticles
+                }
             }
         }
     }
