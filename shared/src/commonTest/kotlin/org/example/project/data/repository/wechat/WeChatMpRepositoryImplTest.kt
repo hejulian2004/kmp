@@ -224,6 +224,42 @@ class WeChatMpRepositoryImplTest {
     }
 
     @Test
+    fun testDislikeArticleDoesNotAdvancePaginationCursor() = runTest {
+        val testDirs = TestStorageDirectories()
+        val fileStorage = DefaultFileStorage(directories = testDirs)
+        val repo = WeChatMpRepositoryImpl(weChatMpDao = dao, fileStorage = fileStorage)
+
+        assertTrue(repo.refreshData().isSuccess)
+        assertTrue(repo.loadMoreArticles().isSuccess)
+        assertEquals(
+            "{\"nextPage\":3}",
+            fileStorage.read(
+                StorageArea.PERSISTENT,
+                StoragePath("wechat_mp/pagination.json")
+            ).decodeToString()
+        )
+
+        val targetId = repo.observeWaterfallArticles().first().first().id
+        assertTrue(repo.dislikeArticle(targetId, "不感兴趣").isSuccess)
+        assertEquals(
+            "{\"nextPage\":3}",
+            fileStorage.read(
+                StorageArea.PERSISTENT,
+                StoragePath("wechat_mp/pagination.json")
+            ).decodeToString()
+        )
+
+        assertTrue(repo.loadMoreArticles().isSuccess)
+        assertEquals(
+            "{\"nextPage\":4}",
+            fileStorage.read(
+                StorageArea.PERSISTENT,
+                StoragePath("wechat_mp/pagination.json")
+            ).decodeToString()
+        )
+    }
+
+    @Test
     fun testDislikePersistenceAcrossRepositoryRecreation() = runTest {
         val testDirs = TestStorageDirectories()
         val fileStorage = DefaultFileStorage(directories = testDirs)
