@@ -1,7 +1,7 @@
 /**
  * @File: AppVideoCacheManager.kt
  * @Package: org.example.project.ui.core.video
- * @Description: 全局统一视频缓存管理器（支持网络视频本地离线缓存、预加载与LRU自动清理）
+ * @Description: 视频路径缓存辅助工具（Android实际播放缓存由Media3负责，iOS本轮不启用自动持久缓存）
  * @Author: 何聚敛
  * @Date: 2026-08-18
  */
@@ -23,13 +23,13 @@ import org.example.project.core.storage.api.WriteMode
 import org.example.project.core.storage.client.AppStorageInitializer
 
 /**
- * 全局统一视频缓存管理器。
+ * 视频路径缓存辅助工具。
  * 
  * 职责：
- * 1. 拦截网络视频播放 URL，优先从本地私有缓存区 (`StorageArea.CACHE/video_cache/`) 读取。
- * 2. 命中缓存时提供 0 缓冲秒开与离线播放体验。
- * 3. 未命中缓存时，启动异步后台任务静默下载并落盘，为下次播放提速。
- * 4. 支持手动或自动清理视频磁盘缓存。
+ * 1. 为需要复用历史文件缓存的调用方解析网络视频可播放路径。
+ * 2. Android播放链路由Media3 `SimpleCache`负责流式缓存与512MB LRU淘汰。
+ * 3. iOS当前由AVPlayer直接播放，不由此工具自动预加载当前视频。
+ * 4. 支持显式清理历史视频文件缓存。
  */
 object AppVideoCacheManager {
 
@@ -38,7 +38,7 @@ object AppVideoCacheManager {
     private val activeDownloads = mutableSetOf<String>()
 
     /**
-     * 视频磁盘缓存最大配额 (512MB)
+     * 兼容性缓存配额常量，不代表common层或iOS已实现512MB LRU；Android实际配置见AndroidVideoCache。
      */
     const val MAX_VIDEO_CACHE_SIZE_BYTES: Long = 512L * 1024 * 1024
 
@@ -47,7 +47,7 @@ object AppVideoCacheManager {
      * 
      * - 若为本地文件路径（如相机录制/相册选择），直接返回原路径；
      * - 若为网络视频且本地已缓存，返回本地沙盒绝对物理路径；
-     * - 若为网络视频且未缓存，触发后台异步预下载，并返回原始网络 URL 保障首次流畅播。
+     * - 若为网络视频且未缓存，返回原始网络 URL；平台播放器自行决定网络缓存策略。
      * 
      * @param videoUrl 原始视频地址 (本地物理路径或 HTTP/HTTPS URL)
      * @return 实际可用于 VideoPlayer 播放的路径
@@ -70,6 +70,7 @@ object AppVideoCacheManager {
 
     /**
      * 异步预加载/缓存指定网络视频到本地磁盘。
+     * 当前Android/iOS平台VideoPlayer均不自动调用此方法；iOS播放链路不通过此方法做持久缓存。
      * 
      * @param videoUrl 网络视频地址
      */

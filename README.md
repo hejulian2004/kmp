@@ -1,6 +1,6 @@
 # Social KMP App
 
-基于 **Kotlin Multiplatform (KMP)** 和 **Compose Multiplatform** 实现的跨平台社交应用框架，集成了 **Airbnb 个人资料与设置**、**FeedLine 朋友圈**、**Instagram 动态流**、**WeChatMp 微信公众号与看一看瀑布流** 四大核心业务模块，全量采用 **MVI 架构**、**Room KMP 生产级跨平台物理数据库（Local-First SWR）**、**Core Infrastructure 统一文件存储架构**、**统一图片与视频多级离线缓存**、**跨平台数据埋点与 PlatformLock 互斥安全**、**StartupGate 响应式启动门禁** 与 **SDUI（服务端驱动 UI）动态组件热更新架构**。
+基于 **Kotlin Multiplatform (KMP)** 和 **Compose Multiplatform** 实现的跨平台社交应用框架，集成了 **Airbnb 个人资料与设置**、**FeedLine 朋友圈**、**Instagram 动态流**、**WeChatMp 微信公众号与看一看瀑布流** 四大核心业务模块，全量采用 **MVI 架构**、**Room KMP 生产级跨平台物理数据库（Local-First SWR）**、**Core Infrastructure 统一文件存储架构**、**图片统一缓存与平台化视频播放缓存**、**跨平台数据埋点与 PlatformLock 互斥安全**、**StartupGate 响应式启动门禁** 与 **SDUI（服务端驱动 UI）动态组件热更新架构**。
 
 ---
 
@@ -25,9 +25,9 @@
 - **真实跨平台 Room / SQLite 本地优先数据库（Local-First SWR）**：
   - 生产环境彻底剔除 Fake DAO，基于 SQLite Bundled 驱动提供 `HostProfileDao`、`FeedLineDao`、`InstagramDao` 与 `WeChatMpDao` 响应式数据持久化。
   - 支持物理 `.db` 数据库跨实例、跨生命周期重新打开持久化恢复，具备完备的集成测试校验。
-- **全局统一图片与视频多级离线缓存架构**：
+- **图片统一与平台化视频播放缓存架构**：
   - **图片多级缓存 (`AppImageLoader`)**：统一收敛 Coil 3 引擎，提供 L1 动态 LRU 内存缓存（25% 堆内存）+ L2 物理磁盘缓存（256MB LRU）+ Ktor 3 网络拉取 + FileKit 本地解码。
-  - **视频磁盘缓存 (`AppVideoCacheManager`)**：全应用统一 512MB 视频磁盘文件池，`VideoPlayer` 自动拦截网络视频，命中时 0ms 离线起播，未命中时后台静默预下载。
+  - **Android视频播放缓存 (`AndroidVideoCache`)**：Media3 `SimpleCache`提供512MB LRU流式缓存；iOS使用AVPlayer直接播放，本轮不启用自动持久视频缓存。
 - **Core Infrastructure 统一文件存储架构 (`core/storage`)**：
   - **逻辑区域划分**：提供 `StorageArea.PERSISTENT`（长期持久数据）、`CACHE`（快照缓存与图片/视频离线缓存）与 `TEMPORARY`（临时文件）抽象，屏蔽 Android 与 iOS 物理目录差异。
   - **路径安全防护与防逃逸 (`StoragePathValidator`)**：防范绝对路径与目录穿越 (`..`)，确保文件操作严格限制在逻辑根目录内。
@@ -160,9 +160,9 @@ shared/src/commonMain/kotlin/org/example/project/
 - 生产环境统一接入 `RealSqliteAppDatabase` 与原生 SQLite 驱动引擎，杜绝假数据 DAO。
 - 页面优先从本地数据库加载并响应式渲染，后台静默拉取网络并增量入库同步。
 
-### 3. 全局统一图片与视频多级离线缓存
+### 3. 图片统一与平台化视频播放缓存
 - **图片缓存 (`AppImageLoader`)**：统一收敛 Coil 3 实例，挂载 25% 堆内存 `MemoryCache` 与 256MB 磁盘 `DiskCache`。
-- **视频缓存 (`AppVideoCacheManager`)**：统一 512MB 视频磁盘文件池，`VideoPlayer` 自动拦截，命中时 0ms 本地起播，未命中时后台静默预下载。
+- **Android视频缓存 (`AndroidVideoCache`)**：Media3 `SimpleCache`提供512MB LRU流式缓存，由Android`VideoPlayer`使用；iOS`VideoPlayer`通过AVPlayer直接播放，本轮不启用持久视频缓存。
 - **媒体持久化 (`MediaPersister`)**：相册选取与拍摄的媒体在发布前统一持久化落盘至私有沙盒，入库绝对物理路径。
 
 ### 4. Core Infrastructure 统一文件存储架构 (`core/storage`)
