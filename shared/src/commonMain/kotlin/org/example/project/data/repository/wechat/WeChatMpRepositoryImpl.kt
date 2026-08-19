@@ -262,10 +262,6 @@ class WeChatMpRepositoryImpl(
     override suspend fun refreshData(): Result<Unit> {
         awaitInitialization()
         return paginationMutex.withLock {
-            // 刷新会重新从第一页开始，成功后游标推进到第二页。
-            nextPage = 1
-            savePaginationToStorage(nextPage)
-
             runCatching {
                 if (isMockActive) {
                     delay(AppMockConfig.mockNetworkDelayMs)
@@ -294,7 +290,6 @@ class WeChatMpRepositoryImpl(
                     weChatMpDao.insertArticles(entities)
 
                     saveToDiskCache(refreshedAccounts, newFeatured, currentWaterfall)
-                    nextPage = 2
                 } else {
                     val client = networkContainer?.authorizedClient
                         ?: error("NetworkContainer尚未配置，无法发起真实网络请求")
@@ -316,8 +311,9 @@ class WeChatMpRepositoryImpl(
                     }
                     weChatMpDao.insertArticles(entities)
                     saveToDiskCache(accounts, featured, waterfall)
-                    nextPage = 2
                 }
+                // 只有刷新成功后才将游标推进到第二页，失败时保留原游标。
+                nextPage = 2
                 savePaginationToStorage(nextPage)
             }
         }
